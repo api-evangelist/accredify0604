@@ -1,0 +1,1186 @@
+openapi: 3.1.0
+info:
+  title: Auth Module
+  version: "1.0"
+  description: Auth module endpoints
+  contact:
+    name: Accredify
+    url: "https://accredify.io"
+    email: support@accredify.io
+  termsOfService: "https://www.accredify.io/legal"
+servers:
+  - url: "https://nexus.staging.accredify.io"
+    description: Staging
+  - url: "https://nexus.uat.accredify.io"
+    description: UAT
+  - url: "https://nexus.accredify.io"
+    description: Production
+paths:
+  /oauth/token:
+    post:
+      summary: Get OAuth access token
+      description: |
+        Obtain an access token using the client credentials grant type. Request only the scopes required by your integration, separated by spaces.
+
+        | Scope | Permission granted |
+        | --- | --- |
+        | `run-workflow` | Ability to run a specific workflow. |
+        | `webcomponent-verification` | Ability to get verification access from the web component. |
+        | `verification-suite` | Ability to access the verification suite APIs. |
+        | `workflows:read` | Ability to read workflows. |
+        | `workflows:write` | Ability to write workflows. |
+        | `workflow-runs:read` | Ability to read workflow runs. |
+        | `documents:read` | Ability to read documents. |
+        | `documents:write` | Ability to write documents. |
+        | `custom-views:read` | Ability to read custom views. |
+        | `users:read` | Ability to read organization users. |
+        | `users:write` | Ability to write organization users. |
+        | `design-templates:read` | Ability to read design templates. |
+        | `document-templates:read` | Ability to read document templates. |
+        | `groups:read` | Ability to read organization groups. |
+        | `groups:write` | Ability to write organization groups. |
+        | `courses:read` | Ability to read courses. |
+        | `courses:write` | Ability to write courses. |
+        | `roles:read` | Ability to read organization roles. |
+        | `user-tokens:read` | Ability to read user tokens. |
+        | `user-tokens:write` | Ability to create and revoke user tokens. |
+      tags:
+        - OAuth
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              required:
+                - grant_type
+                - client_id
+                - client_secret
+              properties:
+                grant_type:
+                  type: string
+                  enum:
+                    - client_credentials
+                  description: OAuth grant type
+                client_id:
+                  type: string
+                  description: OAuth client ID
+                client_secret:
+                  type: string
+                  description: OAuth client secret
+                scope:
+                  type: string
+                  description: Space-separated list of scopes. See the endpoint description for the available scopes and their permissions.
+                  example: "workflows:read workflow-runs:read documents:read"
+      responses:
+        "200":
+          description: Token issued successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OAuthTokenResponse"
+              examples:
+                Success:
+                  value:
+                    token_type: Bearer
+                    expires_in: 31536000
+                    access_token: eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9...
+        "400":
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OAuthError"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OAuthError"
+  /api/v1/organization/users:
+    get:
+      summary: Get list of organization users
+      description: Retrieve a paginated list of organization users with optional filtering by status, role, groups, and search terms
+      tags:
+        - Organization Users
+      security:
+        - OAuth2:
+            - "users:read"
+      parameters:
+        - name: page
+          in: query
+          description: Page number for pagination (starts from 1)
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+          example: 1
+        - name: per_page
+          in: query
+          description: Number of users per page (10-50)
+          required: false
+          schema:
+            type: integer
+            enum:
+              - 10
+              - 20
+              - 30
+              - 40
+              - 50
+            default: 10
+          example: 10
+        - name: status[]
+          in: query
+          description: Filter by user status(es). Repeat this parameter for multiple statuses.
+          required: false
+          schema:
+            type: array
+            items:
+              type: string
+              enum:
+                - active
+                - pending
+                - expired
+                - locked
+          style: form
+          explode: true
+          example: ["active", "pending"]
+        - name: search
+          in: query
+          description: Search users by name or email (case-insensitive partial match)
+          required: false
+          schema:
+            type: string
+          example: "John Doe"
+        - name: role[]
+          in: query
+          description: Filter by role. Repeat this parameter for multiple roles.
+          required: false
+          schema:
+            type: array
+            items:
+              type: string
+              enum:
+                - admin
+                - member
+          style: form
+          explode: true
+          example: ["admin"]
+        - name: group_uuids[]
+          in: query
+          description: Filter by organization group UUIDs. Repeat this parameter for multiple organization groups.
+          required: false
+          schema:
+            type: array
+            items:
+              type: string
+              format: uuid
+          style: form
+          explode: true
+          example:
+            [
+              "9f854436-2e67-439e-bdda-e7ab6a4b5874",
+              "9fb13026-0719-4cf5-b559-8fd312eebdbd",
+            ]
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/User"
+                  links:
+                    $ref: "#/components/schemas/PaginationLinks"
+                  meta:
+                    $ref: "#/components/schemas/PaginationMeta"
+                required:
+                  - data
+                  - links
+                  - meta
+              examples:
+                Example 1:
+                  value:
+                    data:
+                      - uuid: 9c80a7ea-f055-4695-9440-07a3fe4722e9
+                        name: John Doe
+                        role: admin
+                        email: john.doe@accredify.io
+                        status: active
+                        groups: []
+                      - uuid: 9fb13043-3833-4f0e-8aff-996a007e0aa5
+                        name: Jane Doe
+                        role: member
+                        email: jane.doe@accredify.io
+                        status: active
+                        groups:
+                          - uuid: 9f854436-2e67-439e-bdda-e7ab6a4b5874
+                            name: Default Access Group
+                            description: null
+                          - uuid: 9fb13026-0719-4cf5-b559-8fd312eebdbd
+                            name: Marketing Team
+                            description: null
+                    links:
+                      first: "https://nexus.staging.accredify.io/api/v1/organization/users?page=1"
+                      last: "https://nexus.staging.accredify.io/api/v1/organization/users?page=1"
+                      prev: null
+                      next: null
+                    meta:
+                      current_page: 1
+                      from: 1
+                      last_page: 1
+                      links:
+                        - url: null
+                          label: "&laquo; Previous"
+                          active: false
+                        - url: "https://nexus.staging.accredify.io/api/v1/organization/users?page=1"
+                          label: "1"
+                          active: true
+                        - url: null
+                          label: Next &raquo;
+                          active: false
+                      path: "https://nexus.staging.accredify.io/api/v1/organization/users"
+                      per_page: 10
+                      to: 2
+                      total: 2
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+        "422":
+          description: Validation Error
+    post:
+      summary: Create an organization user
+      description: Create or onboard a user into the current organization and assign roles/groups.
+      tags:
+        - Organization Users
+      security:
+        - OAuth2:
+            - "users:write"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - name
+                - email
+                - role_uuids
+              properties:
+                name:
+                  type: string
+                  maxLength: 255
+                email:
+                  type: string
+                  format: email
+                  maxLength: 255
+                onboarding:
+                  type: boolean
+                  default: true
+                  description: When false, the user is created without sending an onboarding email and a newly created user is set to `active` instead of `pending`.
+                role_uuids:
+                  type: array
+                  minItems: 1
+                  items:
+                    type: string
+                    format: uuid
+                group_uuids:
+                  type: array
+                  items:
+                    type: string
+                    format: uuid
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+              examples:
+                Onboarding enabled:
+                  value:
+                    uuid: 9fb13043-3833-4f0e-8aff-996a007e0aa5
+                    name: Default Onboarding User
+                    role: member
+                    email: default-onboarding-user@accredify.test
+                    status: pending
+                    groups:
+                      - uuid: 9f854436-2e67-439e-bdda-e7ab6a4b5874
+                        name: Default Access Group
+                        description: null
+                Onboarding disabled:
+                  value:
+                    uuid: 9fb13043-3833-4f0e-8aff-996a007e0aa5
+                    name: No Onboarding User
+                    role: member
+                    email: no-onboarding-user@accredify.test
+                    status: active
+                    groups:
+                      - uuid: 9f854436-2e67-439e-bdda-e7ab6a4b5874
+                        name: Default Access Group
+                        description: null
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+        "422":
+          description: Validation Error
+  "/api/v1/organization/users/{user_uuid}":
+    get:
+      summary: Get a specific organization user
+      description: Retrieve detailed information about a specific organization user including their role, status, and group memberships
+      tags:
+        - Organization Users
+      security:
+        - OAuth2:
+            - "users:read"
+      parameters:
+        - name: user_uuid
+          in: path
+          description: The ID of the user to retrieve
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+              examples:
+                Example 1:
+                  value:
+                    data:
+                      uuid: 497f6eca-6276-4993-bfeb-53cbbbba6f08
+                      name: John Doe
+                      email: john.doe@example.com
+                      role: admin
+                      status: active
+                      groups:
+                        - uuid: f47ac10b-58cc-4372-a567-0e02b2c3d479
+                          name: Administrators
+                          description: Admin group with full access
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+        "404":
+          description: User not found
+    patch:
+      summary: Update an organization user
+      description: Update organization user name, roles, and group assignments.
+      tags:
+        - Organization Users
+      security:
+        - OAuth2:
+            - "users:write"
+      parameters:
+        - name: user_uuid
+          in: path
+          description: The ID of the user to update
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - name
+                - role_uuids
+              properties:
+                name:
+                  type: string
+                  maxLength: 255
+                role_uuids:
+                  type: array
+                  minItems: 1
+                  items:
+                    type: string
+                    format: uuid
+                group_uuids:
+                  type: array
+                  items:
+                    type: string
+                    format: uuid
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+        "404":
+          description: User not found
+        "422":
+          description: Validation Error
+  /api/v1/organization/groups:
+    get:
+      summary: Get list of organization groups
+      description: Retrieve a paginated list of organization groups with their names and descriptions
+      tags:
+        - Organization Groups
+      security:
+        - OAuth2:
+            - "groups:read"
+      parameters:
+        - name: page
+          in: query
+          description: Page number for pagination (starts from 1)
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+          example: 1
+        - name: per_page
+          in: query
+          description: Number of groups per page (10-50)
+          required: false
+          schema:
+            type: integer
+            enum:
+              - 10
+              - 20
+              - 30
+              - 40
+              - 50
+            default: 10
+          example: 10
+        - name: search
+          in: query
+          description: Search groups by name (partial matches supported)
+          required: false
+          schema:
+            type: string
+            maxLength: 255
+          example: "Marketing"
+        - name: created_after
+          in: query
+          description: Filter groups created at or after this timestamp (ISO 8601)
+          required: false
+          schema:
+            type: string
+            format: date-time
+          example: "2025-06-01T00:00:00.000000Z"
+        - name: created_before
+          in: query
+          description: Filter groups created at or before this timestamp (ISO 8601)
+          required: false
+          schema:
+            type: string
+            format: date-time
+          example: "2025-06-30T23:59:59.000000Z"
+        - name: updated_after
+          in: query
+          description: Filter groups updated at or after this timestamp (ISO 8601)
+          required: false
+          schema:
+            type: string
+            format: date-time
+          example: "2025-06-01T00:00:00.000000Z"
+        - name: updated_before
+          in: query
+          description: Filter groups updated at or before this timestamp (ISO 8601)
+          required: false
+          schema:
+            type: string
+            format: date-time
+          example: "2025-06-30T23:59:59.000000Z"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/Group"
+                  links:
+                    $ref: "#/components/schemas/PaginationLinks"
+                  meta:
+                    $ref: "#/components/schemas/PaginationMeta"
+                required:
+                  - data
+                  - links
+                  - meta
+              examples:
+                Example 1:
+                  value:
+                    data:
+                      - uuid: f47ac10b-58cc-4372-a567-0e02b2c3d479
+                        name: Default Access Group
+                        description: Default group with standard access
+                      - uuid: a2b1c3d4-e5f6-7890-ab12-3456789cdef0
+                        name: Marketing Team
+                        description: Team responsible for marketing activities
+                    links:
+                      first: "https://nexus.staging.accredify.io/api/v1/organization/groups?page=1"
+                      last: "https://nexus.staging.accredify.io/api/v1/organization/groups?page=1"
+                      prev: null
+                      next: null
+                    meta:
+                      current_page: 1
+                      from: 1
+                      last_page: 1
+                      links:
+                        - url: null
+                          label: "&laquo; Previous"
+                          active: false
+                        - url: "https://nexus.staging.accredify.io/api/v1/organization/groups?page=1"
+                          label: "1"
+                          active: true
+                        - url: null
+                          label: Next &raquo;
+                          active: false
+                      path: "https://nexus.staging.accredify.io/api/v1/organization/groups"
+                      per_page: 10
+                      to: 2
+                      total: 2
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+        "422":
+          description: Validation Error
+  /api/v1/organization/roles:
+    get:
+      summary: Get organization roles
+      description: Retrieve available organization roles for role mapping and user-token management flows
+      tags:
+        - Organization Roles
+      security:
+        - OAuth2:
+            - "roles:read"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Role"
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+  "/api/v1/organization/users/{user_uuid}/user_tokens":
+    get:
+      summary: Get user tokens for an organization user
+      description: Retrieve paginated user-token metadata for the specified organization user. Tokens can be auto-revoked when the subject user is locked.
+      tags:
+        - User Tokens
+      security:
+        - OAuth2:
+            - "user-tokens:read"
+      parameters:
+        - name: user_uuid
+          in: path
+          required: true
+          description: The UUID of the target user
+          schema:
+            type: string
+            format: uuid
+        - name: page
+          in: query
+          required: false
+          description: Page number for pagination (starts from 1)
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+        - name: per_page
+          in: query
+          required: false
+          description: Number of tokens per page (10-50)
+          schema:
+            type: integer
+            enum:
+              - 10
+              - 20
+              - 30
+              - 40
+              - 50
+            default: 10
+        - name: status
+          in: query
+          required: false
+          description: Filter by token status
+          schema:
+            type: string
+            enum:
+              - active
+              - revoked
+              - all
+            default: all
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/UserToken"
+                  links:
+                    $ref: "#/components/schemas/PaginationLinks"
+                  meta:
+                    $ref: "#/components/schemas/PaginationMeta"
+                required:
+                  - data
+                  - links
+                  - meta
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+        "404":
+          description: User not found
+        "422":
+          description: Validation Error
+    post:
+      summary: Create a user token for an organization user
+      description: |
+        Create a new user token and return the plaintext bearer token once. Issued tokens may later be auto-revoked when the subject user is locked.
+
+        To override the default scopes, pass the `scopes` field as a JSON array. User tokens support only the following scopes:
+
+        | Scope | Permission granted |
+        | --- | --- |
+        | `run-workflow` | Ability to run a specific workflow. |
+        | `workflows:read` | Ability to read workflows. |
+        | `workflows:write` | Ability to write workflows. |
+        | `workflow-runs:read` | Ability to read workflow runs. |
+        | `documents:read` | Ability to read documents. |
+        | `documents:write` | Ability to write documents. |
+        | `users:read` | Ability to read organization users. |
+        | `groups:read` | Ability to read organization groups. |
+        | `design-templates:read` | Ability to read design templates. |
+        | `document-templates:read` | Ability to read document templates. |
+        | `courses:read` | Ability to read courses. |
+        | `courses:write` | Ability to write courses. |
+      tags:
+        - User Tokens
+      security:
+        - OAuth2:
+            - "user-tokens:write"
+      parameters:
+        - name: user_uuid
+          in: path
+          required: true
+          description: The UUID of the target user
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                  maxLength: 255
+                  description: Optional human-readable token name
+                scopes:
+                  type: array
+                  description: Optional scope overrides as a JSON array. Defaults apply when omitted or empty. See the endpoint description for scope permissions.
+                  items:
+                    type: string
+                    enum:
+                      - "run-workflow"
+                      - "workflows:read"
+                      - "workflows:write"
+                      - "workflow-runs:read"
+                      - "documents:read"
+                      - "documents:write"
+                      - "users:read"
+                      - "groups:read"
+                      - "design-templates:read"
+                      - "document-templates:read"
+                      - "courses:read"
+                      - "courses:write"
+                  example:
+                    - "workflows:read"
+                    - "workflow-runs:read"
+                    - "documents:read"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CreatedUserToken"
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+        "404":
+          description: User not found
+        "422":
+          description: Validation Error
+  "/api/v1/organization/user_tokens/{token_uuid}/revoke":
+    post:
+      summary: Revoke a user token
+      description: Manually revoke a user token using its user-token context UUID. Tokens are also revoked automatically when the subject user is locked.
+      tags:
+        - User Tokens
+      security:
+        - OAuth2:
+            - "user-tokens:write"
+      parameters:
+        - name: token_uuid
+          in: path
+          required: true
+          description: The user-token context UUID
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserToken"
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+        "404":
+          description: User token not found
+  /api/v1/organization/groups/{group_uuid}/duplicate:
+    post:
+      summary: Duplicate organization group
+      description: Duplicate an existing organization group and copy its assets into a new group within the same organization
+      tags:
+        - Organization Groups
+      security:
+        - OAuth2:
+            - 'groups:write'
+      parameters:
+        - name: group_uuid
+          in: path
+          description: Organization group UUID to duplicate
+          required: true
+          schema:
+            type: string
+            format: uuid
+          example: f47ac10b-58cc-4372-a567-0e02b2c3d479
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - name
+              properties:
+                name:
+                  type: string
+                  maxLength: 255
+                  description: Name of the new group
+                description:
+                  type: string
+                  nullable: true
+                  maxLength: 255
+                  description: Optional description for the new group
+            examples:
+              Example 1:
+                value:
+                  name: Marketing Team Copy
+                  description: Duplicate of Marketing Team
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Group'
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '404':
+          description: Not Found
+        '422':
+          description: Validation Error
+components:
+  securitySchemes:
+    OAuth2:
+      type: oauth2
+      description: OAuth2 client credentials flow
+      flows:
+        clientCredentials:
+          tokenUrl: /oauth/token
+          scopes:
+            run-workflow: Ability to run a specific workflow
+            webcomponent-verification: Ability to get the verification access from webcomponent
+            verification-suite: Ability to access the verification suite APIs
+            "workflows:read": Ability to read workflows
+            "workflows:write": Ability to write workflows
+            "workflow-runs:read": Ability to read workflow runs
+            "documents:read": Ability to read documents
+            "documents:write": Ability to write documents
+            "custom-views:read": Ability to read custom views
+            "users:read": Ability to read users
+            "users:write": Ability to write users
+            "design-templates:read": Ability to read design templates
+            "document-templates:read": Ability to read document templates
+            "groups:read": Ability to read groups
+            "groups:write": Ability to write groups
+            "courses:read": Ability to read courses
+            "courses:write": Ability to write courses
+            "roles:read": Ability to read roles
+            "user-tokens:read": Ability to read user tokens
+            "user-tokens:write": Ability to write user tokens
+  schemas:
+    User:
+      type: object
+      description: Organization user object
+      required:
+        - uuid
+        - name
+        - email
+        - role
+        - status
+        - groups
+      properties:
+        uuid:
+          type: string
+          format: uuid
+          description: Unique identifier for the user
+        name:
+          type: string
+          description: Full name of the user
+        email:
+          type: string
+          format: email
+          description: Email address of the user
+        role:
+          type: string
+          enum:
+            - admin
+            - member
+            - "-"
+          description: Role of the user within the organization (or "-" if no role assigned)
+        status:
+          type: string
+          enum:
+            - active
+            - pending
+            - expired
+            - locked
+          description: Status of the user within the organization
+        groups:
+          type: array
+          description: List of organization groups the user belongs to
+          items:
+            $ref: "#/components/schemas/Group"
+      examples:
+        - uuid: 9fb13043-3833-4f0e-8aff-996a007e0aa5
+          name: John Doe
+          role: member
+          email: john.doe@accredify.io
+          status: active
+          groups:
+            - uuid: 9f854436-2e67-439e-bdda-e7ab6a4b5874
+              name: Default Access Group
+              description: null
+            - uuid: 9fb13026-0719-4cf5-b559-8fd312eebdbd
+              name: Marketing Team
+              description: null
+    Group:
+      type: object
+      description: Organization group object
+      required:
+        - uuid
+        - name
+        - description
+      properties:
+        uuid:
+          type: string
+          format: uuid
+          description: Unique identifier for the group
+        name:
+          type: string
+          description: Name of the group
+        description:
+          type:
+            - string
+            - "null"
+          description: Description of the group (null if not provided)
+      examples:
+        - uuid: 9f854436-2e67-439e-bdda-e7ab6a4b5874
+          name: Default Access Group
+          description: null
+    Role:
+      type: object
+      description: Organization role object
+      required:
+        - uuid
+        - name
+        - description
+        - is_system_role
+      properties:
+        uuid:
+          type: string
+          format: uuid
+          description: Unique identifier for the role
+        name:
+          type: string
+          description: Display name of the role
+        description:
+          type:
+            - string
+            - "null"
+          description: Description of the role
+        is_system_role:
+          type: boolean
+          description: Whether this role is a predefined system role
+    UserToken:
+      type: object
+      description: User token metadata object
+      required:
+        - uuid
+        - name
+        - scopes
+        - created_at
+        - expires_at
+        - last_used_at
+        - is_revoked
+      properties:
+        uuid:
+          type: string
+          format: uuid
+          description: User-token context UUID
+        name:
+          type: string
+          description: Human-readable token name
+        scopes:
+          type: array
+          items:
+            type: string
+          description: OAuth scopes granted to the token
+        created_at:
+          type: string
+          format: date-time
+          description: Token creation timestamp
+        expires_at:
+          type:
+            - string
+            - "null"
+          format: date-time
+          description: Token expiry timestamp
+        last_used_at:
+          type:
+            - string
+            - "null"
+          format: date-time
+          description: Last usage timestamp
+        is_revoked:
+          type: boolean
+          description: Whether token is revoked (manually or automatically when subject user is locked)
+    CreatedUserToken:
+      allOf:
+        - $ref: "#/components/schemas/UserToken"
+        - $ref: "#/components/schemas/CreatedUserTokenSecret"
+    CreatedUserTokenSecret:
+      type: object
+      required:
+        - token
+      properties:
+        token:
+          type: string
+          description: Plaintext bearer token shown only once at creation
+    PaginationLinks:
+      type: object
+      description: Pagination links for navigating through paginated results
+      required:
+        - first
+        - last
+        - prev
+        - next
+      properties:
+        first:
+          type: string
+          description: URL for the first page
+        last:
+          type: string
+          description: URL for the last page
+        prev:
+          type:
+            - string
+            - "null"
+          description: URL for the previous page (null if on first page)
+        next:
+          type:
+            - string
+            - "null"
+          description: URL for the next page (null if on last page)
+      examples:
+        - first: "http://nexus.localhost:8080/api/workflows?page=1"
+          last: "http://nexus.localhost:8080/api/workflows?page=1"
+          prev: null
+          next: null
+    PaginationMeta:
+      type: object
+      description: Pagination metadata containing information about the current page and total results
+      required:
+        - current_page
+        - from
+        - last_page
+        - links
+        - path
+        - per_page
+        - to
+        - total
+      properties:
+        current_page:
+          type: integer
+          description: Current page number
+        from:
+          type:
+            - "null"
+            - integer
+          description: Starting record number for current page (null if no results)
+        last_page:
+          type: integer
+          description: Last page number
+        links:
+          type: array
+          description: Array of pagination link objects
+          items:
+            type: object
+            required:
+              - url
+              - label
+              - active
+            properties:
+              url:
+                type:
+                  - "null"
+                  - string
+                description: URL for the pagination link (null for disabled links)
+              label:
+                type: string
+                description: Display label for the pagination link
+              active:
+                type: boolean
+                description: Whether this link represents the current page
+        path:
+          type: string
+          description: Base path for the API endpoint
+        per_page:
+          type: integer
+          description: Number of items per page
+        to:
+          type:
+            - "null"
+            - integer
+          description: Ending record number for current page (null if no results)
+        total:
+          type: integer
+          description: Total number of records
+      examples:
+        - current_page: 1
+          from: 1
+          last_page: 1
+          links:
+            - url: null
+              label: "&laquo; Previous"
+              active: false
+            - url: "http://nexus.localhost:8080/api/v1/organization/users?page=1"
+              label: "1"
+              active: true
+            - url: null
+              label: Next &raquo;
+              active: false
+          path: "http://nexus.localhost:8080/api/v1/organization/users"
+          per_page: 10
+          to: 3
+          total: 3
+    OAuthTokenResponse:
+      type: object
+      description: OAuth token response
+      required:
+        - token_type
+        - expires_in
+        - access_token
+      properties:
+        token_type:
+          type: string
+          enum:
+            - Bearer
+          description: Type of token issued
+        expires_in:
+          type: integer
+          description: Token expiration time in seconds
+        access_token:
+          type: string
+          description: The access token
+        refresh_token:
+          type: string
+          description: The refresh token (if applicable)
+        scope:
+          type: string
+          description: Space-separated list of granted scopes
+      examples:
+        - token_type: Bearer
+          expires_in: 31536000
+          access_token: eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9...
+    OAuthError:
+      type: object
+      description: OAuth error response
+      required:
+        - error
+      properties:
+        error:
+          type: string
+          enum:
+            - invalid_request
+            - invalid_client
+            - invalid_grant
+            - unauthorized_client
+            - unsupported_grant_type
+            - invalid_scope
+          description: Error code
+        error_description:
+          type: string
+          description: Human-readable error description
+        error_uri:
+          type: string
+          format: uri
+          description: URI identifying the error
+      examples:
+        - error: invalid_client
+          error_description: Client authentication failed
+          message: Client authentication failed
+        - error: unsupported_grant_type
+          error_description: The authorization grant type is not supported by the authorization server.
+          hint: Check that all required parameters have been provided
+          message: The authorization grant type is not supported by the authorization server.

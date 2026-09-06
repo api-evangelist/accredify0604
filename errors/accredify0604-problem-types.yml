@@ -1,0 +1,98 @@
+generated: '2026-09-06'
+method: derived
+source: openapi/accredify0604-dashboard-v1-openapi.yaml, openapi/accredify0604-dashboard-v2-openapi.yaml,
+  openapi/accredify0604-nexus-workflow-openapi.yaml, openapi/accredify0604-nexus-auth-openapi.yaml
+format: bespoke-json
+rfc9457: false
+note: >-
+  Accredify does not use RFC 9457 problem+json. Both API families return a plain
+  application/json object; the two families do not agree on its shape, which is the most
+  useful finding here for a client author. The Dashboard API returns {status, message}
+  with a `code` field added on 500 and an `errors` array on 422. The Nexus modules return
+  {message} with an `errors` object on 422 and carry no numeric status in the body. Titles
+  and remediation below are the provider's own example strings, quoted verbatim from the
+  specs; nothing was invented.
+envelopes:
+- name: dashboard
+  applies_to:
+  - openapi/accredify0604-dashboard-v1-openapi.yaml
+  - openapi/accredify0604-dashboard-v2-openapi.yaml
+  media_type: application/json
+  fields:
+    status: integer, the HTTP status code repeated in the body
+    message: string, human-readable message
+    errors: array of strings, present on 422 (v2)
+    error: object of field -> array of strings, present on 422 (v1)
+    code: string, internal reference code, present on 500 (example "E500"/"E400")
+- name: nexus
+  applies_to:
+  - openapi/accredify0604-nexus-auth-openapi.yaml
+  - openapi/accredify0604-nexus-workflow-openapi.yaml
+  - openapi/accredify0604-nexus-verification-openapi.yaml
+  media_type: application/json
+  fields:
+    message: string, required on 400/401/422
+    errors: object, required on 422
+problem_types:
+- id: bad-request
+  status: 400
+  component: dashboard.BadRequest
+  title: Bad request
+  detail: "We couldn't find you, please try again."
+  remediation: Check the request body and query parameters against the operation schema.
+- id: unauthenticated
+  status: 401
+  component: dashboard.UnauthenticatedRequest
+  title: Unauthenticated request
+  detail: "Unauthenticated. You might have provided an invalid access token or your token has already expired."
+  remediation: >-
+    Re-issue a token. Dashboard clients POST /v1/oauth/refresh (operationId refresh);
+    Nexus clients POST /oauth/token with the client-credentials grant.
+- id: unauthorised
+  status: 403
+  component: dashboard.UnauthorisedRequest
+  title: Unauthorised request
+  detail: "Unauthorised. Access is denied due to invalid credentials."
+  remediation: >-
+    The token is valid but lacks the required scope. See scopes/accredify0604-scopes.yml
+    for the 20 Nexus scopes and request the one the operation needs.
+- id: not-found
+  status: 404
+  component: dashboard.NotFoundRequest
+  title: The specified resource was not found
+  detail: "Please ensure you are making the request to the correct endpoint."
+  remediation: Verify the path identifier (UUID for Nexus resources, integer id for Dashboard v2 resources).
+- id: unprocessable-entity
+  status: 422
+  component: dashboard.UnprocessableEntityRequest / nexus 422
+  title: Unprocessable entity
+  detail: "Validation failed for the request."
+  remediation: >-
+    Read the per-field detail — `errors` is an array of strings in Dashboard v2, an object
+    keyed by field name in Dashboard v1 and in the Nexus modules.
+- id: too-many-requests
+  status: 429
+  component: dashboard.TooManyRequests
+  title: Too many requests
+  detail: "You're submitting requests too quickly. Please retry again after 60 seconds."
+  remediation: >-
+    Back off and retry. No Retry-After or RateLimit-* header is declared — see
+    rate-limits/accredify0604-rate-limits.yml.
+- id: internal-error
+  status: 500
+  component: dashboard.InternalErrorRequest
+  title: Internal server error
+  detail: >-
+    "There was an unexpected error while performing your last action. Please contact us at
+    support@accredify.io with the error code for internal reference"
+  remediation: >-
+    Capture the `code` field (example "E500") and mail support@accredify.io. This is the
+    only place in the published contract where an Accredify error code appears; no error-code
+    registry is published.
+  carries_code: true
+- id: oauth-error
+  status: 400
+  component: nexus.OAuthError
+  title: OAuth token error
+  detail: Returned by POST /oauth/token when the client credentials or requested scopes are rejected.
+  remediation: Verify client_id/client_secret and that every requested scope is granted to the client.

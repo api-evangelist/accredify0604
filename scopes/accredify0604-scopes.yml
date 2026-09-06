@@ -1,0 +1,174 @@
+generated: '2026-09-06'
+method: searched
+source: https://docs.nexus.accredify.io/auth.yaml, https://docs.nexus.accredify.io/workflow.yaml, https://docs.nexus.accredify.io/verification.yaml
+  (fetched 2026-09-06); mirrored to openapi/accredify0604-nexus-auth-openapi.yaml, openapi/accredify0604-nexus-workflow-openapi.yaml,
+  openapi/accredify0604-nexus-verification-openapi.yaml
+docs: https://docs.nexus.accredify.io/auth.html
+note: 'The 20 scopes below are published verbatim by Accredify in two places that agree: the components.securitySchemes.OAuth2
+  clientCredentials block of the Nexus specs, and a scope/permission table rendered in the description
+  of POST /oauth/token. Accredify has no separate scopes reference page; the specification IS the reference.
+  The Accredify Dashboard API declares no scopes at all — it uses an unscoped bearer JWT — so this file
+  covers the Nexus family only. The provider instructs: "Request only the scopes required by your integration,
+  separated by spaces."'
+applies_to:
+- Accredify Nexus API
+not_applicable:
+- api: Accredify Dashboard API
+  reason: bearer JWT with no declared scopes (components.securitySchemes.bearerAuth)
+scope_count: 20
+schemes:
+- name: OAuth2
+  source: openapi/accredify0604-nexus-auth-openapi.yaml
+  flows:
+  - flow: clientCredentials
+    tokenUrl: /oauth/token
+  description: OAuth2 client credentials flow
+- name: OAuth2
+  source: openapi/accredify0604-nexus-verification-openapi.yaml
+  flows:
+  - flow: clientCredentials
+    tokenUrl: /oauth/token
+  description: OAuth2 client credentials flow
+- name: OAuth2
+  source: openapi/accredify0604-nexus-workflow-openapi.yaml
+  flows:
+  - flow: clientCredentials
+    tokenUrl: /oauth/token
+  description: OAuth2 client credentials flow
+scopes:
+- scope: courses:read
+  description: Ability to read courses
+  flows:
+  - clientCredentials
+  sources:
+  - openapi/accredify0604-nexus-auth-openapi.yaml
+  - openapi/accredify0604-nexus-workflow-openapi.yaml
+- scope: courses:write
+  description: Ability to write courses
+  flows:
+  - clientCredentials
+  sources:
+  - openapi/accredify0604-nexus-auth-openapi.yaml
+  - openapi/accredify0604-nexus-workflow-openapi.yaml
+- scope: custom-views:read
+  description: Ability to read custom views
+  flows:
+  - clientCredentials
+  sources:
+  - openapi/accredify0604-nexus-auth-openapi.yaml
+  - openapi/accredify0604-nexus-workflow-openapi.yaml
+- scope: design-templates:read
+  description: Ability to read design templates
+  flows:
+  - clientCredentials
+  sources:
+  - openapi/accredify0604-nexus-auth-openapi.yaml
+  - openapi/accredify0604-nexus-workflow-openapi.yaml
+- scope: document-templates:read
+  description: Ability to read document templates
+  flows:
+  - clientCredentials
+  sources:
+  - openapi/accredify0604-nexus-auth-openapi.yaml
+  - openapi/accredify0604-nexus-workflow-openapi.yaml
+- scope: documents:read
+  description: Ability to read documents
+  flows:
+  - clientCredentials
+  sources:
+  - openapi/accredify0604-nexus-auth-openapi.yaml
+  - openapi/accredify0604-nexus-workflow-openapi.yaml
+- scope: documents:write
+  description: Ability to write documents
+  flows:
+  - clientCredentials
+  sources:
+  - openapi/accredify0604-nexus-auth-openapi.yaml
+  - openapi/accredify0604-nexus-workflow-openapi.yaml
+- scope: groups:read
+  description: Ability to read groups
+  flows:
+  - clientCredentials
+  sources:
+  - openapi/accredify0604-nexus-auth-openapi.yaml
+  - openapi/accredify0604-nexus-workflow-openapi.yaml
+- scope: groups:write
+  description: Ability to write groups
+  flows:
+  - clientCredentials
+  sources:
+  - openapi/accredify0604-nexus-auth-openapi.yaml
+- scope: roles:read
+  description: Ability to read roles
+  flows:
+  - clientCredentials
+  sources:
+  - openapi/accredify0604-nexus-auth-openapi.yaml
+- scope: run-workflow
+  description: Ability to run a specific workflow
+  flows:
+  - clientCredentials
+  sources:
+  - openapi/accredify0604-nexus-auth-openapi.yaml
+  - openapi/accredify0604-nexus-workflow-openapi.yaml
+- scope: user-tokens:read
+  description: Ability to read user tokens
+  flows:
+  - clientCredentials
+  sources:
+  - openapi/accredify0604-nexus-auth-openapi.yaml
+- scope: user-tokens:write
+  description: Ability to write user tokens
+  flows:
+  - clientCredentials
+  sources:
+  - openapi/accredify0604-nexus-auth-openapi.yaml
+- scope: users:read
+  description: Ability to read users
+  flows:
+  - clientCredentials
+  sources:
+  - openapi/accredify0604-nexus-auth-openapi.yaml
+  - openapi/accredify0604-nexus-workflow-openapi.yaml
+- scope: users:write
+  description: Ability to write users
+  flows:
+  - clientCredentials
+  sources:
+  - openapi/accredify0604-nexus-auth-openapi.yaml
+- scope: verification-suite
+  description: Ability to access the verification suite APIs
+  flows:
+  - clientCredentials
+  sources:
+  - openapi/accredify0604-nexus-auth-openapi.yaml
+  - openapi/accredify0604-nexus-verification-openapi.yaml
+  - openapi/accredify0604-nexus-workflow-openapi.yaml
+- scope: webcomponent-verification
+  description: Ability to get the verification access from webcomponent
+  flows:
+  - clientCredentials
+  sources:
+  - openapi/accredify0604-nexus-auth-openapi.yaml
+  - openapi/accredify0604-nexus-workflow-openapi.yaml
+- scope: workflow-runs:read
+  description: Ability to read workflow runs
+  flows:
+  - clientCredentials
+  sources:
+  - openapi/accredify0604-nexus-auth-openapi.yaml
+  - openapi/accredify0604-nexus-workflow-openapi.yaml
+- scope: workflows:read
+  description: Ability to read workflows
+  flows:
+  - clientCredentials
+  sources:
+  - openapi/accredify0604-nexus-auth-openapi.yaml
+  - openapi/accredify0604-nexus-workflow-openapi.yaml
+- scope: workflows:write
+  description: Ability to write workflows
+  flows:
+  - clientCredentials
+  sources:
+  - openapi/accredify0604-nexus-auth-openapi.yaml
+  - openapi/accredify0604-nexus-workflow-openapi.yaml

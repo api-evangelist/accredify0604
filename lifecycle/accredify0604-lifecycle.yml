@@ -1,0 +1,78 @@
+generated: '2026-09-06'
+method: searched
+source: https://status.accredify.io/, https://www.accredify.io/security,
+  openapi/accredify0604-dashboard-v1-openapi.yaml, openapi/accredify0604-dashboard-v2-openapi.yaml,
+  openapi/accredify0604-nexus-auth-openapi.yaml
+versioning:
+  scheme: uri-path
+  detail: >-
+    Both API families version in the URI path. The Dashboard API runs v1 and v2 side by
+    side as two separately published OpenAPI documents — v1 at
+    https://dashboard.accredify.io/api (paths prefixed /v1/, plus an unversioned /ext/
+    external-integration path) and v2 at https://dashboard.accredify.io/api/v2. The Nexus
+    modules are all /api/v1/ under one host, except POST /oauth/token and
+    POST /api/workflows/{workflow}/runs which are unversioned.
+  current_versions:
+  - api: Accredify Dashboard API
+    versions:
+    - '1.0.0'
+    - '2.0.0'
+    both_live: true
+  - api: Accredify Nexus API
+    versions:
+    - '1.0'
+    modules:
+    - Auth
+    - Workflow
+    - Verification
+  anomaly: >-
+    POST /api/workflows/{workflow}/runs (operationId trigger-workflow-run) sits outside the
+    /api/v1/ prefix used by every other Workflow-module operation while
+    GET /api/v1/workflows/{workflow}/runs is inside it. An agent constructing paths by
+    pattern will get this one wrong.
+deprecation:
+  policy_published: false
+  sunset_header: false
+  deprecation_header: false
+  detail: >-
+    No deprecation or sunset policy is published on any Accredify surface, and no
+    operation in the five specs carries `deprecated: true`, a Sunset header (RFC 8594) or
+    a Deprecation header. Dashboard v1 and v2 are both live with no stated end-of-life for
+    v1, so a consumer on v1 has no published signal about how long it will be served.
+  deprecated_operations: []
+status_page:
+  published: true
+  url: https://status.accredify.io/
+  status: 200
+  provider: HetrixTools
+  title: Production Status
+  detail: >-
+    An uptime monitor page with a 7-day availability strip and an SLA uptime calculator
+    supporting last 7/30 days, this month, last month, year to date and last year ranges,
+    plus CSV export. It reports availability only — there is no incident feed, no
+    component breakdown, no subscribe option and no machine-readable status endpoint.
+  machine_readable: false
+  referenced_by_provider: >-
+    https://www.accredify.io/security — "Accredify maintains a publicly available system-status webpage."
+sla:
+  published: false
+  detail: >-
+    No SLA document is published publicly. The status page ships an "SLA Uptime Calculator"
+    widget but states no committed availability target. Service commitments sit behind the
+    master user agreements at https://www.accredify.io/master-user-agreements.
+changelog:
+  published: false
+  detail: >-
+    No changelog, release-notes or roadmap page was found. https://www.accredify.io/changelog,
+    /roadmap, https://docs.nexus.accredify.io/changelog and
+    https://docs.dashboard.accredify.io/changelog all return 404. Version history is only
+    inferable from info.version in the specs.
+evidence:
+- url: https://status.accredify.io/
+  status: 200
+- url: https://www.accredify.io/changelog
+  status: 404
+- url: https://docs.nexus.accredify.io/changelog
+  status: 404
+- url: https://www.accredify.io/roadmap
+  status: 404

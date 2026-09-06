@@ -1,0 +1,184 @@
+generated: '2026-09-06'
+method: probed
+source: live HTTPS probes of the named /.well-known/ path list on every host in apis.yml,
+  every OpenAPI servers[] host, and the docs hosts (2026-09-06)
+note: >-
+  Two real documents were found, both on nexus.accredify.io, and both are OpenID for
+  Verifiable Credential Issuance (OID4VCI) metadata rather than the usual RFC 8414 /
+  OIDC discovery pair. app.accredify.io answers HTTP 200 with the same 857-byte SPA
+  shell for EVERY /.well-known/ path probed; those are recorded as misses, not hits,
+  and earn no pointer. No security.txt, api-catalog, ai-plugin.json or agent card was
+  served on any host.
+hosts:
+- host: nexus.accredify.io
+  documents:
+  - path: /.well-known/oauth-authorization-server
+    status: 200
+    file: accredify0604-nexus-oauth-authorization-server.json
+    content_type: application/json
+    note: OID4VCI authorization server metadata; pre-authorized_code grant, PAR endpoint, S256 PKCE.
+  - path: /.well-known/openid-credential-issuer
+    status: 200
+    file: accredify0604-nexus-openid-credential-issuer.json
+    content_type: application/json
+    note: OID4VCI credential issuer metadata; 3 mso_mdoc credential configurations.
+  - path: /.well-known/security.txt
+    status: 404
+  - path: /.well-known/openid-configuration
+    status: 404
+  - path: /.well-known/oauth-protected-resource
+    status: 404
+  - path: /.well-known/api-catalog
+    status: 404
+  - path: /.well-known/ai-plugin.json
+    status: 404
+  - path: /.well-known/agent-card.json
+    status: 404
+  - path: /.well-known/agent.json
+    status: 404
+  - path: /.well-known/aauth-resource.json
+    status: 404
+  - path: /.well-known/jwt-vc-issuer
+    status: 404
+  - path: /.well-known/did.json
+    status: 404
+- host: accredify.io
+  documents:
+  - path: /.well-known/security.txt
+    status: 404
+  - path: /.well-known/openid-configuration
+    status: 404
+  - path: /.well-known/oauth-authorization-server
+    status: 404
+  - path: /.well-known/api-catalog
+    status: 404
+  - path: /.well-known/ai-plugin.json
+    status: 404
+  - path: /.well-known/agent-card.json
+    status: 404
+  - path: /.well-known/agent.json
+    status: 404
+- host: www.accredify.io
+  documents:
+  - path: /.well-known/security.txt
+    status: 404
+  - path: /.well-known/openid-configuration
+    status: 404
+  - path: /.well-known/oauth-authorization-server
+    status: 404
+  - path: /.well-known/api-catalog
+    status: 404
+  - path: /.well-known/ai-plugin.json
+    status: 404
+  - path: /.well-known/agent-card.json
+    status: 404
+  - path: /.well-known/agent.json
+    status: 404
+- host: api.accredify.io
+  documents:
+  - path: /.well-known/security.txt
+    status: 404
+  - path: /.well-known/openid-configuration
+    status: 404
+  - path: /.well-known/oauth-authorization-server
+    status: 404
+  - path: /.well-known/openid-credential-issuer
+    status: 404
+  - path: /.well-known/api-catalog
+    status: 404
+  - path: /.well-known/ai-plugin.json
+    status: 404
+  - path: /.well-known/agent-card.json
+    status: 404
+  - path: /.well-known/agent.json
+    status: 404
+- host: dashboard.accredify.io
+  documents:
+  - path: /.well-known/security.txt
+    status: 404
+  - path: /.well-known/openid-configuration
+    status: 404
+  - path: /.well-known/oauth-authorization-server
+    status: 404
+  - path: /.well-known/api-catalog
+    status: 404
+  - path: /.well-known/ai-plugin.json
+    status: 404
+  - path: /.well-known/agent-card.json
+    status: 404
+  - path: /.well-known/agent.json
+    status: 404
+- host: docs.nexus.accredify.io
+  documents:
+  - path: /.well-known/security.txt
+    status: 404
+  - path: /.well-known/openid-configuration
+    status: 404
+  - path: /.well-known/oauth-authorization-server
+    status: 404
+  - path: /.well-known/api-catalog
+    status: 404
+  - path: /.well-known/ai-plugin.json
+    status: 404
+  - path: /.well-known/agent-card.json
+    status: 404
+  - path: /.well-known/agent.json
+    status: 404
+- host: docs.dashboard.accredify.io
+  documents:
+  - path: /.well-known/security.txt
+    status: 404
+  - path: /.well-known/openid-configuration
+    status: 404
+  - path: /.well-known/oauth-authorization-server
+    status: 404
+  - path: /.well-known/api-catalog
+    status: 404
+  - path: /.well-known/ai-plugin.json
+    status: 404
+  - path: /.well-known/agent-card.json
+    status: 404
+  - path: /.well-known/agent.json
+    status: 404
+- host: app.accredify.io
+  note: >-
+    Every path returned HTTP 200 with an identical 857-byte HTML SPA shell. Per the
+    pipeline contract a 200 returning an SPA shell is NOT a document; all are recorded
+    as misses.
+  documents:
+  - path: /.well-known/security.txt
+    status: 200
+    file: null
+    body: spa-shell
+  - path: /.well-known/openid-configuration
+    status: 200
+    file: null
+    body: spa-shell
+  - path: /.well-known/oauth-authorization-server
+    status: 200
+    file: null
+    body: spa-shell
+  - path: /.well-known/oauth-protected-resource
+    status: 200
+    file: null
+    body: spa-shell
+  - path: /.well-known/api-catalog
+    status: 200
+    file: null
+    body: spa-shell
+  - path: /.well-known/ai-plugin.json
+    status: 200
+    file: null
+    body: spa-shell
+  - path: /.well-known/agent-card.json
+    status: 200
+    file: null
+    body: spa-shell
+  - path: /.well-known/agent.json
+    status: 200
+    file: null
+    body: spa-shell
+  - path: /.well-known/aauth-resource.json
+    status: 200
+    file: null
+    body: spa-shell

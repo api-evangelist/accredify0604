@@ -1,0 +1,54 @@
+generated: '2026-09-06'
+method: generated
+source: openapi/accredify0604-nexus-auth-openapi.yaml, openapi/accredify0604-nexus-workflow-openapi.yaml,
+  openapi/accredify0604-nexus-verification-openapi.yaml, openapi/accredify0604-dashboard-v1-openapi.yaml,
+  openapi/accredify0604-dashboard-v2-openapi.yaml
+note: >-
+  Five packaged Agent Skills, one per marquee flow across Accredify's two API families.
+  Every operationId and path referenced was read from the published specifications; no
+  operation was invented. Where the Auth module publishes no operationIds, the skill says
+  so and addresses operations by method and path instead. Accredify publishes no skills or
+  AGENTS.md of its own — https://www.accredify.io/llms.txt is an AIOSEO-generated marketing
+  site index, not an agent instruction set.
+provider_published_skills: false
+skills:
+- name: accredify0604-issue-credentials-via-workflow
+  file: accredify0604-issue-credentials-via-workflow.md
+  api: Accredify Nexus API
+  summary: Authenticate, read a workflow's own input schema, trigger a run, track it, and collect issued documents.
+  operations: [get-workflows, get-workflow-by-id, trigger-workflow-run, get-workflow-runs,
+    get-workflow-run-by-id, resume-workflow-run, get-documents, download-workflow-run-documents]
+  scopes: [run-workflow, 'workflows:read', 'workflow-runs:read', 'documents:read']
+- name: accredify0604-verify-a-document
+  file: accredify0604-verify-a-document.md
+  api: Accredify Nexus API
+  summary: Verify a verifiable document and extract its verifiable data keys.
+  operations: [verify-document, extract-keys]
+  scopes: [verification-suite]
+- name: accredify0604-revoke-a-credential
+  file: accredify0604-revoke-a-credential.md
+  api: Accredify Nexus API, Accredify Dashboard API
+  summary: >-
+    Revoke an issued credential across all four revocation surfaces, and choose correctly
+    between delete-before-issuance and revoke-after-issuance.
+  operations: [revoke-document, revokeBatchItem, revokeOpenBadge, revokeCerts,
+    delete-workflow-run, deleteBatch]
+  scopes: ['documents:write', run-workflow]
+  caution: >-
+    Every revocation on this surface is terminal. The spec states of revoke-document
+    "This action cannot be undone", and no un-revoke operation exists.
+- name: accredify0604-issue-openbadges-batch
+  file: accredify0604-issue-openbadges-batch.md
+  api: Accredify Dashboard API
+  summary: Issue 1EdTech Open Badges and certificate batches, and dispatch recipient emails.
+  operations: [authorizationCodeGrant, refresh, issueOpenBadges, createOpenBadgesCourse,
+    updateOpenBadge, uploadBatch, uploadBatchExcel, uploadIssueBatch, createBatch,
+    issueBatch, getBatches, getBatchById, getBatchItems, sendEmails]
+- name: accredify0604-manage-organization-access
+  file: accredify0604-manage-organization-access.md
+  api: Accredify Nexus API
+  summary: Manage organisation users, groups, roles, and the long-lived scoped user tokens.
+  operations_note: >-
+    The Auth module publishes no operationIds; this skill addresses its eleven operations by
+    method and path.
+  scopes: ['users:read', 'users:write', 'groups:read', 'roles:read']

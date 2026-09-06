@@ -1,0 +1,260 @@
+generated: '2026-09-06'
+method: derived
+source: openapi/accredify0604-nexus-workflow-openapi.yaml, openapi/accredify0604-nexus-auth-openapi.yaml,
+  openapi/accredify0604-dashboard-v2-openapi.yaml
+note: >-
+  Derived from components.schemas $ref links and id-reference fields in the two Nexus
+  specs, which are the only Accredify documents carrying named schemas (30 between them).
+  The Dashboard specs declare zero components.schemas — every response body there is an
+  inline anonymous object — so the Dashboard entities below are named from their path
+  resources and tags, not from a schema registry, and are marked schema_source: inline.
+identifiers:
+  nexus: >-
+    UUID strings on User, Group, Workflow, WorkflowRun, Document, Course, CourseVersion and
+    CourseWorkflow. DesignTemplate and DocumentTemplate break the pattern and use integer ids.
+  dashboard_v2: integer ids on Batch, BatchItem, Course, Template and EmailTemplate.
+  cross_family: >-
+    No shared identifier space. Nexus and Dashboard resources with the same name (Course,
+    Document) are distinct entities in distinct systems.
+entities:
+- name: User
+  api: Accredify Nexus API
+  schema_source: components.schemas.User
+  key: uuid
+  fields: [uuid, name, role, email, status, groups]
+- name: Group
+  api: Accredify Nexus API
+  schema_source: components.schemas.Group
+  key: uuid
+  fields: [uuid, name, description]
+  note: The organisation group. It is the tenancy boundary that Workflow, Document, DesignTemplate, DocumentTemplate and Course all hang off.
+- name: Role
+  api: Accredify Nexus API
+  schema_source: components.schemas.Role
+- name: UserToken
+  api: Accredify Nexus API
+  schema_source: components.schemas.UserToken
+  note: Plaintext secret returned once via CreatedUserTokenSecret; auto-revoked when the subject user is locked.
+- name: Workflow
+  api: Accredify Nexus API
+  schema_source: components.schemas.Workflow / WorkflowDetails
+  key: uuid
+  fields: [uuid, name, description, active, has_active_runs, runs_count, created_at, updated_at]
+- name: WorkflowVersion
+  api: Accredify Nexus API
+  schema_source: components.schemas.WorkflowVersion
+  fields: [version, published_at, api_schema]
+- name: WorkflowApiSchema
+  api: Accredify Nexus API
+  schema_source: components.schemas.WorkflowApiSchema
+  fields: [schema, flattened_schema]
+  note: >-
+    The per-workflow input contract. This is the closest thing Accredify publishes to a
+    typed payload definition for POST /api/workflows/{workflow}/runs — the actual shape a
+    caller must send is workflow-specific and only readable at runtime from
+    GET /api/v1/workflows/{workflow}.
+- name: WorkflowRun
+  api: Accredify Nexus API
+  schema_source: components.schemas.WorkflowRun
+  key: uuid
+  fields: [uuid, status, status_label, batch_name, started_at, ended_at, current_action_sequence_number, workflow_actions_list]
+  states: [failed, paused, cancelled, rejected, and further states implied by status_label]
+- name: Document
+  api: Accredify Nexus API
+  schema_source: components.schemas.Document
+  key: uuid
+  fields: [uuid, status, external_reference_id, issued_at, revoked_at, revocation_reason, user_provided_content, share_link]
+  note: >-
+    external_reference_id is the customer's own key into the document, and
+    GET /api/v1/documents/by_recipient is the lookup that does not need the Accredify UUID.
+- name: DocumentRecipient
+  api: Accredify Nexus API
+  schema_source: components.schemas.DocumentRecipient
+  fields: [name, email]
+- name: DocumentFile
+  api: Accredify Nexus API
+  schema_source: components.schemas.DocumentFile
+  fields: [url, label]
+- name: DesignTemplate
+  api: Accredify Nexus API
+  schema_source: components.schemas.DesignTemplate
+  key: id (integer)
+  fields: [id, name, description, document_standard, document_templates_count, is_custom_design, type, tags]
+  note: document_standard is where the credential standard (OpenBadges, OpenAttestation, mDL and so on) is recorded on a template.
+- name: DocumentTemplate
+  api: Accredify Nexus API
+  schema_source: components.schemas.DocumentTemplate
+  key: id (integer)
+  fields: [id, name, description, document_standard, type, is_draft, tags]
+- name: TemplateAttribute
+  api: Accredify Nexus API
+  schema_source: components.schemas.TemplateAttribute
+  fields: [name, key, type, description, example, required, allowed_options, items]
+  note: Self-referential through items — attributes nest.
+- name: Thumbnail
+  api: Accredify Nexus API
+  schema_source: components.schemas.Thumbnail
+- name: Course
+  api: Accredify Nexus API
+  schema_source: components.schemas.Course
+  key: uuid
+  fields: [uuid, title, code, group_uuid]
+- name: CourseVersion
+  api: Accredify Nexus API
+  schema_source: components.schemas.CourseVersion
+  fields: [uuid, title, version, course_type, settings]
+- name: CourseSettings
+  api: Accredify Nexus API
+  schema_source: components.schemas.CourseSettings
+  fields: [ssec_version, eqa_code, eqa_title, fos_code, fos_title, skills_passport_course_type]
+  note: >-
+    Singapore SkillsFuture vocabulary — SSEC (Singapore Standard Educational
+    Classification), EQA and field-of-study codes, and a skills-passport course type.
+- name: CourseWorkflow
+  api: Accredify Nexus API
+  schema_source: components.schemas.CourseWorkflow
+  note: The join between a course version and a workflow.
+- name: Batch
+  api: Accredify Dashboard API
+  schema_source: inline
+  key: id (integer)
+  fields: [id, name, alias, status, status_updated_at, subscribers]
+- name: BatchItem
+  api: Accredify Dashboard API
+  schema_source: inline
+  key: id (integer)
+- name: OpenBadgeAssertion
+  api: Accredify Dashboard API
+  schema_source: inline
+  key: assertion
+  note: Addressed by Open Badges assertion identifier on /v1/openbadges/{assertion}.
+- name: Certificate
+  api: Accredify Dashboard API
+  schema_source: inline
+  key: certificate hash
+  note: POST /v1/revokeCerts revokes by hash, not by id.
+- name: EmailTemplate
+  api: Accredify Dashboard API
+  schema_source: inline
+  key: id (integer)
+- name: Institution
+  api: Accredify Dashboard API
+  schema_source: inline
+  note: Addressed only through POST /institutions/access-matrix; no CRUD surface is published.
+relationships:
+- from: User
+  to: Group
+  type: has_many
+  via: groups
+- from: Workflow
+  to: Group
+  type: belongs_to
+  via: group
+- from: Workflow
+  to: User
+  type: belongs_to
+  via: created_by
+- from: Workflow
+  to: User
+  type: belongs_to
+  via: updated_by
+- from: WorkflowDetails
+  to: WorkflowVersion
+  type: has_many
+  via: versions
+- from: WorkflowDetails
+  to: WorkflowVersion
+  type: has_one
+  via: latest_version
+- from: WorkflowDetails
+  to: DocumentTemplate
+  type: has_one
+  via: document_template
+- from: WorkflowDetails
+  to: DesignTemplate
+  type: has_one
+  via: design_template
+- from: WorkflowDetails
+  to: Course
+  type: has_many
+  via: courses
+- from: WorkflowVersion
+  to: WorkflowApiSchema
+  type: has_one
+  via: api_schema
+- from: WorkflowRun
+  to: User
+  type: belongs_to
+  via: created_by
+- from: WorkflowRun
+  to: Workflow
+  type: belongs_to
+  via: path (/api/v1/workflows/{workflow}/runs)
+- from: Document
+  to: Group
+  type: belongs_to
+  via: group
+- from: Document
+  to: DocumentRecipient
+  type: has_one
+  via: recipient
+- from: Document
+  to: DocumentFile
+  type: has_many
+  via: files
+- from: Document
+  to: WorkflowRun
+  type: belongs_to
+  via: query parameter on GET /api/v1/documents (workflow run UUID)
+- from: DesignTemplate
+  to: Group
+  type: belongs_to
+  via: group
+- from: DesignTemplate
+  to: Thumbnail
+  type: has_many
+  via: thumbnails
+- from: DesignTemplate
+  to: TemplateAttribute
+  type: has_many
+  via: attributes
+- from: DocumentTemplate
+  to: Group
+  type: belongs_to
+  via: group
+- from: DocumentTemplate
+  to: TemplateAttribute
+  type: has_many
+  via: attributes
+- from: DocumentTemplate
+  to: User
+  type: belongs_to
+  via: created_by
+- from: TemplateAttribute
+  to: TemplateAttribute
+  type: has_many
+  via: items
+- from: Course
+  to: Group
+  type: belongs_to
+  via: group_uuid
+- from: Course
+  to: CourseVersion
+  type: has_many
+  via: versions
+- from: Course
+  to: CourseVersion
+  type: has_one
+  via: latest_version
+- from: Course
+  to: CourseWorkflow
+  type: has_many
+  via: workflows
+- from: CourseVersion
+  to: CourseSettings
+  type: has_one
+  via: settings
+- from: Batch
+  to: BatchItem
+  type: has_many
+  via: GET /batch-items (batch filter)

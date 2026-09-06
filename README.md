@@ -64,5 +64,27 @@
 > Full detail: **[Where this data comes from](https://apievangelist.com/about/where-our-data-comes-from)**
 <!-- API-EVANGELIST-PROVENANCE:END -->
 
-Accredify0604 is a company surfaced via the API Evangelist harvest backlog (source: secondary-market) and added to the network as a stub for full-pipeline profiling.
+Accredify is a Singapore-headquartered verifiable-credentials and "TrustTech" platform that lets
+organisations create, issue, verify and manage tamper-proof digital documents. It serves education,
+healthcare, associations, licensing and public-sector customers across nine markets, and built
+Singapore's HealthCerts COVID-19 verification system.
+
+The company publishes two API families, both documented with public OpenAPI 3.1 specifications:
+
+- **Accredify Nexus API** (`https://nexus.accredify.io`) — OAuth 2.0 client credentials, 20 scopes,
+  across three modules: Auth (organisation users, groups, roles, user tokens), Workflow (workflows,
+  workflow runs, documents, design/document templates, courses) and Verification (verify a document,
+  extract verifiable data keys). Reference: <https://docs.nexus.accredify.io/>
+- **Accredify Dashboard API** (`https://dashboard.accredify.io/api`) — bearer JWT, published as v1
+  and v2 side by side, covering OAuth grants, OpenBadges issuance/revocation, batch upload and issue,
+  certificate revocation by hash, courses, templates and email templates.
+  Reference: <https://docs.dashboard.accredify.io/>
+
+Nexus is also a live **OID4VCI** credential issuer: `/.well-known/openid-credential-issuer` serves
+`mso_mdoc` credential configurations for ISO/IEC 18013-5 mobile driving licence and ISO/IEC 23220
+photo ID.
+
+This profile was first surfaced via the API Evangelist harvest backlog (source: secondary-market).
+
+- https://www.accredify.io/
 - https://equityzen.com/company/accredify0604

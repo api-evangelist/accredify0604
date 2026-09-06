@@ -1,0 +1,97 @@
+generated: '2026-09-06'
+method: derived
+source: openapi/accredify0604-nexus-workflow-openapi.yaml, openapi/accredify0604-nexus-verification-openapi.yaml,
+  openapi/accredify0604-dashboard-v2-openapi.yaml
+status: candidate
+note: >-
+  Accredify ships no MCP server. mcp.accredify.io does not resolve; POST tools/list to
+  https://nexus.accredify.io/mcp and https://api.accredify.io/mcp both return the Laravel
+  404 body {"message":"The route mcp could not be found."}; https://accredify.io/mcp returns
+  the WordPress 404 page. No MCP configuration appears in the provider's llms.txt, docs or
+  GitHub org. The tools below are a CANDIDATE surface derived from published OpenAPI
+  operationIds — nobody has shipped them and no endpoint exists to call.
+deployment:
+  mode: none
+  endpoint: null
+  install: null
+  package: null
+  auth: unknown
+  verified: probed
+probes:
+- url: https://nexus.accredify.io/mcp
+  method: POST tools/list
+  status: 404
+- url: https://api.accredify.io/mcp
+  method: POST tools/list
+  status: 404
+- url: https://accredify.io/mcp
+  method: POST tools/list
+  status: 404
+- url: https://mcp.accredify.io/mcp
+  method: POST tools/list
+  status: null
+  result: DNS does not resolve
+candidate_tools:
+- name: verify_document
+  rest: verify-document
+  method_path: POST /verification/v1/verify
+  api: Accredify Nexus API
+  scope: verification-suite
+  description: Verify a document or credential and return its verification result.
+- name: extract_verifiable_keys
+  rest: extract-keys
+  method_path: POST /verification/v1/extract-keys
+  api: Accredify Nexus API
+  scope: verification-suite
+  description: Extract verifiable data keys from a document for verified data extraction.
+- name: list_workflows
+  rest: get-workflows
+  method_path: GET /api/v1/workflows
+  api: Accredify Nexus API
+  scope: workflows:read
+- name: get_workflow
+  rest: get-workflow-by-id
+  method_path: GET /api/v1/workflows/{workflow}
+  api: Accredify Nexus API
+  scope: workflows:read
+- name: trigger_workflow_run
+  rest: trigger-workflow-run
+  method_path: POST /api/workflows/{workflow}/runs
+  api: Accredify Nexus API
+  scope: run-workflow
+  consequence: writes — issues credentials. No idempotency mechanism is published.
+- name: get_workflow_run
+  rest: get-workflow-run-by-id
+  method_path: GET /api/v1/workflow-runs/{run}
+  api: Accredify Nexus API
+  scope: workflow-runs:read
+- name: list_documents
+  rest: get-documents
+  method_path: GET /api/v1/documents
+  api: Accredify Nexus API
+  scope: documents:read
+- name: get_documents_by_recipient
+  rest: get-documents-by_recipient
+  method_path: GET /api/v1/documents/by_recipient
+  api: Accredify Nexus API
+  scope: documents:read
+- name: revoke_document
+  rest: revoke-document
+  method_path: POST /api/v1/documents/{document}/revoke
+  api: Accredify Nexus API
+  scope: documents:write
+  consequence: irreversible — the spec states "This action cannot be undone."
+- name: list_courses
+  rest: get-courses
+  method_path: GET /api/v1/courses
+  api: Accredify Nexus API
+  scope: courses:read
+- name: list_batches
+  rest: getBatches
+  method_path: GET /batches
+  api: Accredify Dashboard API
+- name: issue_batch
+  rest: issueBatch
+  method_path: POST /batches/{id}/issue
+  api: Accredify Dashboard API
+  consequence: writes — issues credentials.

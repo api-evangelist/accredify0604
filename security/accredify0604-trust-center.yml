@@ -1,0 +1,52 @@
+generated: '2026-09-06'
+method: searched
+source: https://www.accredify.io/security, https://www.accredify.io/multi-standard-flexibility,
+  https://www.accredify.io/data-protection-notice
+url: https://www.accredify.io/security
+status: 200
+note: >-
+  Accredify publishes a full security posture page rather than a hosted trust-center portal.
+  It names downloadable certificates and describes infrastructure, network, application and
+  continuity controls in specific terms. There is no automated evidence portal, no NDA-gated
+  document room, and no vulnerability disclosure programme or security contact anywhere on
+  the surface.
+certifications:
+- name: ISO/IEC 27001:2022
+  evidence: https://www.accredify.io/security — "Download ISO 27001:2022 certificate"
+  downloadable: true
+- name: ISO/IEC 27017:2015
+  scope: cloud security
+  evidence: https://www.accredify.io/security — "Download ISO 27017:2015 certificate"
+  downloadable: true
+- name: ISO/IEC 27018:2019
+  scope: protection of PII in public clouds
+  evidence: https://www.accredify.io/security — "Download ISO 27018:2019 certificate"
+  downloadable: true
+- name: CSA STAR CAIQ
+  evidence: https://www.accredify.io/security — "CSA STAR CAIQ website"
+- name: ISO 22301
+  scope: business continuity management
+  evidence: https://www.accredify.io/multi-standard-flexibility
+- name: IMDA Data Protection Trustmark
+  jurisdiction: Singapore
+  evidence: https://www.accredify.io/multi-standard-flexibility
+regulatory:
+- name: Singapore Personal Data Protection Act (PDPA)
+  evidence: https://www.accredify.io/multi-standard-flexibility, https://www.accredify.io/data-protection-notice
+controls_published:
+  hosting: >-
+    AWS data centres in Singapore or Australia where applicable; AWS certified ISO 27001,
+    PCI DSS Service Provider Level 1 and/or SOC 2.
+  encryption_in_transit: HTTPS/TLS 1.2 or higher over public networks
+  encryption_at_rest: AES-256 in AWS
+  network: Web Application Firewall in front of every endpoint, multi-zone architecture, IDS/IPS, DDoS mitigation
+  vulnerability_management: network vulnerability scanning plus an annual third-party penetration test of the production network
+  access_control: least privilege, need-to-know, multi-factor authentication for production network access
+  sdlc: OWASP Top 10 controls, automated unit testing, code coverage review, manual peer review, separate test/staging/production environments
+  continuity: business continuity and disaster recovery plans, cross-AZ replication, service clustering
+  vendor_management: security reviews of third-party vendors with access to systems or Service Data
+  status_page: https://status.accredify.io/
+gaps:
+- No /.well-known/security.txt on any Accredify host (all probed hosts returned 404).
+- No vulnerability disclosure policy, bug bounty programme, or named security contact address.
+- No SOC 2 report of Accredify's own; the SOC 2 reference is to AWS as the underlying hosting provider.

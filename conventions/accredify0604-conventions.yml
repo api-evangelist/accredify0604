@@ -1,0 +1,203 @@
+generated: '2026-09-06'
+method: derived
+source: openapi/accredify0604-nexus-auth-openapi.yaml, openapi/accredify0604-nexus-workflow-openapi.yaml,
+  openapi/accredify0604-nexus-verification-openapi.yaml, openapi/accredify0604-dashboard-v1-openapi.yaml,
+  openapi/accredify0604-dashboard-v2-openapi.yaml, https://docs.nexus.accredify.io/,
+  https://docs.dashboard.accredify.io/
+note: >-
+  Accredify runs two API families with materially different conventions. Treat them as two
+  integrations, not one: they differ in auth model, error envelope, identifier type and
+  rate-limit signalling.
+auth:
+  style: two distinct models
+  nexus:
+    scheme: OAuth 2.0 client credentials
+    token_endpoint: https://nexus.accredify.io/oauth/token
+    presentation: 'Authorization: Bearer <access_token>'
+    scopes: 20 (see scopes/accredify0604-scopes.yml)
+    guidance: >-
+      The provider's own description on POST /oauth/token instructs "Request only the
+      scopes required by your integration, separated by spaces." Least privilege is the
+      documented default.
+    secondary: >-
+      Long-lived per-user tokens can be minted via
+      POST /api/v1/organization/users/{user_uuid}/user_tokens; the plaintext bearer token is
+      returned exactly once and is auto-revoked when the subject user is locked.
+  dashboard:
+    scheme: HTTP bearer, JWT
+    grant: OAuth 2.0 authorization code (POST /v1/oauth/grant) with refresh (POST /v1/oauth/refresh)
+    presentation: 'Authorization: Bearer <jwt>'
+    scopes: none declared
+  detail_artifact: authentication/accredify0604-authentication.yml
+idempotency:
+  coverage: none
+  supported: false
+  header: null
+  scope: []
+  retention: null
+  detail: >-
+    No Idempotency-Key header, request-id echo, or client-supplied deduplication token is
+    declared on any of the 72 published operations across the five specs. This matters most
+    on the issuance path: POST /v1/uploadIssueBatch, POST /batches/{id}/issue,
+    POST /v1/openbadges/issue and POST /api/workflows/{workflow}/runs all mint credentials,
+    and a retried request after a timeout has no published mechanism to avoid issuing a
+    second credential. There is no documented replay protection to key against.
+reversibility:
+  grade: verified
+  detail: >-
+    Accredify has an unusually complete reversal surface for a credentialing platform —
+    revocation is a first-class operation in both families — and two operations state a
+    real state-gated window in the spec itself. One operation states the opposite
+    explicitly, which is equally load-bearing for an agent.
+  reversals:
+  - write_operation: revoke a live document
+    reversal_operation: revoke-document
+    method_path: POST /api/v1/documents/{document}/revoke
+    spec: openapi/accredify0604-nexus-workflow-openapi.yaml
+    window: null
+    irreversible: true
+    docs_statement: >-
+      "Revoke a specific document by marking it as void and updating its revocation status.
+      This action cannot be undone."
+    note: >-
+      Revocation is itself the reversal of issuance, and it is terminal. There is no
+      un-revoke operation anywhere in the published contract.
+  - write_operation: createBatch / uploadBatch
+    reversal_operation: deleteBatch
+    method_path: DELETE /batches/{id}
+    spec: openapi/accredify0604-dashboard-v2-openapi.yaml
+    window: >-
+      Only while the batch is NOT in an issuing, revoking, issued or revoked status, and
+      only for the batch owner.
+    docs_statement: >-
+      "Deletes a specific batch if it's not in an issuing, revoking, issued, or revoked
+      status. Only the owner of the batch can delete it."
+    graded: verified
+  - write_operation: issueBatch (per item)
+    reversal_operation: revokeBatchItem
+    method_path: DELETE /batch-items/{id}
+    spec: openapi/accredify0604-dashboard-v2-openapi.yaml
+    window: null
+    docs_statement: >-
+      "Revokes a specific batch item and its associated documents, given a reason for the
+      revocation. Supports revocation for both internal certificates and badges."
+    note: A revocation reason is required.
+  - write_operation: trigger-workflow-run
+    reversal_operation: delete-workflow-run
+    method_path: DELETE /api/v1/workflow-runs/{run}
+    spec: openapi/accredify0604-nexus-workflow-openapi.yaml
+    window: >-
+      Only while the run has issued no documents AND is in "failed", "paused", "cancelled"
+      or "rejected" status. Requires the run-workflow scope.
+    docs_statement: >-
+      "Permanently delete a workflow run and its associated data. The workflow run must not
+      have issued documents and must be in \"failed\", \"paused\", \"cancelled\" or
+      \"rejected\" status."
+    graded: verified
+  - write_operation: issueOpenBadges
+    reversal_operation: revokeOpenBadge
+    method_path: DELETE /v1/openbadges/{assertion}
+    spec: openapi/accredify0604-dashboard-v1-openapi.yaml
+    window: null
+    docs_statement: '"Allow an issuer to revoke an open badge"'
+  - write_operation: certificate issuance
+    reversal_operation: revokeCerts
+    method_path: POST /v1/revokeCerts
+    spec: openapi/accredify0604-dashboard-v1-openapi.yaml
+    window: null
+    docs_statement: >-
+      "Revokes certificates that were issued by their certificate hash, also supports the
+      removal of the certificate from MySF"
+  - write_operation: create a user token
+    reversal_operation: revoke a user token
+    method_path: POST /api/v1/organization/user_tokens/{token_uuid}/revoke
+    spec: openapi/accredify0604-nexus-auth-openapi.yaml
+    window: null
+    docs_statement: >-
+      "Manually revoke a user token using its user-token context UUID. Tokens are also
+      revoked automatically when the subject user is locked."
+  - write_operation: attach-course-workflow
+    reversal_operation: detach-course-workflow
+    method_path: DELETE /api/v1/courses/{course}/workflows/{workflow}
+    spec: openapi/accredify0604-nexus-workflow-openapi.yaml
+    window: null
+  no_reversal_for:
+  - operation: resume-workflow-run
+    note: No pause operation is published; a run can be resumed but not paused via the API.
+  - operation: generate-design-template-signed-edit-link
+    note: >-
+      Produces a single-use signed edit link. No revoke-link operation exists; the link is
+      described as single-use, which is the only stated bound.
+dry_run:
+  supported: false
+  detail: >-
+    No dry-run, preview-only or validate-only mode is declared on any write operation. The
+    closest published surface is POST /api/v1/design_templates/{designTemplate}/preview,
+    which renders a PDF preview of a design template — a rendering preview, not a rehearsal
+    of an issuance.
+pagination:
+  style: page-number
+  parameters:
+  - name: page
+    in: query
+    default: 1
+    minimum: 1
+  - name: per_page
+    in: query
+    default: 10
+    enum_dashboard_v2: [10, 25, 50, 100]
+  response_fields:
+    data: array of resources
+    links: PaginationLinks (first, last, prev, next)
+    meta: PaginationMeta (current_page, from, last_page, per_page, to, total)
+  quirk: >-
+    Dashboard v2 GET /courses documents that setting per_page to -1 returns ALL courses
+    without pagination. An agent iterating pages should not assume per_page is bounded by
+    the declared enum on every operation.
+  applies_to: >-
+    Nexus Workflow and Auth list operations, and Dashboard v2 list operations. Dashboard v1
+    is unpaginated.
+field_expansion:
+  supported: false
+  detail: No expand, include, fields or sparse-fieldset parameter is declared anywhere.
+filtering:
+  supported: partial
+  detail: >-
+    Resource-specific filters only, e.g. GET /api/v1/documents accepts workflow UUID and/or
+    workflow-run filters, and GET /api/v1/documents/by_recipient looks a document up by
+    recipient identifier. There is no generic filter grammar.
+metadata:
+  supported: false
+  detail: No free-form customer metadata field is declared on any resource schema.
+request_tracing:
+  request_id_header: null
+  detail: >-
+    No X-Request-Id or correlation-id header is declared on requests or responses. The only
+    trace handle published is the `code` field on a Dashboard 500 response (example "E500"),
+    which the spec tells clients to quote to support@accredify.io.
+versioning:
+  style: uri-path
+  detail_artifact: lifecycle/accredify0604-lifecycle.yml
+error_envelope:
+  rfc9457: false
+  detail_artifact: errors/accredify0604-problem-types.yml
+  summary: >-
+    Dashboard returns {status, message} plus `errors`/`error` on 422 and `code` on 500;
+    Nexus returns {message} plus an `errors` object on 422. The two shapes are not
+    interchangeable.
+rate_limit_signalling:
+  headers: []
+  status_on_exhaustion: 429
+  detail_artifact: rate-limits/accredify0604-rate-limits.yml
+  summary: >-
+    429 is declared on all 26 Dashboard operations and on none of the 40 Nexus operations.
+    No rate-limit response headers are published on either.
+identifiers:
+  nexus: UUID path parameters (user_uuid, token_uuid, group_uuid, workflow, run, document, course)
+  dashboard_v2: integer ids
+  dashboard_v1: >-
+    OpenBadges assertion identifiers on the /v1/openbadges/{assertion} paths and certificate
+    hashes on POST /v1/revokeCerts.
+  note: >-
+    The two families do not share an identifier space. A document UUID from Nexus is not a
+    Dashboard batch-item id.

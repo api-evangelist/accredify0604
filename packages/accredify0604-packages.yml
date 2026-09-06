@@ -1,0 +1,83 @@
+generated: '2026-09-06'
+method: searched
+source: https://packagist.org/search.json?q=accredify, https://registry.npmjs.org/-/v1/search?text=accredify,
+  https://api.github.com/orgs/Accredifysg/repos
+note: >-
+  Accredify publishes no API client SDK for the Nexus or Dashboard APIs on any registry.
+  What it does publish under its own org namespaces (Packagist accredifysg/*, npm
+  @accredify/*) are the verifiable-credential building blocks its own platform runs on:
+  a Laravel Singpass/MyInfo login integration, a PHP JSON-LD 1.1 implementation, a PHP
+  W3C RDF Dataset Canonicalization (RDFC-1.0) implementation, and a fast PHP Keccak/SHAKE
+  extension. These are official first-party libraries but they are cryptography and
+  credential-standards infrastructure, not clients for the REST APIs documented in openapi/.
+  Every version and published date below was read from the registry metadata endpoint
+  on 2026-09-06.
+packages:
+- name: accredifysg/singpass-login
+  registry: packagist
+  language: PHP
+  url: https://packagist.org/packages/accredifysg/singpass-login
+  repository: https://github.com/Accredifysg/SingPass-Login
+  official: true
+  version: v4.1.0
+  published: '2026-08-13'
+  downloads: 2567
+  description: A Laravel package for integrating Singpass Login, MyInfo, and Corppass.
+  wraps_api: null
+- name: accredifysg/php-json-ld
+  registry: packagist
+  language: PHP
+  url: https://packagist.org/packages/accredifysg/php-json-ld
+  repository: https://github.com/Accredifysg/PHP-JSON-LD
+  official: true
+  version: v2.1.1
+  published: '2026-09-06'
+  downloads: 477
+  description: A PHP implementation of the JSON-LD 1.1 specification.
+  wraps_api: null
+- name: accredifysg/php-rdf-canonicalize
+  registry: packagist
+  language: PHP
+  url: https://packagist.org/packages/accredifysg/php-rdf-canonicalize
+  repository: https://github.com/Accredifysg/PHP-RDF-Canonicalize
+  official: true
+  version: v1.0.0
+  published: '2026-06-11'
+  downloads: 459
+  description: A PHP implementation of the W3C RDF Dataset Canonicalization (RDFC-1.0) algorithm.
+  wraps_api: null
+- name: accredifysg/php-keccak-64bit
+  registry: packagist
+  language: PHP
+  url: https://packagist.org/packages/accredifysg/php-keccak-64bit
+  repository: https://github.com/Accredifysg/PHP-Keccak-64bit
+  official: true
+  version: v1.0.0
+  published: '2026-06-24'
+  downloads: 180
+  description: Keccak (224/256/384/512) and SHAKE (128/256) for 64-bit PHP.
+  wraps_api: null
+- name: '@accredify/custom_ckeditor'
+  registry: npm
+  language: JavaScript
+  url: https://www.npmjs.com/package/@accredify/custom_ckeditor
+  repository: https://github.com/Accredifysg/CKEditor-Components
+  official: true
+  version: 2.0.0
+  published: '2026-05-30'
+  description: Accredify's CKEditor 5 build used in its document/template editor surface.
+  wraps_api: null
+- name: '@accredify/decentralized-renderer-react-components'
+  registry: npm
+  language: TypeScript
+  url: https://www.npmjs.com/package/@accredify/decentralized-renderer-react-components
+  repository: https://github.com/Open-Attestation/decentralized-renderer-react-components
+  official: true
+  version: 1.0.0
+  published: '2026-09-05'
+  description: >-
+    React components abstracting communication with an OpenAttestation decentralized
+    renderer. Published under Accredify's own npm scope; upstream source is the
+    Open-Attestation project.
+  wraps_api: null
+sdk_clients_for_documented_apis: 0

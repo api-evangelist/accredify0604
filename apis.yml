@@ -1,18 +1,102 @@
 aid: accredify0604
-name: Accredify0604
-description: 'Accredify0604 is a company surfaced via the API Evangelist harvest backlog (source: secondary-market)
-  and added to the network as a stub for full-pipeline profiling.'
+name: Accredify
+description: 'Accredify is a Singapore-headquartered verifiable-credentials and "TrustTech"
+  platform that lets organisations create, issue, verify and manage tamper-proof digital
+  documents. Its Nexus platform exposes an OAuth 2.0 client-credentials REST API covering
+  organisation users, groups, roles and user tokens (Auth module), workflow definitions,
+  workflow runs, documents, design/document templates and courses (Workflow module),
+  and document verification plus verifiable-data key extraction (Verification module).
+  A separate Accredify Dashboard API (v1 and v2) covers OAuth 2.0 grants, OpenBadges
+  issuance and revocation, batch upload/issue, certificate revocation, courses,
+  templates and email templates. Accredify also operates a live OpenID for Verifiable
+  Credential Issuance (OID4VCI) credential issuer at nexus.accredify.io, publishing
+  mso_mdoc credential configurations for ISO/IEC 18013-5 mobile driving licence and
+  ISO/IEC 23220 photo ID. The company issues in W3C VC, EBSI, mDL, SMART Health Card,
+  OpenCerts, OpenAttestation and OpenBadges standards, serves education, healthcare,
+  associations, licensing and public-sector customers across nine markets, and built
+  Singapore''s HealthCerts COVID-19 verification system.'
+image: https://www.accredify.io/wp-content/uploads/2022/10/Accredify-Logo.png
 url: https://raw.githubusercontent.com/api-evangelist/accredify0604/refs/heads/main/apis.yml
 x-type: company
 x-source: harvest:secondary-market
-x-tier: stub
-x-tier-reason: harvest
+x-tier: profiled
+x-tier-reason: enrichment
 specificationVersion: '0.20'
 created: '2026-09-06'
 modified: '2026-09-06'
 tags:
 - Company
-apis: []
+- Verifiable Credentials
+- Digital Credentials
+- Identity
+- Document Verification
+- Credentialing
+- Education
+- Healthcare
+- Trust
+- OpenBadges
+- OID4VCI
+- Singapore
+position: Producing
+apis:
+- aid: accredify0604-nexus
+  name: Accredify Nexus API
+  description: 'The Accredify Nexus platform API. OAuth 2.0 client-credentials REST
+    API split across three published OpenAPI 3.1 modules: Auth (organisation users,
+    groups, roles, user tokens, token issuance), Workflow (workflows, workflow runs,
+    documents, design templates, document templates, courses) and Verification (verify
+    a document, extract verifiable data keys). Nexus is also a live OID4VCI credential
+    issuer serving mso_mdoc credentials for ISO/IEC 18013-5 mDL and ISO/IEC 23220 photo ID.'
+  humanURL: https://docs.nexus.accredify.io/
+  baseURL: https://nexus.accredify.io
+  tags:
+  - Verifiable Credentials
+  - Workflows
+  - Document Verification
+  - Identity
+  - OID4VCI
+  properties:
+  - type: OpenAPI
+    url: openapi/accredify0604-nexus-auth-openapi.yaml
+  - type: OpenAPI
+    url: openapi/accredify0604-nexus-workflow-openapi.yaml
+  - type: OpenAPI
+    url: openapi/accredify0604-nexus-verification-openapi.yaml
+  - type: APIReference
+    url: https://docs.nexus.accredify.io/
+  - type: Overlay
+    url: overlays/accredify0604-nexus-auth-overlay.yaml
+  - type: Overlay
+    url: overlays/accredify0604-nexus-workflow-overlay.yaml
+  - type: Overlay
+    url: overlays/accredify0604-nexus-verification-overlay.yaml
+- aid: accredify0604-dashboard
+  name: Accredify Dashboard API
+  description: 'The Accredify Dashboard API, published as two OpenAPI 3.1 documents.
+    v1 covers OAuth 2.0 authorization-code grant and refresh, OpenBadges issuance,
+    update and revocation, batch upload (JSON and Excel), issue-on-upload, certificate
+    revocation by hash, email dispatch and an external-app certificate lookup. v2 covers
+    batches, batch items, courses, documents, templates, email templates and the
+    institution access matrix. Bearer JWT authentication; a UAT sandbox host is
+    published in the specification servers block.'
+  humanURL: https://docs.dashboard.accredify.io/
+  baseURL: https://dashboard.accredify.io/api
+  tags:
+  - Digital Credentials
+  - OpenBadges
+  - Certificates
+  - Batches
+  properties:
+  - type: OpenAPI
+    url: openapi/accredify0604-dashboard-v1-openapi.yaml
+  - type: OpenAPI
+    url: openapi/accredify0604-dashboard-v2-openapi.yaml
+  - type: APIReference
+    url: https://docs.dashboard.accredify.io/
+  - type: Overlay
+    url: overlays/accredify0604-dashboard-v1-overlay.yaml
+  - type: Overlay
+    url: overlays/accredify0604-dashboard-v2-overlay.yaml
 maintainers:
 - FN: Kin Lane
   email: kin@apievangelist.com
@@ -20,4 +104,80 @@ maintainers:
   email: info@apis.io
 common:
 - type: Website
-  url: https://equityzen.com/company/accredify0604
+  url: https://www.accredify.io/
+- type: Documentation
+  url: https://docs.nexus.accredify.io/
+- type: APIReference
+  url: https://docs.dashboard.accredify.io/
+- type: GitHubOrganization
+  url: https://github.com/Accredifysg
+- type: Blog
+  url: https://www.accredify.io/blog
+- type: Support
+  url: https://www.accredify.io/contact-us
+- type: HelpCenter
+  url: https://www.accredify.io/faq
+- type: SignUp
+  url: https://www.accredify.io/schedule-demo
+- type: Login
+  url: https://dashboard.accredify.io/login
+- type: TermsOfService
+  url: https://www.accredify.io/service-terms
+- type: PrivacyPolicy
+  url: https://www.accredify.io/data-protection-notice
+- type: StatusPage
+  url: https://status.accredify.io/
+- type: Security
+  url: https://www.accredify.io/security
+- type: Compliance
+  url: https://www.accredify.io/security
+- type: TrustCenter
+  url: security/accredify0604-trust-center.yml
+- type: LLMsTxt
+  url: llms/accredify0604-llms.txt
+- type: WellKnown
+  url: well-known/accredify0604-well-known.yml
+  x-note: >-
+    Emitted on a real hit: nexus.accredify.io serves OID4VCI credential-issuer metadata and
+    OAuth authorization-server metadata, both HTTP 200 with real JSON bodies. No SecurityTxt
+    pointer is emitted — /.well-known/security.txt returned 404 on every host probed.
+- type: Packages
+  url: packages/accredify0604-packages.yml
+  x-note: >-
+    No SDKs pointer is emitted. Accredify publishes six official first-party packages
+    (Packagist accredifysg/*, npm @accredify/*) but every one of them is credential-standards
+    or cryptography infrastructure — none is a client library for the Nexus or Dashboard APIs.
+    sdk_clients_for_documented_apis is 0.
+- type: Conformance
+  url: conformance/accredify0604-conformance.yml
+- type: ErrorCatalog
+  url: errors/accredify0604-problem-types.yml
+- type: Lifecycle
+  url: lifecycle/accredify0604-lifecycle.yml
+- type: OAuthScopes
+  url: scopes/accredify0604-scopes.yml
+- type: Authentication
+  url: authentication/accredify0604-authentication.yml
+- type: DomainSecurity
+  url: security/accredify0604-domain-security.yml
+- type: Conventions
+  url: conventions/accredify0604-conventions.yml
+  x-note: >-
+    No Idempotency pointer is emitted. idempotency.coverage is "none" — no Idempotency-Key
+    header or equivalent replay protection is declared on any of the 72 published operations,
+    including the credential-issuing writes.
+- type: Sandbox
+  url: sandbox/accredify0604-sandbox.yml
+- type: DataModel
+  url: data-model/accredify0604-data-model.yml
+- type: Plans
+  url: plans/accredify0604-plans-pricing.yml
+- type: RateLimits
+  url: rate-limits/accredify0604-rate-limits.yml
+- type: AgentSkill
+  url: skills/_index.yml
+x-enrichment:
+  date: '2026-09-06'
+  status: enriched
+  artifacts_added: 34
+  pass: local-v3

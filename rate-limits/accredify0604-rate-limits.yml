@@ -1,0 +1,44 @@
+generated: '2026-09-06'
+method: derived
+source: openapi/accredify0604-dashboard-v1-openapi.yaml, openapi/accredify0604-dashboard-v2-openapi.yaml
+limit_count: 0
+note: >-
+  Accredify documents that rate limiting EXISTS but never publishes a number. Every
+  operation in both Dashboard API specs (v1 and v2) declares a 429 response through the
+  shared components.responses.TooManyRequests, whose message example is
+  "You're submitting requests too quickly. Please retry again after 60 seconds." That
+  60-second figure appears only inside an example string, so it is recorded below as the
+  documented retry hint and NOT as a limit. No X-RateLimit-* or RateLimit-* response
+  header is declared anywhere in the specs, no Retry-After header is declared, and the
+  three Nexus module specs declare no 429 response at all. The runtime signal an agent
+  needs is therefore absent: a client can only discover the ceiling by hitting it.
+signalling:
+  status_code_on_exhaustion: 429
+  response_headers: []
+  retry_after_header: false
+  documented_retry_hint_seconds: 60
+  hint_source: >-
+    components.responses.TooManyRequests message example in
+    openapi/accredify0604-dashboard-v2-openapi.yaml
+  error_envelope:
+    status: integer
+    message: string
+limits: []
+surfaces:
+- api: Accredify Dashboard API
+  spec: openapi/accredify0604-dashboard-v1-openapi.yaml
+  declares_429: true
+  operations_with_429: 8
+- api: Accredify Dashboard API
+  spec: openapi/accredify0604-dashboard-v2-openapi.yaml
+  declares_429: true
+  operations_with_429: 18
+- api: Accredify Nexus API
+  spec: openapi/accredify0604-nexus-auth-openapi.yaml
+  declares_429: false
+- api: Accredify Nexus API
+  spec: openapi/accredify0604-nexus-workflow-openapi.yaml
+  declares_429: false
+- api: Accredify Nexus API
+  spec: openapi/accredify0604-nexus-verification-openapi.yaml
+  declares_429: false

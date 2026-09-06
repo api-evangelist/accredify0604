@@ -1,0 +1,57 @@
+generated: '2026-09-06'
+method: searched
+source: https://docs.nexus.accredify.io/auth.yaml, https://docs.dashboard.accredify.io/v1.yaml, https://docs.dashboard.accredify.io/v2.yaml
+  (fetched 2026-09-06); mirrored to openapi/
+docs: https://docs.nexus.accredify.io/auth.html
+note: 'Accredify runs TWO different auth models and a client must pick the right one per API family. Nexus
+  (nexus.accredify.io) uses OAuth 2.0 client credentials against POST /oauth/token with an application/x-www-form-urlencoded
+  body (grant_type=client_credentials, client_id, client_secret, and a space-separated scope string),
+  returning a Bearer token with expires_in 31536000 — one year. The Dashboard (dashboard.accredify.io)
+  uses an OAuth 2.0 authorization-code flow (GET /v1/oauth/redirect, POST /v1/oauth/grant, POST /v1/oauth/refresh)
+  yielding an unscoped bearer JWT. Nexus additionally mints long-lived per-user API tokens whose plaintext
+  secret is returned exactly once and which are auto-revoked when the subject user is locked. A third,
+  separate authorization surface exists for credential issuance: the OID4VCI authorization server at https://nexus.accredify.io/.well-known/oauth-authorization-server,
+  which advertises the pre-authorized_code grant with anonymous access and S256 PKCE — that is the wallet
+  flow, not the API flow.'
+summary:
+  types:
+  - http
+  - oauth2
+  oauth2_flows:
+  - clientCredentials
+schemes:
+- name: bearerAuth
+  type: http
+  scheme: bearer
+  bearerFormat: JWT
+  description: 'JWT Authorization header using the Bearer scheme. Example: ''Authorization: Bearer {token}'''
+  sources:
+  - openapi/accredify0604-dashboard-v1-openapi.yaml
+  - openapi/accredify0604-dashboard-v2-openapi.yaml
+- name: OAuth2
+  type: oauth2
+  flows:
+  - flow: clientCredentials
+    tokenUrl: /oauth/token
+    scopes: 20
+  description: OAuth2 client credentials flow
+  sources:
+  - openapi/accredify0604-nexus-auth-openapi.yaml
+  - openapi/accredify0604-nexus-verification-openapi.yaml
+  - openapi/accredify0604-nexus-workflow-openapi.yaml
+token_endpoints:
+- api: Accredify Nexus API
+  url: https://nexus.accredify.io/oauth/token
+  grant: client_credentials
+  body: application/x-www-form-urlencoded
+  expires_in: 31536000
+- api: Accredify Dashboard API
+  url: https://dashboard.accredify.io/api/v1/oauth/grant
+  grant: authorization_code
+  refresh: https://dashboard.accredify.io/api/v1/oauth/refresh
+- api: OID4VCI credential issuance
+  url: https://nexus.accredify.io/oid4vci/tokens
+  grant: urn:ietf:params:oauth:grant-type:pre-authorized_code
+  source: https://nexus.accredify.io/.well-known/oauth-authorization-server
+  note: Wallet/holder flow for issuing mso_mdoc credentials, not the REST API auth path.
+scopes_artifact: scopes/accredify0604-scopes.yml

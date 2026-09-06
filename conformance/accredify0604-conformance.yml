@@ -1,0 +1,179 @@
+generated: '2026-09-06'
+method: searched
+source: https://nexus.accredify.io/.well-known/openid-credential-issuer,
+  https://nexus.accredify.io/.well-known/oauth-authorization-server,
+  https://www.accredify.io/multi-standard-flexibility, https://www.accredify.io/security,
+  openapi/accredify0604-nexus-auth-openapi.yaml, openapi/accredify0604-dashboard-v1-openapi.yaml
+note: >-
+  Accredify's market is verifiable credentials, and unusually for this pipeline the
+  domain-standard claim is verifiable from the CONTRACT rather than from marketing prose:
+  nexus.accredify.io serves live OID4VCI issuer metadata declaring mso_mdoc credential
+  configurations whose doctypes are the ISO/IEC 18013-5 mDL and ISO/IEC 23220 photo ID
+  identifiers. Standards asserted only on the marketing page and not evidenced by a
+  fetched machine-readable artifact are recorded with conforms: false and the prose URL,
+  so the distinction stays visible.
+conformance:
+- id: oauth2
+  conforms: true
+  evidence: >-
+    openapi/accredify0604-nexus-auth-openapi.yaml components.securitySchemes.OAuth2 —
+    type oauth2, clientCredentials flow, tokenUrl /oauth/token, 20 declared scopes.
+- id: oauth2-client-credentials
+  conforms: true
+  evidence: openapi/accredify0604-nexus-workflow-openapi.yaml components.securitySchemes.OAuth2.flows.clientCredentials
+- id: rfc6750-bearer-token
+  conforms: true
+  evidence: >-
+    openapi/accredify0604-dashboard-v2-openapi.yaml components.securitySchemes.bearerAuth —
+    http/bearer, bearerFormat JWT.
+- id: rfc8414-oauth-authorization-server-metadata
+  conforms: true
+  evidence: https://nexus.accredify.io/.well-known/oauth-authorization-server (HTTP 200, application/json)
+- id: rfc7636-pkce
+  conforms: true
+  evidence: >-
+    https://nexus.accredify.io/.well-known/oauth-authorization-server —
+    code_challenge_methods_supported ["S256"].
+- id: rfc9126-pushed-authorization-requests
+  conforms: true
+  evidence: >-
+    https://nexus.accredify.io/.well-known/oauth-authorization-server —
+    pushed_authorization_request_endpoint https://nexus.accredify.io/oid4vci/pushed_authorization_requests
+- id: rfc9457
+  conforms: false
+  evidence: >-
+    No application/problem+json media type appears in any of the five published specs.
+    Errors use a bespoke {status, message, errors?, code?} JSON envelope — see
+    errors/accredify0604-problem-types.yml.
+- id: pagination
+  conforms: true
+  evidence: >-
+    Page/per_page query parameters with links + meta response envelope across
+    openapi/accredify0604-nexus-workflow-openapi.yaml and
+    openapi/accredify0604-dashboard-v2-openapi.yaml (PaginationLinks / PaginationMeta schemas).
+- id: idempotency
+  conforms: false
+  evidence: >-
+    No Idempotency-Key header or equivalent replay-protection parameter is declared on
+    any of the 72 published operations.
+domain_standards:
+- id: oid4vci
+  name: OpenID for Verifiable Credential Issuance
+  conforms: true
+  evidence: >-
+    https://nexus.accredify.io/.well-known/openid-credential-issuer (HTTP 200) —
+    credential_issuer, authorization_servers, credential_endpoint
+    https://nexus.accredify.io/oid4vci/credentials, nonce_endpoint
+    https://nexus.accredify.io/oid4vci/nonces, credential_configurations_supported.
+  artifact: well-known/accredify0604-nexus-openid-credential-issuer.json
+- id: oid4vci-pre-authorized-code
+  name: OID4VCI pre-authorized code grant
+  conforms: true
+  evidence: >-
+    https://nexus.accredify.io/.well-known/oauth-authorization-server —
+    grant_types_supported ["urn:ietf:params:oauth:grant-type:pre-authorized_code"],
+    pre-authorized_grant_anonymous_access_supported true.
+- id: iso-18013-5-mdl
+  name: ISO/IEC 18013-5 mobile driving licence (mDL)
+  conforms: true
+  evidence: >-
+    https://nexus.accredify.io/.well-known/openid-credential-issuer —
+    credential_configurations_supported.mobile_driving_licence, format mso_mdoc,
+    doctype org.iso.18013.5.1.mDL, cryptographic_binding_methods_supported ["cose_key"],
+    credential_signing_alg_values_supported [-7] (COSE ES256).
+- id: iso-23220-photo-id
+  name: ISO/IEC 23220 photo ID
+  conforms: true
+  evidence: >-
+    https://nexus.accredify.io/.well-known/openid-credential-issuer —
+    credential_configurations_supported.photo_id, format mso_mdoc,
+    doctype org.iso.23220.photoid.1.
+- id: iso-18013-5-mso-mdoc
+  name: mso_mdoc credential format (ISO mdoc / CBOR-COSE)
+  conforms: true
+  evidence: >-
+    All three credential configurations at
+    https://nexus.accredify.io/.well-known/openid-credential-issuer declare
+    "format": "mso_mdoc". A third configuration,
+    emso_competitor_licence_mdoc, uses a customer-specific doctype
+    ae.emso.competitor_licence.1.mCL on the same mdoc profile.
+- id: openbadges
+  name: 1EdTech Open Badges
+  conforms: true
+  evidence: >-
+    openapi/accredify0604-dashboard-v1-openapi.yaml — a dedicated OpenBadges tag with
+    four operations: issueOpenBadges (POST /v1/openbadges/issue),
+    createOpenBadgesCourse (POST /v1/openbadges/new-course),
+    updateOpenBadge (PATCH /v1/openbadges/{assertion}) and
+    revokeOpenBadge (DELETE /v1/openbadges/{assertion}). The {assertion} path parameter
+    is the Open Badges assertion identifier.
+- id: openattestation
+  name: OpenAttestation
+  conforms: true
+  evidence: >-
+    Accredify publishes @accredify/decentralized-renderer-react-components on npm and
+    maintains forks of Open-Attestation/oa-encryption, opencerts-functions, schemata and
+    open-certificate in https://github.com/Accredifysg. Also claimed at
+    https://www.accredify.io/multi-standard-flexibility.
+- id: opencerts
+  name: OpenCerts
+  conforms: true
+  evidence: >-
+    https://github.com/Accredifysg/opencerts-functions and
+    https://github.com/Accredifysg/open-certificate; the subdomain
+    api.opencert.accredify.io appears in Accredify's certificate transparency records.
+    Also claimed at https://www.accredify.io/multi-standard-flexibility.
+- id: w3c-verifiable-credentials
+  name: W3C Verifiable Credentials Data Model
+  conforms: false
+  evidence: >-
+    Claimed at https://www.accredify.io/multi-standard-flexibility ("W3C"). No W3C VC
+    credential configuration (jwt_vc_json / ldp_vc) is offered at the live OID4VCI issuer
+    metadata, and /.well-known/jwt-vc-issuer and /.well-known/did.json both return 404 on
+    nexus.accredify.io. Supporting infrastructure exists — Accredify publishes first-party
+    PHP JSON-LD 1.1 and W3C RDF Dataset Canonicalization (RDFC-1.0) implementations — but
+    no machine-readable W3C VC contract was reachable, so this is recorded as a prose
+    claim only.
+- id: ebsi
+  name: European Blockchain Services Infrastructure (EBSI)
+  conforms: false
+  evidence: >-
+    Claimed at https://www.accredify.io/multi-standard-flexibility. No EBSI-conformant
+    endpoint or credential configuration was found on any probed host.
+- id: smart-health-cards
+  name: SMART Health Cards
+  conforms: false
+  evidence: >-
+    Claimed at https://www.accredify.io/multi-standard-flexibility and supported by
+    Accredify's role in Singapore's HealthCerts programme. No SMART Health Card issuer
+    JWKS (/.well-known/jwks.json) was served on any probed host, so this is recorded as
+    a prose claim only.
+compliance:
+- id: iso-27001
+  name: ISO/IEC 27001:2022
+  conforms: true
+  evidence: https://www.accredify.io/security — "Download ISO 27001:2022 certificate"
+- id: iso-27017
+  name: ISO/IEC 27017:2015 (cloud security)
+  conforms: true
+  evidence: https://www.accredify.io/security — "Download ISO 27017:2015 certificate"
+- id: iso-27018
+  name: ISO/IEC 27018:2019 (cloud PII protection)
+  conforms: true
+  evidence: https://www.accredify.io/security — "Download ISO 27018:2019 certificate"
+- id: csa-star-caiq
+  name: CSA STAR CAIQ
+  conforms: true
+  evidence: https://www.accredify.io/security — "CSA STAR CAIQ website"
+- id: iso-22301
+  name: ISO 22301 (business continuity)
+  conforms: true
+  evidence: https://www.accredify.io/multi-standard-flexibility — "We are ISO27001, ISO22301, ISO27017, ISO27018, and IMDA Data Protection Trustmark certified"
+- id: imda-dpt
+  name: IMDA Data Protection Trustmark (Singapore)
+  conforms: true
+  evidence: https://www.accredify.io/multi-standard-flexibility
+- id: pdpa-sg
+  name: Singapore Personal Data Protection Act (PDPA)
+  conforms: true
+  evidence: https://www.accredify.io/multi-standard-flexibility — "and are compliant with PDPA"; https://www.accredify.io/data-protection-notice

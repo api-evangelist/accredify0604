@@ -1,0 +1,60 @@
+generated: '2026-09-06'
+method: probed
+source: openapi/accredify0604-dashboard-v1-openapi.yaml servers[], openapi/accredify0604-dashboard-v2-openapi.yaml servers[],
+  openapi/accredify0604-nexus-workflow-openapi.yaml servers[], live probes 2026-09-06
+note: >-
+  Accredify publishes a named sandbox in the contract itself: the Dashboard specs label
+  https://dashboard.uat.accredify.io/api "Accredify Sandbox (UAT)" alongside the production
+  server, and the Nexus specs list Staging and UAT servers ahead of Production. Both UAT
+  hosts answer on the public internet. What is NOT published is any way to get into them:
+  there is no self-service sign-up, no test credentials, no test fixtures, no magic
+  identifiers and no test-mode key prefix anywhere in the documentation. The environments
+  are real and reachable; access is provisioned by Accredify, not obtained.
+self_service: false
+test_credentials_published: false
+test_key_prefix: null
+test_fixtures: []
+test_clock: false
+environments:
+- name: Accredify Sandbox (UAT)
+  api: Accredify Dashboard API
+  base_url: https://dashboard.uat.accredify.io/api
+  v2_base_url: https://dashboard.uat.accredify.io/api/v2
+  declared_in: openapi/accredify0604-dashboard-v1-openapi.yaml, openapi/accredify0604-dashboard-v2-openapi.yaml
+  probe:
+    url: https://dashboard.uat.accredify.io/
+    status: 200
+    result: redirects to /login — credential wall, no public sign-up
+- name: UAT
+  api: Accredify Nexus API
+  base_url: https://nexus.uat.accredify.io
+  declared_in: openapi/accredify0604-nexus-auth-openapi.yaml, openapi/accredify0604-nexus-workflow-openapi.yaml,
+    openapi/accredify0604-nexus-verification-openapi.yaml
+  probe:
+    url: https://nexus.uat.accredify.io/
+    status: 200
+    result: redirects to /login
+  note: >-
+    The UAT host also serves live OID4VCI credential issuer metadata at
+    https://nexus.uat.accredify.io/.well-known/openid-credential-issuer (HTTP 200), so the
+    verifiable-credential issuance surface is genuinely exercisable in UAT.
+- name: Staging
+  api: Accredify Nexus API
+  base_url: https://nexus.staging.accredify.io
+  declared_in: openapi/accredify0604-nexus-auth-openapi.yaml, openapi/accredify0604-nexus-workflow-openapi.yaml,
+    openapi/accredify0604-nexus-verification-openapi.yaml
+  probe:
+    url: https://nexus.staging.accredify.io/
+    status: 403
+    result: forbidden at the edge — internal environment, listed in the spec but not open
+- name: Local
+  api: Accredify Dashboard API
+  base_url: http://dashboard.local.accredify.io/api
+  declared_in: openapi/accredify0604-dashboard-v1-openapi.yaml
+  note: >-
+    A developer loopback entry left in the published servers[] block. It is not a service a
+    consumer can reach and should not be selected by a client generator.
+gaps:
+- No documented path to obtain UAT credentials; the only route published is https://www.accredify.io/schedule-demo.
+- No test document hashes, sample assertions, sample workflow UUIDs or seeded fixtures.
+- No distinguishable test-mode vs live-mode token prefix, so a client cannot tell from a credential which environment it addresses.

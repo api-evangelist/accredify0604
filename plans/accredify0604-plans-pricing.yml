@@ -1,0 +1,19 @@
+generated: '2026-09-06'
+method: searched
+source: https://www.accredify.io/ (site navigation and llms.txt page inventory), https://www.accredify.io/schedule-demo
+plan_count: 0
+note: >-
+  Accredify publishes no pricing page and no plan tiers. https://www.accredify.io/pricing
+  returns HTTP 404, and the site inventory in the provider's own llms.txt contains no
+  pricing, plans or packages URL. Every commercial call to action routes to
+  https://www.accredify.io/schedule-demo (HTTP 200) or the partnership/pilot programme
+  pages. This is an enterprise contact-sales motion, not an absence of research.
+plans: []
+evidence:
+- url: https://www.accredify.io/pricing
+  status: 404
+- url: https://www.accredify.io/schedule-demo
+  status: 200
+- url: https://www.accredify.io/llms.txt
+  status: 200
+  note: 400-line site inventory published by the provider; contains no pricing page.

@@ -1,0 +1,1848 @@
+openapi: 3.1.0
+info:
+  title: Accredify Dashboard APIs
+  description: >-
+    This is the API documentation for the Accredify Dashboard, providing access to our services in a development and
+    production environment.
+  version: 2.0.0
+servers:
+  - url: 'http://dashboard.local.accredify.io/api/v2'
+    description: Accredify Local (Local)
+  - url: 'https://dashboard.uat.accredify.io/api/v2'
+    description: Accredify Sandbox (UAT)
+  - url: 'https://dashboard.accredify.io/api/v2'
+    description: Accredify Main Server (Production)
+paths:
+  /batches:
+    get:
+      tags:
+        - Batches
+      summary: Get batches
+      description: Returns a paginated list of batches scoped to the authenticated user's issuer or institution affiliation.
+      operationId: getBatches
+      parameters:
+        - name: page
+          in: query
+          description: The page number to retrieve.
+          required: false
+          schema:
+            type: integer
+            default: 1
+            minimum: 1
+        - name: per_page
+          in: query
+          description: The number of batches per page.
+          required: false
+          schema:
+            type: integer
+            default: 10
+            enum:
+              - 10
+              - 25
+              - 50
+              - 100
+      responses:
+        '200':
+          description: Batches retrieved successfully.
+          content:
+            application/json:
+              schema:
+                properties:
+                  data:
+                    type: array
+                    items:
+                      properties:
+                        id:
+                          description: Batch ID
+                          type: integer
+                        name:
+                          description: Batch name
+                          type: string
+                        alias:
+                          description: Batch alias
+                          type:
+                            - string
+                            - 'null'
+                        status:
+                          description: Current status of the batch
+                          type: string
+                        status_updated_at:
+                          description: Last update timestamp of the batch status
+                          type:
+                            - string
+                            - 'null'
+                          format: date-time
+                        subscribers:
+                          type: array
+                          items:
+                            type: string
+                            format: email
+                      type: object
+                  links:
+                    description: Pagination links
+                    type: object
+                  meta:
+                    description: Pagination metadata
+                    type: object
+                type: object
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/UnauthenticatedRequest'
+        '422':
+          $ref: '#/components/responses/UnprocessableEntityRequest'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalErrorRequest'
+      security:
+        - bearerAuth: []
+    post:
+      tags:
+        - Batches
+      summary: Create a new batch
+      description: 'Creates a new batch from provided JSON data, processes it, and optionally issues the batch.'
+      operationId: createBatch
+      requestBody:
+        description: Batch creation data
+        required: true
+        content:
+          application/json:
+            schema:
+              required:
+                - course_id
+                - issue
+                - batch_alias
+                - data
+              properties:
+                course_id:
+                  description: ID of the course associated with the batch
+                  type: integer
+                issue:
+                  description: Whether to issue the batch immediately after creation
+                  type: boolean
+                distribute:
+                  description: 'Whether to distribute the batch, required if ''issue'' is true'
+                  type: boolean
+                encrypt:
+                  description: 'Whether to encrypt the batch, required if ''distribute'' is true'
+                  type: boolean
+                batch_alias:
+                  description: Alias for the batch
+                  type: string
+                chunking:
+                  description: Optional object for handling batch chunking
+                  properties:
+                    batch_size:
+                      description: The total number of message sequences you will be sending
+                      type: integer
+                    msg_seq:
+                      description: The sequence number of this request
+                      type: integer
+                    num_items:
+                      description: The number of items that are in this request
+                      type: integer
+                  type: object
+                data:
+                  description: Array of data objects for batch processing
+                  type: array
+                  items:
+                    description: Data for each batch item
+                    type: object
+                subscribers:
+                  description: An array of email addresses that should be subscribed to notifications
+                  type: array
+                  items:
+                    description: Email of each subscriber
+                    type: string
+              type: object
+      responses:
+        '201':
+          description: Batch created successfully
+          content:
+            application/json:
+              schema:
+                properties:
+                  data:
+                    properties:
+                      id:
+                        description: The newly created batch ID
+                        type: integer
+                      name:
+                        description: The name of the batch
+                        type: string
+                      alias:
+                        description: The alias of the batch
+                        type: string
+                      status:
+                        description: The status of the batch
+                        type: string
+                      status_updated_at:
+                        description: The timestamp when the status was last updated
+                        type: string
+                        format: date-time
+                    type: object
+                type: object
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/UnauthenticatedRequest'
+        '404':
+          $ref: '#/components/responses/NotFoundRequest'
+        '422':
+          $ref: '#/components/responses/UnprocessableEntityRequest'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalErrorRequest'
+      security:
+        - bearerAuth: []
+  '/batches/{id}':
+    get:
+      tags:
+        - Batches
+      summary: Get a specific batch
+      description: >-
+        Returns detailed information about a specific batch, including its items, documents, and files, for the
+        authorized user.
+      operationId: getBatchById
+      parameters:
+        - name: id
+          in: path
+          description: The ID of the batch to retrieve
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                properties:
+                  data:
+                    properties:
+                      id:
+                        description: Batch ID
+                        type: integer
+                      name:
+                        description: Batch name
+                        type: string
+                      alias:
+                        description: Batch alias
+                        type: string
+                      status:
+                        description: Current status of the batch
+                        type: string
+                      status_updated_at:
+                        description: Last update timestamp of the batch status
+                        type: string
+                        format: date-time
+                      batch_items:
+                        description: An array of batch items associated with the batch
+                        type: array
+                        items:
+                          properties:
+                            id:
+                              description: Batch item ID
+                              type: integer
+                            status:
+                              description: Status of the batch item
+                              type: string
+                            documents:
+                              description: Documents associated with the batch item
+                              type: array
+                              items:
+                                properties:
+                                  id:
+                                    description: Document ID
+                                    type: integer
+                                  hash:
+                                    description: Document hash
+                                    type: string
+                                  type:
+                                    description: Document type
+                                    type: string
+                                  status:
+                                    description: Document status
+                                    type: string
+                                  files:
+                                    description: Files associated with the document
+                                    properties:
+                                      pdf:
+                                        description: Base64 encoded content of the PDF file
+                                        type: string
+                                      unsigned:
+                                        description: Base64 encoded content of the unsigned file
+                                        type: string
+                                      signed:
+                                        description: Base64 encoded content of the signed file
+                                        type: string
+                                    type: object
+                                type: object
+                          type: object
+                    type: object
+                type: object
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/UnauthenticatedRequest'
+        '404':
+          $ref: '#/components/responses/NotFoundRequest'
+        '422':
+          $ref: '#/components/responses/UnprocessableEntityRequest'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalErrorRequest'
+      security:
+        - bearerAuth: []
+    delete:
+      tags:
+        - Batches
+      summary: Delete a specific batch
+      description: >-
+        Deletes a specific batch if it's not in an issuing, revoking, issued, or revoked status. Only the owner of the
+        batch can delete it.
+      operationId: deleteBatch
+      parameters:
+        - name: id
+          in: path
+          description: The ID of the batch to delete
+          required: true
+          schema:
+            type: integer
+      responses:
+        '204':
+          description: No Content - Successfully deleted the batch
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/UnauthenticatedRequest'
+        '404':
+          $ref: '#/components/responses/NotFoundRequest'
+        '422':
+          $ref: '#/components/responses/UnprocessableEntityRequest'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalErrorRequest'
+      security:
+        - bearerAuth: []
+  /batch-items:
+    get:
+      tags:
+        - Batch Items
+      summary: Get batch items
+      description: Returns a paginated list of batch items scoped to the authenticated user's issuer or institution affiliation.
+      operationId: getBatchItems
+      parameters:
+        - name: page
+          in: query
+          description: The page number to retrieve.
+          required: false
+          schema:
+            type: integer
+            default: 1
+            minimum: 1
+        - name: per_page
+          in: query
+          description: The number of batch items per page.
+          required: false
+          schema:
+            type: integer
+            default: 10
+            enum:
+              - 10
+              - 25
+              - 50
+              - 100
+        - name: exclude_files
+          in: query
+          description: >-
+            Whether to exclude base64-encoded file payloads from nested documents. Defaults to true for collection
+            responses.
+          required: false
+          schema:
+            type: boolean
+            default: true
+      responses:
+        '200':
+          description: Batch items retrieved successfully.
+          content:
+            application/json:
+              schema:
+                properties:
+                  data:
+                    type: array
+                    items:
+                      properties:
+                        id:
+                          description: Batch item ID
+                          type: integer
+                        status:
+                          description: Current status of the batch item
+                          type: string
+                        documents:
+                          type: array
+                          items:
+                            properties:
+                              id:
+                                description: Document ID
+                                type: integer
+                              hash:
+                                description: Document hash
+                                type:
+                                  - string
+                                  - 'null'
+                              type:
+                                description: Document type
+                                type: string
+                              status:
+                                description: Current status of the document
+                                type: string
+                              links:
+                                description: Document links
+                                type: object
+                              meta_data:
+                                description: Document metadata
+                                type: object
+                              recipient:
+                                description: Recipient data
+                                type: object
+                              files:
+                                description: 'Base64-encoded files, included only when exclude_files is false'
+                                type: object
+                            type: object
+                      type: object
+                  links:
+                    description: Pagination links
+                    type: object
+                  meta:
+                    description: Pagination metadata
+                    type: object
+                type: object
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/UnauthenticatedRequest'
+        '422':
+          $ref: '#/components/responses/UnprocessableEntityRequest'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalErrorRequest'
+      security:
+        - bearerAuth: []
+  '/batch-items/{id}':
+    get:
+      tags:
+        - Batch Items
+      summary: Get a specific batch item
+      description: >-
+        Returns detailed information about a specific batch item, including its documents and their files, for the
+        authorized user.
+      operationId: getBatchItemById
+      parameters:
+        - name: id
+          in: path
+          description: The ID of the batch item to retrieve
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                properties:
+                  data:
+                    properties:
+                      id:
+                        description: Batch item ID
+                        type: integer
+                      status:
+                        description: Status of the batch item
+                        type: string
+                      documents:
+                        description: Documents associated with the batch item
+                        type: array
+                        items:
+                          properties:
+                            id:
+                              description: Document ID
+                              type: integer
+                            hash:
+                              description: Document hash
+                              type: string
+                            type:
+                              description: Document type
+                              type: string
+                            status:
+                              description: Document status
+                              type: string
+                            files:
+                              description: 'Files associated with the document, encoded in base64'
+                              properties:
+                                unsigned:
+                                  description: Base64 encoded content of the unsigned file
+                                  type: string
+                                signed:
+                                  description: Base64 encoded content of the signed file
+                                  type: string
+                                pdf:
+                                  description: Base64 encoded content of the PDF file
+                                  type: string
+                              type: object
+                            links:
+                              description: Links associated with the document
+                              properties:
+                                verification_link:
+                                  description: Link to the verification page
+                                  type: string
+                                badge_image_link:
+                                  description: Link to download the badge image
+                                  type: string
+                              type: object
+                          type: object
+                    type: object
+                type: object
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/UnauthenticatedRequest'
+        '404':
+          $ref: '#/components/responses/NotFoundRequest'
+        '422':
+          $ref: '#/components/responses/UnprocessableEntityRequest'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalErrorRequest'
+      security:
+        - bearerAuth: []
+    delete:
+      tags:
+        - Batch Items
+      summary: Revoke a specific batch item
+      description: >-
+        Revokes a specific batch item and its associated documents, given a reason for the revocation. Supports
+        revocation for both internal certificates and badges.
+      operationId: revokeBatchItem
+      parameters:
+        - name: id
+          in: path
+          description: The ID of the batch item to revoke
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        description: Revocation reason
+        required: true
+        content:
+          application/json:
+            schema:
+              required:
+                - reason
+              properties:
+                reason:
+                  description: Reason for revoking the batch item
+                  type: string
+              type: object
+      responses:
+        '204':
+          description: No Content - Batch item revoked successfully
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/UnauthenticatedRequest'
+        '404':
+          $ref: '#/components/responses/NotFoundRequest'
+        '422':
+          $ref: '#/components/responses/UnprocessableEntityRequest'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalErrorRequest'
+      security:
+        - bearerAuth: []
+  /courses:
+    get:
+      tags:
+        - Courses
+      summary: Get list of courses
+      description: >-
+        Returns a paginated list of courses for the logged-in issuer. Clients can specify 'page' and 'per_page' query
+        parameters to control pagination. Setting 'per_page' to -1 returns all courses without pagination.
+      operationId: getCourses
+      parameters:
+        - name: search
+          in: query
+          description: Search term for filtering courses by courseCode.
+          required: false
+          schema:
+            type: string
+        - name: page
+          in: query
+          description: The page number to retrieve
+          required: false
+          schema:
+            type: integer
+            default: 1
+        - name: per_page
+          in: query
+          description: The number of courses per page. Set to -1 to return all courses.
+          required: false
+          schema:
+            type: integer
+            default: 10
+            enum:
+              - 10
+              - 25
+              - 50
+              - 100
+              - -1
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                properties:
+                  data:
+                    type: array
+                    items:
+                      properties:
+                        id:
+                          description: Provided by Accredify
+                          type: integer
+                          example: 1
+                        course_code:
+                          description: The code to identify the course
+                          type: string
+                          example: COURSE101
+                        course_title:
+                          description: The course's title
+                          type: string
+                          example: Introduction to Course
+                        course_description:
+                          description: The course's description
+                          type: string
+                          example: A detailed course description.
+                        schema:
+                          description: The course's schema
+                          type: string
+                          example: OAv2
+                        issuance_method:
+                          description: >-
+                            The course's issuance method, ['badge', 'certificate', 'certificate_and_badge',
+                            'certificate_with_user_pdf']
+                          type: string
+                          example: badge
+                        template:
+                          properties:
+                            id:
+                              description: Provided by Accredify
+                              type: integer
+                              example: 1
+                            name:
+                              description: Provided by Accredify for identifying the template
+                              type: string
+                              example: Standard Template
+                            alias:
+                              description: Provided by customer for identifying the template
+                              type: string
+                              example: standard_template
+                            description:
+                              description: Provided by Accredify for identifying the template
+                              type: string
+                              example: A standard template for general use.
+                          type: object
+                        email_template:
+                          properties:
+                            id:
+                              description: Provided by Accredify
+                              type: integer
+                              example: 1
+                            name:
+                              description: Name of your email template
+                              type: string
+                              example: Standard Email Template
+                            description:
+                              description: Description of your email template
+                              type: string
+                              example: A standard template for general use.
+                            subject:
+                              description: The title that appears as the subject header of the email
+                              type: string
+                              example: Congratulations on your certification!
+                            template:
+                              description: The contents of the email template in markdown
+                              type: string
+                          type: object
+                        sharing:
+                          properties:
+                            share_enabled:
+                              description: Is sharing enabled
+                              type: boolean
+                            share_link:
+                              description: Share link (defaults to Accredify's share link if none provided)
+                              type: string
+                          type: object
+                        configurations:
+                          description: >-
+                            For a list of configurations, please visit
+                            https://accredify.notion.site/Course-Configurations-ec71dbcecdb643a5b2277c76b929ba86
+                          type: object
+                          example:
+                            hasIssuedDate: true
+                            hasCertId: true
+                            hasEmail: false
+                            allMustApprove: false
+                        expected_attributes:
+                          type: array
+                          items:
+                            type: string
+                      type: object
+                  links:
+                    description: Links for pagination
+                    properties:
+                      first:
+                        type: string
+                        example: 'https://api.example.com/courses?page=1'
+                      last:
+                        type: string
+                        example: 'https://api.example.com/courses?page=10'
+                      prev:
+                        type: string
+                        example: 'null'
+                      next:
+                        type: string
+                        example: 'https://api.example.com/courses?page=2'
+                    type: object
+                  meta:
+                    description: Additional metadata for pagination
+                    properties:
+                      current_page:
+                        type: integer
+                        example: 1
+                      from:
+                        type: integer
+                        example: 1
+                      last_page:
+                        type: integer
+                        example: 10
+                      path:
+                        type: string
+                        example: 'https://api.example.com/courses'
+                      per_page:
+                        type: integer
+                        example: 10
+                      to:
+                        type: integer
+                        example: 10
+                      total:
+                        type: integer
+                        example: 100
+                    type: object
+                type: object
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/UnauthenticatedRequest'
+        '404':
+          $ref: '#/components/responses/NotFoundRequest'
+        '422':
+          $ref: '#/components/responses/UnprocessableEntityRequest'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalErrorRequest'
+      security:
+        - bearerAuth: []
+    post:
+      tags:
+        - Courses
+      summary: Add a new course
+      description: Creates a new course with the given settings
+      operationId: createCourse
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              required:
+                - course_code
+                - course_title
+                - course_description
+                - issuance_method
+                - configurations
+              properties:
+                course_code:
+                  description: Unique code for the course
+                  type: string
+                  example: COURSE101
+                course_title:
+                  description: Title of the course
+                  type: string
+                  example: Introduction to Course
+                course_description:
+                  description: Description of the course
+                  type: string
+                  example: A detailed course description.
+                issuance_method:
+                  description: >-
+                    The course's issuance method, ['badge', 'certificate', 'certificate_and_badge',
+                    'certificate_with_user_pdf']
+                  type: string
+                  example: badge
+                schema:
+                  description: >-
+                    Schema version for the course, required only when the issuance_method is ['certificate',
+                    'certificate_and_badge']
+                  type: string
+                  example: OAv2
+                template_id:
+                  description: >-
+                    ID of the template to be used for this course, required only when the issuance_method is
+                    ['certificate', 'certificate_and_badge']
+                  type: integer
+                  example: 1
+                email_template_id:
+                  description: ID of the email template to be used for this course
+                  type: integer
+                  example: 1
+                sharing:
+                  properties:
+                    share_enabled:
+                      description: Whether or not sharing is enabled for the course
+                      type: boolean
+                      example: true
+                    share_link:
+                      description: Custom share link for the course
+                      type: string
+                      example: 'http://example.com/share'
+                  type: object
+                configurations:
+                  description: >-
+                    Array of course-specific configurations. For a list of configurations, please visit
+                    https://accredify.notion.site/Course-Configurations-ec71dbcecdb643a5b2277c76b929ba86
+                  type: array
+                  items:
+                    properties:
+                      key:
+                        description: Configuration key
+                        type: string
+                      value:
+                        description: Configuration value
+                        type: string
+                    type: object
+              type: object
+      responses:
+        '201':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                properties:
+                  data:
+                    properties:
+                      id:
+                        description: Provided by Accredify
+                        type: integer
+                        example: 1
+                      course_code:
+                        description: The code to identify the course
+                        type: string
+                        example: COURSE101
+                      course_title:
+                        description: The course's title
+                        type: string
+                        example: Introduction to Course
+                      course_description:
+                        description: The course's description
+                        type: string
+                        example: A detailed course description.
+                      schema:
+                        description: The course's schema
+                        type: string
+                        example: OAv2
+                      issuance_method:
+                        description: >-
+                          The course's issuance method, ['badge', 'certificate', 'certificate_and_badge',
+                          'certificate_with_user_pdf']
+                        type: string
+                        example: badge
+                      template:
+                        properties:
+                          id:
+                            description: Provided by Accredify
+                            type: integer
+                            example: 1
+                          name:
+                            description: Provided by Accredify for identifying the template
+                            type: string
+                            example: Standard Template
+                          alias:
+                            description: Provided by customer for identifying the template
+                            type: string
+                            example: standard_template
+                          description:
+                            description: Provided by Accredify for identifying the template
+                            type: string
+                            example: A standard template for general use.
+                        type: object
+                      email_template:
+                        properties:
+                          id:
+                            description: Provided by Accredify
+                            type: integer
+                            example: 1
+                          name:
+                            description: Name of your email template
+                            type: string
+                            example: Standard Email Template
+                          description:
+                            description: Description of your email template
+                            type: string
+                            example: A standard template for general use.
+                          subject:
+                            description: The title that appears as the subject header of the email
+                            type: string
+                            example: Congratulations on your certification!
+                          template:
+                            description: The contents of the email template in markdown
+                            type: string
+                        type: object
+                      sharing:
+                        properties:
+                          share_enabled:
+                            description: Is sharing enabled
+                            type: boolean
+                          share_link:
+                            description: Share link (defaults to Accredify's share link if none provided)
+                            type: string
+                        type: object
+                      configurations:
+                        description: >-
+                          For a list of configurations, please visit
+                          https://accredify.notion.site/Course-Configurations-ec71dbcecdb643a5b2277c76b929ba86
+                        type: object
+                        example:
+                          hasIssuedDate: true
+                          hasCertId: true
+                          hasEmail: false
+                          allMustApprove: false
+                      expected_attributes:
+                        type: array
+                        items:
+                          type: string
+                    type: object
+                type: object
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/UnauthenticatedRequest'
+        '404':
+          $ref: '#/components/responses/NotFoundRequest'
+        '422':
+          $ref: '#/components/responses/UnprocessableEntityRequest'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalErrorRequest'
+      security:
+        - bearerAuth: []
+  '/courses/{id}':
+    get:
+      tags:
+        - Courses
+      summary: Get course by ID
+      description: Returns a single course
+      operationId: getCourseById
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                properties:
+                  data:
+                    properties:
+                      id:
+                        description: Provided by Accredify
+                        type: integer
+                        example: 1
+                      course_code:
+                        description: The code to identify the course
+                        type: string
+                        example: COURSE101
+                      course_title:
+                        description: The course's title
+                        type: string
+                        example: Introduction to Course
+                      course_description:
+                        description: The course's description
+                        type: string
+                        example: A detailed course description.
+                      schema:
+                        description: The course's schema
+                        type: string
+                        example: OAv2
+                      issuance_method:
+                        description: >-
+                          The course's issuance method, ['badge', 'certificate', 'certificate_and_badge',
+                          'certificate_with_user_pdf']
+                        type: string
+                        example: badge
+                      template:
+                        properties:
+                          id:
+                            description: Provided by Accredify
+                            type: integer
+                            example: 1
+                          name:
+                            description: Provided by Accredify for identifying the template
+                            type: string
+                            example: Standard Template
+                          alias:
+                            description: Provided by customer for identifying the template
+                            type: string
+                            example: standard_template
+                          description:
+                            description: Provided by Accredify for identifying the template
+                            type: string
+                            example: A standard template for general use.
+                        type: object
+                      email_template:
+                        properties:
+                          id:
+                            description: Provided by Accredify
+                            type: integer
+                            example: 1
+                          name:
+                            description: Name of your email template
+                            type: string
+                            example: Standard Email Template
+                          description:
+                            description: Description of your email template
+                            type: string
+                            example: A standard template for general use.
+                          subject:
+                            description: The title that appears as the subject header of the email
+                            type: string
+                            example: Congratulations on your certification!
+                          template:
+                            description: The contents of the email template in markdown
+                            type: string
+                        type: object
+                      sharing:
+                        properties:
+                          share_enabled:
+                            description: Is sharing enabled
+                            type: boolean
+                          share_link:
+                            description: Share link (defaults to Accredify's share link if none provided)
+                            type: string
+                        type: object
+                      configurations:
+                        description: >-
+                          For a list of configurations, please visit
+                          https://accredify.notion.site/Course-Configurations-ec71dbcecdb643a5b2277c76b929ba86
+                        type: object
+                        example:
+                          hasIssuedDate: true
+                          hasCertId: true
+                          hasEmail: false
+                          allMustApprove: false
+                      expected_attributes:
+                        type: array
+                        items:
+                          type: string
+                    type: object
+                type: object
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/UnauthenticatedRequest'
+        '404':
+          $ref: '#/components/responses/NotFoundRequest'
+        '422':
+          $ref: '#/components/responses/UnprocessableEntityRequest'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalErrorRequest'
+      security:
+        - bearerAuth: []
+    patch:
+      tags:
+        - Courses
+      summary: Update an existing course
+      description: Updates an existing course with the given settings. Fields are optional.
+      operationId: updateCourse
+      parameters:
+        - name: id
+          in: path
+          description: ID of the course to update
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              properties:
+                course_code:
+                  description: Unique code for the course
+                  type: string
+                  example: COURSE101
+                course_title:
+                  description: Title of the course
+                  type: string
+                  example: Introduction to Course
+                course_description:
+                  description: Description of the course
+                  type: string
+                  example: A detailed course description.
+                template_id:
+                  description: ID of the template to be used for this course
+                  type: integer
+                  example: 1
+                email_template_id:
+                  description: ID of the email template to be used for this course
+                  type: integer
+                  example: 1
+                sharing:
+                  properties:
+                    share_enabled:
+                      description: Whether or not sharing is enabled for the course
+                      type: boolean
+                      example: true
+                    share_link:
+                      description: Custom share link for the course
+                      type: string
+                      example: 'http://example.com/share'
+                  type: object
+                configurations:
+                  description: >-
+                    Array of course-specific configurations. For a list of configurations, please visit
+                    https://accredify.notion.site/Course-Configurations-ec71dbcecdb643a5b2277c76b929ba86
+                  type: array
+                  items:
+                    properties:
+                      key:
+                        description: Configuration key
+                        type: string
+                      value:
+                        description: Configuration value
+                        type: string
+                    type: object
+              type: object
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                properties:
+                  data:
+                    properties:
+                      id:
+                        description: Provided by Accredify
+                        type: integer
+                        example: 1
+                      course_code:
+                        description: The code to identify the course
+                        type: string
+                        example: COURSE101
+                      course_title:
+                        description: The course's title
+                        type: string
+                        example: Introduction to Course
+                      course_description:
+                        description: The course's description
+                        type: string
+                        example: A detailed course description.
+                      schema:
+                        description: The course's schema
+                        type: string
+                        example: OAv2
+                      issuance_method:
+                        description: >-
+                          The course's issuance method, ['badge', 'certificate', 'certificate_and_badge',
+                          'certificate_with_user_pdf']
+                        type: string
+                        example: badge
+                      template:
+                        properties:
+                          id:
+                            description: Provided by Accredify
+                            type: integer
+                            example: 1
+                          name:
+                            description: Provided by Accredify for identifying the template
+                            type: string
+                            example: Standard Template
+                          alias:
+                            description: Provided by customer for identifying the template
+                            type: string
+                            example: standard_template
+                          description:
+                            description: Provided by Accredify for identifying the template
+                            type: string
+                            example: A standard template for general use.
+                        type: object
+                      email_template:
+                        properties:
+                          id:
+                            description: Provided by Accredify
+                            type: integer
+                            example: 1
+                          name:
+                            description: Name of your email template
+                            type: string
+                            example: Standard Email Template
+                          description:
+                            description: Description of your email template
+                            type: string
+                            example: A standard template for general use.
+                          subject:
+                            description: The title that appears as the subject header of the email
+                            type: string
+                            example: Congratulations on your certification!
+                          template:
+                            description: The contents of the email template in markdown
+                            type: string
+                        type: object
+                      sharing:
+                        properties:
+                          share_enabled:
+                            description: Is sharing enabled
+                            type: boolean
+                          share_link:
+                            description: Share link (defaults to Accredify's share link if none provided)
+                            type: string
+                        type: object
+                      configurations:
+                        description: >-
+                          For a list of configurations, please visit
+                          https://accredify.notion.site/Course-Configurations-ec71dbcecdb643a5b2277c76b929ba86
+                        type: object
+                        example:
+                          hasIssuedDate: true
+                          hasCertId: true
+                          hasEmail: false
+                          allMustApprove: false
+                      expected_attributes:
+                        type: array
+                        items:
+                          type: string
+                    type: object
+                type: object
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/UnauthenticatedRequest'
+        '404':
+          $ref: '#/components/responses/NotFoundRequest'
+        '422':
+          $ref: '#/components/responses/UnprocessableEntityRequest'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalErrorRequest'
+      security:
+        - bearerAuth: []
+  /documents:
+    get:
+      tags:
+        - Documents
+      summary: Get documents
+      description: >-
+        Returns a paginated list of documents scoped to the authenticated user's issuer or institution affiliation. File
+        payloads are excluded by default.
+      operationId: getDocuments
+      parameters:
+        - name: page
+          in: query
+          description: The page number to retrieve.
+          required: false
+          schema:
+            type: integer
+            default: 1
+            minimum: 1
+        - name: per_page
+          in: query
+          description: The number of documents per page.
+          required: false
+          schema:
+            type: integer
+            default: 10
+            enum:
+              - 10
+              - 25
+              - 50
+              - 100
+        - name: exclude_files
+          in: query
+          description: Whether to exclude base64-encoded file payloads. Defaults to true for collection responses.
+          required: false
+          schema:
+            type: boolean
+            default: true
+      responses:
+        '200':
+          description: Documents retrieved successfully.
+          content:
+            application/json:
+              schema:
+                properties:
+                  data:
+                    type: array
+                    items:
+                      properties:
+                        id:
+                          description: Document ID
+                          type: integer
+                        hash:
+                          description: Document hash
+                          type:
+                            - string
+                            - 'null'
+                        type:
+                          description: Document type
+                          type: string
+                        status:
+                          description: Current status of the document
+                          type: string
+                        links:
+                          description: Document links
+                          type: object
+                        meta_data:
+                          description: Document metadata
+                          type: object
+                        recipient:
+                          description: Recipient data
+                          type: object
+                        files:
+                          description: 'Base64-encoded files, included only when exclude_files is false'
+                          type: object
+                      type: object
+                  links:
+                    description: Pagination links
+                    type: object
+                  meta:
+                    description: Pagination metadata
+                    type: object
+                type: object
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/UnauthenticatedRequest'
+        '422':
+          $ref: '#/components/responses/UnprocessableEntityRequest'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalErrorRequest'
+      security:
+        - bearerAuth: []
+  /email-templates:
+    get:
+      tags:
+        - Email Templates
+      summary: Retrieve all email-templates
+      description: Retrieve a list of email-templates associated with the issuer of the authenticated user.
+      operationId: 4a862272f8543a47968f625f87dbc219
+      responses:
+        '200':
+          description: Success request
+          content:
+            application/json:
+              schema:
+                properties:
+                  data:
+                    type: array
+                    items:
+                      properties:
+                        id:
+                          description: Provided by Accredify
+                          type: integer
+                          example: 1
+                        name:
+                          description: Name of your email template
+                          type: string
+                          example: Standard Email Template
+                        description:
+                          description: Description of your email template
+                          type: string
+                          example: A standard template for general use.
+                        subject:
+                          description: The title that appears as the subject header of the email
+                          type: string
+                          example: Congratulations on your certification!
+                        template:
+                          description: The contents of the email template in markdown
+                          type: string
+                      type: object
+                type: object
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/UnauthenticatedRequest'
+        '404':
+          $ref: '#/components/responses/NotFoundRequest'
+        '422':
+          $ref: '#/components/responses/UnprocessableEntityRequest'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalErrorRequest'
+      security:
+        - bearerAuth: []
+  '/email-templates/{id}':
+    get:
+      tags:
+        - Email Templates
+      summary: Retrieve a single email template
+      description: Retrieve details of a specific email template by its ID
+      operationId: 414a1ddc1aa9899758e173741648b698
+      parameters:
+        - name: id
+          in: path
+          description: ID of the email template to retrieve
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Success request
+          content:
+            application/json:
+              schema:
+                properties:
+                  data:
+                    properties:
+                      id:
+                        description: Provided by Accredify
+                        type: integer
+                        example: 1
+                      name:
+                        description: Name of your email template
+                        type: string
+                        example: Standard Email Template
+                      description:
+                        description: Description of your email template
+                        type: string
+                        example: A standard template for general use.
+                      subject:
+                        description: The title that appears as the subject header of the email
+                        type: string
+                        example: Congratulations on your certification!
+                      template:
+                        description: The contents of the email template in markdown
+                        type: string
+                    type: object
+                type: object
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/UnauthenticatedRequest'
+        '404':
+          $ref: '#/components/responses/NotFoundRequest'
+        '422':
+          $ref: '#/components/responses/UnprocessableEntityRequest'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalErrorRequest'
+      security:
+        - bearerAuth: []
+  /institutions/access-matrix:
+    post:
+      tags:
+        - Institutions
+      summary: Access Matrix
+      description: Retrieves the access matrix for the users of the institution
+      operationId: accessMatrix
+      responses:
+        '200':
+          description: User access matrix retrieved successfully
+          content:
+            application/json:
+              schema:
+                properties:
+                  data:
+                    type: array
+                    items:
+                      properties:
+                        name:
+                          description: User's full name
+                          type: string
+                        email:
+                          description: User's email address
+                          type: string
+                        roles:
+                          description: 'User''s roles, comma-separated if multiple'
+                          type: string
+                        permissions:
+                          description: 'User''s permissions, comma-separated if multiple'
+                          type: string
+                        last_login_at:
+                          description: Timestamp of the user's last login
+                          type:
+                            - string
+                            - 'null'
+                          format: date-time
+                        password_updated_at:
+                          description: Timestamp of the last password update
+                          type: string
+                          format: date-time
+                      type: object
+                type: object
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/UnauthenticatedRequest'
+        '404':
+          $ref: '#/components/responses/NotFoundRequest'
+        '422':
+          $ref: '#/components/responses/UnprocessableEntityRequest'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalErrorRequest'
+      security:
+        - bearerAuth: []
+  '/batches/{id}/issue':
+    post:
+      tags:
+        - Batches
+      summary: Issue a batch
+      description: Issues the specified batch based on the provided options. The operation is queued and processed asynchronously.
+      operationId: issueBatch
+      parameters:
+        - name: id
+          in: path
+          description: The ID of the batch to issue
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        description: Issue options for the batch
+        required: true
+        content:
+          application/json:
+            schema:
+              required:
+                - distribute
+              properties:
+                distribute:
+                  description: Whether to distribute the batch
+                  type: boolean
+                encrypt:
+                  description: 'Whether to encrypt the batch, required if ''distribute'' is set to true'
+                  type: boolean
+              type: object
+      responses:
+        '200':
+          description: Batch issued successfully
+          content:
+            application/json:
+              schema:
+                properties:
+                  data:
+                    properties:
+                      id:
+                        description: Batch ID
+                        type: integer
+                      name:
+                        description: Batch name
+                        type: string
+                      alias:
+                        description: Batch alias
+                        type: string
+                      status:
+                        description: Current status of the batch
+                        type: string
+                      status_updated_at:
+                        description: Last update timestamp of the batch status
+                        type: string
+                        format: date-time
+                    type: object
+                type: object
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/UnauthenticatedRequest'
+        '404':
+          $ref: '#/components/responses/NotFoundRequest'
+        '422':
+          $ref: '#/components/responses/UnprocessableEntityRequest'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalErrorRequest'
+      security:
+        - bearerAuth: []
+  /templates:
+    get:
+      tags:
+        - Templates
+      summary: Retrieve all templates
+      description: Retrieve a list of templates associated with the issuer of the authenticated user.
+      operationId: 0e5969fa18fdcfe544417bd17c33612d
+      responses:
+        '200':
+          description: Success request
+          content:
+            application/json:
+              schema:
+                properties:
+                  data:
+                    type: array
+                    items:
+                      properties:
+                        id:
+                          description: Provided by Accredify
+                          type: integer
+                          example: 1
+                        name:
+                          description: Provided by Accredify for identifying the template
+                          type: string
+                          example: Standard Template
+                        alias:
+                          description: Provided by customer for identifying the template
+                          type: string
+                          example: standard_template
+                        description:
+                          description: Provided by Accredify for identifying the template
+                          type: string
+                          example: A standard template for general use.
+                      type: object
+                type: object
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/UnauthenticatedRequest'
+        '404':
+          $ref: '#/components/responses/NotFoundRequest'
+        '422':
+          $ref: '#/components/responses/UnprocessableEntityRequest'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalErrorRequest'
+      security:
+        - bearerAuth: []
+  '/templates/{id}':
+    get:
+      tags:
+        - Templates
+      summary: Retrieve a single template
+      description: 'Retrieve details of a specific template by its ID, including sample JSON if authorized.'
+      operationId: 80c8f9a5b93009c1d4f3e73356ea8d88
+      parameters:
+        - name: id
+          in: path
+          description: ID of the template to retrieve
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Success request
+          content:
+            application/json:
+              schema:
+                properties:
+                  data:
+                    properties:
+                      id:
+                        description: Provided by Accredify
+                        type: integer
+                        example: 1
+                      name:
+                        description: Provided by Accredify for identifying the template
+                        type: string
+                        example: Standard Template
+                      alias:
+                        description: Provided by customer for identifying the template
+                        type: string
+                        example: standard_template
+                      description:
+                        description: Provided by Accredify for identifying the template
+                        type: string
+                        example: A standard template for general use.
+                      signed_sample_json:
+                        description: A sample json that can be used for rendering the preview
+                        type: object
+                        example:
+                          key: value
+                        additionalProperties: true
+                      configurations:
+                        description: >-
+                          For a list of configurations, please visit
+                          https://accredify.notion.site/Course-Configurations-ec71dbcecdb643a5b2277c76b929ba86
+                        type: object
+                        example:
+                          hasIssuedDate: true
+                          hasCertId: true
+                          hasEmail: false
+                          allMustApprove: false
+                    type: object
+                type: object
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/UnauthenticatedRequest'
+        '404':
+          $ref: '#/components/responses/NotFoundRequest'
+        '422':
+          $ref: '#/components/responses/UnprocessableEntityRequest'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalErrorRequest'
+      security:
+        - bearerAuth: []
+components:
+  responses:
+    SuccessRequest:
+      description: Success request
+      content:
+        application/json:
+          schema:
+            properties:
+              message:
+                type: string
+                example: Request successful
+            type: object
+    NoContentRequest:
+      description: No content request
+    RedirectRequest:
+      description: Redirect request
+    BadRequest:
+      description: Bad request
+      content:
+        application/json:
+          schema:
+            properties:
+              status:
+                type: integer
+                example: 400
+              message:
+                type: string
+                example: 'We couldn''t find you, please try again.'
+            type: object
+    UnauthenticatedRequest:
+      description: Unauthenticated request
+      content:
+        application/json:
+          schema:
+            properties:
+              status:
+                type: integer
+                example: 401
+              message:
+                type: string
+                example: Unauthenticated. You might have provided an invalid access token or your token has already expired.
+            type: object
+    UnauthorisedRequest:
+      description: Unauthorised request
+      content:
+        application/json:
+          schema:
+            properties:
+              status:
+                type: integer
+                example: 403
+              message:
+                type: string
+                example: Unauthorised. Access is denied due to invalid credentials.
+            type: object
+    NotFoundRequest:
+      description: The specified resource was not found
+      content:
+        application/json:
+          schema:
+            properties:
+              status:
+                type: integer
+                example: 404
+              message:
+                type: string
+                example: Please ensure you are making the request to the correct endpoint.
+            type: object
+    UnprocessableEntityRequest:
+      description: Unprocessable entity
+      content:
+        application/json:
+          schema:
+            properties:
+              status:
+                type: integer
+                example: 422
+              errors:
+                type: array
+                items:
+                  type: string
+              message:
+                type: string
+                example: Validation failed for the request.
+            type: object
+    TooManyRequests:
+      description: Too many requests
+      content:
+        application/json:
+          schema:
+            properties:
+              status:
+                type: integer
+                example: 429
+              message:
+                type: string
+                example: You're submitting requests too quickly. Please retry again after 60 seconds.
+            type: object
+    InternalErrorRequest:
+      description: Internal server error
+      content:
+        application/json:
+          schema:
+            properties:
+              status:
+                type: integer
+                example: 500
+              message:
+                type: string
+                example: >-
+                  There was an unexpected error while performing your last action. Please contact us at
+                  support@accredify.io with the error code for internal reference
+              code:
+                type: string
+                example: E500
+            type: object
+  securitySchemes:
+    bearerAuth:
+      type: http
+      description: 'JWT Authorization header using the Bearer scheme. Example: ''Authorization: Bearer {token}'''
+      bearerFormat: JWT
+      scheme: bearer
+tags:
+  - name: Batches
+    description: Batches
+  - name: Batch Items
+    description: Batch Items
+  - name: Courses
+    description: Courses
+  - name: Documents
+    description: Documents
+  - name: Email Templates
+    description: Email Templates
+  - name: Institutions
+    description: Institutions
+  - name: Templates
+    description: Templates

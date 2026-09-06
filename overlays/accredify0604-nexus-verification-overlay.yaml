@@ -1,0 +1,26 @@
+overlay: 1.0.0
+info:
+  title: API Evangelist enhancements for Verification Module
+  version: 1.0.0
+extends: openapi/accredify0604-nexus-verification-openapi.yaml
+x-generated: '2026-09-06'
+x-method: generated
+x-source: openapi/accredify0604-nexus-verification-openapi.yaml (fetched verbatim from https://docs.nexus.accredify.io/verification.yaml
+  on 2026-09-06)
+actions:
+- target: $.info
+  description: 'Record the API Evangelist provenance of this document: where it was fetched and when.'
+  update:
+    x-apievangelist-source: https://docs.nexus.accredify.io/verification.yaml
+    x-apievangelist-fetched: '2026-09-06'
+    x-apievangelist-provider: accredify0604
+- target: $.info
+  description: Cross-link the derived artifacts that describe conventions this document does not state.
+  update:
+    x-apievangelist-artifacts:
+      conventions: conventions/accredify0604-conventions.yml
+      errors: errors/accredify0604-problem-types.yml
+      authentication: authentication/accredify0604-authentication.yml
+      rate-limits: rate-limits/accredify0604-rate-limits.yml
+      lifecycle: lifecycle/accredify0604-lifecycle.yml
+      data-model: data-model/accredify0604-data-model.yml
