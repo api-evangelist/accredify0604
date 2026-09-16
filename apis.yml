@@ -50,73 +50,344 @@ tags_raw:
 - Singapore
 position: Producing
 apis:
-- aid: accredify0604:accredify0604-nexus
-  name: Accredify Nexus API
-  description: 'The Accredify Nexus platform API. OAuth 2.0 client-credentials REST API split across three
-    published OpenAPI 3.1 modules: Auth (organisation users, groups, roles, user tokens, token issuance),
-    Workflow (workflows, workflow runs, documents, design templates, document templates, courses) and
-    Verification (verify a document, extract verifiable data keys). Nexus is also a live OID4VCI credential
-    issuer serving mso_mdoc credentials for ISO/IEC 18013-5 mDL and ISO/IEC 23220 photo ID.'
+- aid: accredify0604:accredify0604-batch-items-api
+  name: Accredify Batch Items API
+  description: Batch Items
   humanURL: https://docs.nexus.accredify.io/
   baseURL: https://nexus.accredify.io
   tags:
-  - Verifiable Credentials
-  - Workflows
-  - Document Verification
-  - Identity
-  - OID4VCI
+  - Batch Items
   properties:
   - type: OpenAPI
-    url: openapi/accredify0604-nexus-auth-openapi.yaml
-  - type: OpenAPI
-    url: openapi/accredify0604-nexus-workflow-openapi.yaml
-  - type: OpenAPI
-    url: openapi/accredify0604-nexus-verification-openapi.yaml
+    url: openapi/accredify0604-batch-items-api-openapi.yml
   - type: APIReference
     url: https://docs.nexus.accredify.io/
-  - type: Overlay
-    url: overlays/accredify0604-nexus-auth-overlay.yaml
-  - type: Overlay
-    url: overlays/accredify0604-nexus-workflow-overlay.yaml
-  - type: Overlay
-    url: overlays/accredify0604-nexus-verification-overlay.yaml
-- aid: accredify0604:accredify0604-dashboard
-  name: Accredify Dashboard API
-  description: The Accredify Dashboard API, published as two OpenAPI 3.1 documents. v1 covers OAuth 2.0
-    authorization-code grant and refresh, OpenBadges issuance, update and revocation, batch upload (JSON
-    and Excel), issue-on-upload, certificate revocation by hash, email dispatch and an external-app certificate
-    lookup. v2 covers batches, batch items, courses, documents, templates, email templates and the institution
-    access matrix. Bearer JWT authentication; a UAT sandbox host is published in the specification servers
-    block.
-  humanURL: https://docs.dashboard.accredify.io/
-  baseURL: https://dashboard.accredify.io/api
+  - type: APIReference
+    url: https://docs.dashboard.accredify.io/
+- aid: accredify0604:accredify0604-batches-api
+  name: Accredify Batches API
+  description: Batches
+  humanURL: https://docs.nexus.accredify.io/
+  baseURL: https://nexus.accredify.io
   tags:
-  - Digital Credentials
-  - Open Badges
-  - Certificates
-  - Batches
-  tags_raw:
-  - Digital Credentials
-  - OpenBadges
-  - Certificates
   - Batches
   properties:
   - type: OpenAPI
-    url: openapi/accredify0604-dashboard-v1-openapi.yaml
-  - type: OpenAPI
-    url: openapi/accredify0604-dashboard-v2-openapi.yaml
+    url: openapi/accredify0604-batches-api-openapi.yml
+  - type: APIReference
+    url: https://docs.nexus.accredify.io/
   - type: APIReference
     url: https://docs.dashboard.accredify.io/
-  - type: Overlay
-    url: overlays/accredify0604-dashboard-v1-overlay.yaml
-  - type: Overlay
-    url: overlays/accredify0604-dashboard-v2-overlay.yaml
+- aid: accredify0604:accredify0604-courses-api
+  name: Accredify Courses API
+  description: Courses
+  humanURL: https://docs.nexus.accredify.io/
+  baseURL: https://nexus.accredify.io
+  tags:
+  - Courses
+  properties:
+  - type: OpenAPI
+    url: openapi/accredify0604-courses-api-openapi.yml
+  - type: APIReference
+    url: https://docs.nexus.accredify.io/
+  - type: APIReference
+    url: https://docs.dashboard.accredify.io/
+- aid: accredify0604:accredify0604-design-templates-api
+  name: Accredify Design Templates API
+  description: The Design Templates API from Accredify — 4 operation(s) for design templates.
+  humanURL: https://docs.nexus.accredify.io/
+  baseURL: https://nexus.accredify.io
+  tags:
+  - Design Templates
+  properties:
+  - type: OpenAPI
+    url: openapi/accredify0604-design-templates-api-openapi.yml
+  - type: APIReference
+    url: https://docs.nexus.accredify.io/
+  - type: APIReference
+    url: https://docs.dashboard.accredify.io/
+- aid: accredify0604:accredify0604-document-templates-api
+  name: Accredify Document Templates API
+  description: The Document Templates API from Accredify — 2 operation(s) for document templates.
+  humanURL: https://docs.nexus.accredify.io/
+  baseURL: https://nexus.accredify.io
+  tags:
+  - Document Templates
+  properties:
+  - type: OpenAPI
+    url: openapi/accredify0604-document-templates-api-openapi.yml
+  - type: APIReference
+    url: https://docs.nexus.accredify.io/
+  - type: APIReference
+    url: https://docs.dashboard.accredify.io/
+- aid: accredify0604:accredify0604-documents-api
+  name: Accredify Documents API
+  description: Documents
+  humanURL: https://docs.nexus.accredify.io/
+  baseURL: https://nexus.accredify.io
+  tags:
+  - Documents
+  properties:
+  - type: OpenAPI
+    url: openapi/accredify0604-documents-api-openapi.yml
+  - type: APIReference
+    url: https://docs.nexus.accredify.io/
+  - type: APIReference
+    url: https://docs.dashboard.accredify.io/
+- aid: accredify0604:accredify0604-email-templates-api
+  name: Accredify Email Templates API
+  description: Email Templates
+  humanURL: https://docs.nexus.accredify.io/
+  baseURL: https://nexus.accredify.io
+  tags:
+  - Email Templates
+  properties:
+  - type: OpenAPI
+    url: openapi/accredify0604-email-templates-api-openapi.yml
+  - type: APIReference
+    url: https://docs.nexus.accredify.io/
+  - type: APIReference
+    url: https://docs.dashboard.accredify.io/
+- aid: accredify0604:accredify0604-external-app-integrations-api
+  name: Accredify External App Integrations API
+  description: External App Integrations
+  humanURL: https://docs.nexus.accredify.io/
+  baseURL: https://nexus.accredify.io
+  tags:
+  - External App Integrations
+  properties:
+  - type: OpenAPI
+    url: openapi/accredify0604-external-app-integrations-api-openapi.yml
+  - type: APIReference
+    url: https://docs.nexus.accredify.io/
+  - type: APIReference
+    url: https://docs.dashboard.accredify.io/
+- aid: accredify0604:accredify0604-institutions-api
+  name: Accredify Institutions API
+  description: Institutions
+  humanURL: https://docs.nexus.accredify.io/
+  baseURL: https://nexus.accredify.io
+  tags:
+  - Institutions
+  properties:
+  - type: OpenAPI
+    url: openapi/accredify0604-institutions-api-openapi.yml
+  - type: APIReference
+    url: https://docs.nexus.accredify.io/
+  - type: APIReference
+    url: https://docs.dashboard.accredify.io/
+- aid: accredify0604:accredify0604-issue-api
+  name: Accredify Issue API
+  description: Issue
+  humanURL: https://docs.nexus.accredify.io/
+  baseURL: https://nexus.accredify.io
+  tags:
+  - Issue
+  properties:
+  - type: OpenAPI
+    url: openapi/accredify0604-issue-api-openapi.yml
+  - type: APIReference
+    url: https://docs.nexus.accredify.io/
+  - type: APIReference
+    url: https://docs.dashboard.accredify.io/
+- aid: accredify0604:accredify0604-keys-api
+  name: Accredify Keys API
+  description: The Keys API from Accredify — 1 operation(s) for keys.
+  humanURL: https://docs.nexus.accredify.io/
+  baseURL: https://nexus.accredify.io
+  tags:
+  - Keys
+  properties:
+  - type: OpenAPI
+    url: openapi/accredify0604-keys-api-openapi.yml
+  - type: APIReference
+    url: https://docs.nexus.accredify.io/
+  - type: APIReference
+    url: https://docs.dashboard.accredify.io/
+- aid: accredify0604:accredify0604-oauth-2-0-api
+  name: Accredify OAuth 2.0 API
+  description: OAuth 2.0
+  humanURL: https://docs.nexus.accredify.io/
+  baseURL: https://nexus.accredify.io
+  tags:
+  - OAuth 2.0
+  properties:
+  - type: OpenAPI
+    url: openapi/accredify0604-oauth-2-0-api-openapi.yml
+  - type: APIReference
+    url: https://docs.nexus.accredify.io/
+  - type: APIReference
+    url: https://docs.dashboard.accredify.io/
+- aid: accredify0604:accredify0604-oauth-api
+  name: Accredify O Auth API
+  description: The OAuth API from Accredify — 1 operation(s) for oauth.
+  humanURL: https://docs.nexus.accredify.io/
+  baseURL: https://nexus.accredify.io
+  tags:
+  - OAuth
+  properties:
+  - type: OpenAPI
+    url: openapi/accredify0604-oauth-api-openapi.yml
+  - type: APIReference
+    url: https://docs.nexus.accredify.io/
+  - type: APIReference
+    url: https://docs.dashboard.accredify.io/
+- aid: accredify0604:accredify0604-openbadges-api
+  name: Accredify Open Badges API
+  description: OpenBadges
+  humanURL: https://docs.nexus.accredify.io/
+  baseURL: https://nexus.accredify.io
+  tags:
+  - OpenBadges
+  properties:
+  - type: OpenAPI
+    url: openapi/accredify0604-openbadges-api-openapi.yml
+  - type: APIReference
+    url: https://docs.nexus.accredify.io/
+  - type: APIReference
+    url: https://docs.dashboard.accredify.io/
+- aid: accredify0604:accredify0604-organization-groups-api
+  name: Accredify Organization Groups API
+  description: The Organization Groups API from Accredify — 2 operation(s) for organization groups.
+  humanURL: https://docs.nexus.accredify.io/
+  baseURL: https://nexus.accredify.io
+  tags:
+  - Organization Groups
+  properties:
+  - type: OpenAPI
+    url: openapi/accredify0604-organization-groups-api-openapi.yml
+  - type: APIReference
+    url: https://docs.nexus.accredify.io/
+  - type: APIReference
+    url: https://docs.dashboard.accredify.io/
+- aid: accredify0604:accredify0604-organization-roles-api
+  name: Accredify Organization Roles API
+  description: The Organization Roles API from Accredify — 1 operation(s) for organization roles.
+  humanURL: https://docs.nexus.accredify.io/
+  baseURL: https://nexus.accredify.io
+  tags:
+  - Organization Roles
+  properties:
+  - type: OpenAPI
+    url: openapi/accredify0604-organization-roles-api-openapi.yml
+  - type: APIReference
+    url: https://docs.nexus.accredify.io/
+  - type: APIReference
+    url: https://docs.dashboard.accredify.io/
+- aid: accredify0604:accredify0604-organization-users-api
+  name: Accredify Organization Users API
+  description: The Organization Users API from Accredify — 2 operation(s) for organization users.
+  humanURL: https://docs.nexus.accredify.io/
+  baseURL: https://nexus.accredify.io
+  tags:
+  - Organization Users
+  properties:
+  - type: OpenAPI
+    url: openapi/accredify0604-organization-users-api-openapi.yml
+  - type: APIReference
+    url: https://docs.nexus.accredify.io/
+  - type: APIReference
+    url: https://docs.dashboard.accredify.io/
+- aid: accredify0604:accredify0604-revoke-api
+  name: Accredify Revoke API
+  description: Revoke
+  humanURL: https://docs.nexus.accredify.io/
+  baseURL: https://nexus.accredify.io
+  tags:
+  - Revoke
+  properties:
+  - type: OpenAPI
+    url: openapi/accredify0604-revoke-api-openapi.yml
+  - type: APIReference
+    url: https://docs.nexus.accredify.io/
+  - type: APIReference
+    url: https://docs.dashboard.accredify.io/
+- aid: accredify0604:accredify0604-templates-api
+  name: Accredify Templates API
+  description: Templates
+  humanURL: https://docs.nexus.accredify.io/
+  baseURL: https://nexus.accredify.io
+  tags:
+  - Templates
+  properties:
+  - type: OpenAPI
+    url: openapi/accredify0604-templates-api-openapi.yml
+  - type: APIReference
+    url: https://docs.nexus.accredify.io/
+  - type: APIReference
+    url: https://docs.dashboard.accredify.io/
+- aid: accredify0604:accredify0604-user-tokens-api
+  name: Accredify User Tokens API
+  description: The User Tokens API from Accredify — 2 operation(s) for user tokens.
+  humanURL: https://docs.nexus.accredify.io/
+  baseURL: https://nexus.accredify.io
+  tags:
+  - User Tokens
+  properties:
+  - type: OpenAPI
+    url: openapi/accredify0604-user-tokens-api-openapi.yml
+  - type: APIReference
+    url: https://docs.nexus.accredify.io/
+  - type: APIReference
+    url: https://docs.dashboard.accredify.io/
+- aid: accredify0604:accredify0604-verification-api
+  name: Accredify Verification API
+  description: The Verification API from Accredify — 1 operation(s) for verification.
+  humanURL: https://docs.nexus.accredify.io/
+  baseURL: https://nexus.accredify.io
+  tags:
+  - Verification
+  properties:
+  - type: OpenAPI
+    url: openapi/accredify0604-verification-api-openapi.yml
+  - type: APIReference
+    url: https://docs.nexus.accredify.io/
+  - type: APIReference
+    url: https://docs.dashboard.accredify.io/
+- aid: accredify0604:accredify0604-workflow-runs-api
+  name: Accredify Workflow Runs API
+  description: The Workflow Runs API from Accredify — 3 operation(s) for workflow runs.
+  humanURL: https://docs.nexus.accredify.io/
+  baseURL: https://nexus.accredify.io
+  tags:
+  - Workflow Runs
+  properties:
+  - type: OpenAPI
+    url: openapi/accredify0604-workflow-runs-api-openapi.yml
+  - type: APIReference
+    url: https://docs.nexus.accredify.io/
+  - type: APIReference
+    url: https://docs.dashboard.accredify.io/
+- aid: accredify0604:accredify0604-workflows-api
+  name: Accredify Workflows API
+  description: The Workflows API from Accredify — 5 operation(s) for workflows.
+  humanURL: https://docs.nexus.accredify.io/
+  baseURL: https://nexus.accredify.io
+  tags:
+  - Workflows
+  properties:
+  - type: OpenAPI
+    url: openapi/accredify0604-workflows-api-openapi.yml
+  - type: APIReference
+    url: https://docs.nexus.accredify.io/
+  - type: APIReference
+    url: https://docs.dashboard.accredify.io/
 maintainers:
 - FN: Kin Lane
   email: kin@apievangelist.com
 - FN: APIs.json
   email: info@apis.io
 common:
+- type: Overlay
+  url: overlays/accredify0604-nexus-auth-overlay.yaml
+- type: Overlay
+  url: overlays/accredify0604-nexus-workflow-overlay.yaml
+- type: Overlay
+  url: overlays/accredify0604-nexus-verification-overlay.yaml
+- type: Overlay
+  url: overlays/accredify0604-dashboard-v1-overlay.yaml
+- type: Overlay
+  url: overlays/accredify0604-dashboard-v2-overlay.yaml
 - type: Website
   url: https://www.accredify.io/
 - type: Documentation
