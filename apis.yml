@@ -218,20 +218,6 @@ apis:
     url: https://docs.nexus.accredify.io/
   - type: APIReference
     url: https://docs.dashboard.accredify.io/
-- aid: accredify0604:accredify0604-oauth-api
-  name: Accredify O Auth API
-  description: The OAuth API from Accredify — 1 operation(s) for oauth.
-  humanURL: https://docs.nexus.accredify.io/
-  baseURL: https://nexus.accredify.io
-  tags:
-  - OAuth
-  properties:
-  - type: OpenAPI
-    url: openapi/accredify0604-oauth-api-openapi.yml
-  - type: APIReference
-    url: https://docs.nexus.accredify.io/
-  - type: APIReference
-    url: https://docs.dashboard.accredify.io/
 - aid: accredify0604:accredify0604-openbadges-api
   name: Accredify Open Badges API
   description: OpenBadges
@@ -368,6 +354,20 @@ apis:
   properties:
   - type: OpenAPI
     url: openapi/accredify0604-workflows-api-openapi.yml
+  - type: APIReference
+    url: https://docs.nexus.accredify.io/
+  - type: APIReference
+    url: https://docs.dashboard.accredify.io/
+- aid: accredify0604:accredify0604-oauth-api
+  name: Accredify O Auth API
+  description: The OAuth API from Accredify — 1 operation(s) for oauth.
+  humanURL: https://docs.nexus.accredify.io/
+  baseURL: https://nexus.accredify.io
+  tags:
+  - OAuth
+  properties:
+  - type: OpenAPI
+    url: openapi/accredify0604-oauth-api-openapi.yml
   - type: APIReference
     url: https://docs.nexus.accredify.io/
   - type: APIReference
