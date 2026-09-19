@@ -210,6 +210,8 @@ apis:
   humanURL: https://docs.nexus.accredify.io/
   baseURL: https://nexus.accredify.io
   tags:
+  - Authentication
+  tags_raw:
   - OAuth 2.0
   properties:
   - type: OpenAPI
@@ -224,6 +226,8 @@ apis:
   humanURL: https://docs.nexus.accredify.io/
   baseURL: https://nexus.accredify.io
   tags:
+  - Open Badges
+  tags_raw:
   - OpenBadges
   properties:
   - type: OpenAPI
@@ -364,6 +368,8 @@ apis:
   humanURL: https://docs.nexus.accredify.io/
   baseURL: https://nexus.accredify.io
   tags:
+  - Authentication
+  tags_raw:
   - OAuth
   properties:
   - type: OpenAPI
