@@ -1,0 +1,1032 @@
+openapi: 3.2.0
+info:
+  title: Accredify0604 Documents API
+  version: '1.0'
+  description: 'Operations tagged Documents across 2 of this provider''s published API definitions: accredify0604-dashboard-v2-openapi.yaml, accredify0604-nexus-workflow-openapi.yaml. Each path carries the servers of the definition it was published in.'
+servers:
+- url: http://dashboard.local.accredify.io/api/v2
+  description: Accredify Local (Local)
+- url: https://dashboard.uat.accredify.io/api/v2
+  description: Accredify Sandbox (UAT)
+- url: https://dashboard.accredify.io/api/v2
+  description: Accredify Main Server (Production)
+- url: https://nexus.staging.accredify.io
+  description: Staging
+- url: https://nexus.uat.accredify.io
+  description: UAT
+- url: https://nexus.accredify.io
+  description: Production
+tags:
+- name: Documents
+  description: Documents
+paths:
+  /documents:
+    get:
+      tags:
+      - Documents
+      summary: Get documents
+      description: Returns a paginated list of documents scoped to the authenticated user's issuer or institution affiliation. File payloads are excluded by default.
+      operationId: getDocuments
+      parameters:
+      - name: page
+        in: query
+        description: The page number to retrieve.
+        required: false
+        schema:
+          type: integer
+          default: 1
+          minimum: 1
+      - name: per_page
+        in: query
+        description: The number of documents per page.
+        required: false
+        schema:
+          type: integer
+          default: 10
+          enum:
+          - 10
+          - 25
+          - 50
+          - 100
+      - name: exclude_files
+        in: query
+        description: Whether to exclude base64-encoded file payloads. Defaults to true for collection responses.
+        required: false
+        schema:
+          type: boolean
+          default: true
+      responses:
+        '200':
+          description: Documents retrieved successfully.
+          content:
+            application/json:
+              schema:
+                properties:
+                  data:
+                    type: array
+                    items:
+                      properties:
+                        id:
+                          description: Document ID
+                          type: integer
+                        hash:
+                          description: Document hash
+                          type:
+                          - string
+                          - 'null'
+                        type:
+                          description: Document type
+                          type: string
+                        status:
+                          description: Current status of the document
+                          type: string
+                        links:
+                          description: Document links
+                          type: object
+                        meta_data:
+                          description: Document metadata
+                          type: object
+                        recipient:
+                          description: Recipient data
+                          type: object
+                        files:
+                          description: Base64-encoded files, included only when exclude_files is false
+                          type: object
+                      type: object
+                  links:
+                    description: Pagination links
+                    type: object
+                  meta:
+                    description: Pagination metadata
+                    type: object
+                type: object
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/UnauthenticatedRequest'
+        '422':
+          $ref: '#/components/responses/UnprocessableEntityRequest'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalErrorRequest'
+      security:
+      - bearerAuth: []
+    servers:
+    - url: http://dashboard.local.accredify.io/api/v2
+      description: Accredify Local (Local)
+    - url: https://dashboard.uat.accredify.io/api/v2
+      description: Accredify Sandbox (UAT)
+    - url: https://dashboard.accredify.io/api/v2
+      description: Accredify Main Server (Production)
+  /api/v1/documents:
+    get:
+      summary: Get documents by workflow UUID and/or workflow run UUIDs
+      description: Retrieve a paginated list of documents filtered by workflow UUID and/or workflow run UUIDs. Either workflow_uuid or workflow_run_uuids is required. If both are provided, workflow_run_uuids must belong to the specified workflow_uuid. Supports search by Nexus Document ID or External Reference ID.
+      tags:
+      - Documents
+      security:
+      - OAuth2:
+        - workflow-runs:read
+        - documents:read
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Document'
+                  links:
+                    $ref: '#/components/schemas/PaginationLinks'
+                  meta:
+                    $ref: '#/components/schemas/PaginationMeta'
+                required:
+                - data
+                - links
+                - meta
+              examples:
+                Example 1:
+                  value:
+                    data:
+                    - uuid: 9fad4417-c918-4e28-9dea-b4e212363ad9
+                      status: issued
+                      external_reference_id: ERP-INV-2026-000123
+                      issued_at: '2025-08-20T04:46:45.000000Z'
+                      revoked_at: null
+                      revocation_reason: null
+                      user_provided_content:
+                        id: 07cf07ec-b5a5-41c2-938c-9849a47b9f02
+                        name: Certificate of Participation
+                        issuedOn: '2020-01-01T19:23:24Z'
+                        expiresOn: '2020-01-01T19:23:24Z'
+                        recipient:
+                          name: John Doe
+                          nric: S1234567A
+                          email: john.doe@example.com
+                          studentId: A123456789
+                        admissionDate: '2020-01-01T19:23:24Z'
+                        custom_term_1: null
+                        attainmentDate: '2020-01-01T19:23:24Z'
+                        custom_credits: null
+                        graduationDate: '2020-01-01T19:23:24Z'
+                        custom_course_name_1: Course name 1
+                        custom_course_name_2: Course Name 2
+                        custom_course_name_3: Course Name 3
+                        custom_signatory_1_name: null
+                        custom_recipient_action_1: null
+                        custom_signatory_1_title_1: null
+                        custom_signatory_1_title_2: null
+                      share_link: https://example.com/share/abc123
+                      files:
+                      - url: https://example.com/document.pdf
+                        label: presentation
+                      recipient:
+                        name: John Doe
+                        email: john.doe@example.com
+                    links:
+                      first: http://nexus.localhost:8080/api/v1/documents?workflow_uuid=123&page=1
+                      last: http://nexus.localhost:8080/api/v1/documents?workflow_uuid=123&page=1
+                      prev: null
+                      next: null
+                    meta:
+                      current_page: 1
+                      from: 1
+                      last_page: 1
+                      links:
+                      - url: null
+                        label: '&laquo; Previous'
+                        active: false
+                      - url: http://nexus.localhost:8080/api/v1/documents?workflow_uuid=123&page=1
+                        label: '1'
+                        active: true
+                      - url: null
+                        label: Next &raquo;
+                        active: false
+                      path: http://nexus.localhost:8080/api/v1/documents
+                      per_page: 10
+                      to: 3
+                      total: 3
+        '401':
+          $ref: '#/components/responses/401'
+        '403':
+          $ref: '#/components/responses/403'
+        '422':
+          $ref: '#/components/responses/422'
+      operationId: get-documents
+      parameters:
+      - name: workflow_uuid
+        in: query
+        description: Filter documents by workflow UUID
+        required: false
+        schema:
+          type: string
+          format: uuid
+        example: 9f001c24-eef9-4b82-8399-d4eaa1add4c5
+      - name: workflow_run_uuids[]
+        in: query
+        description: Filter documents by workflow run UUIDs. Repeat this parameter for multiple workflow runs.
+        required: false
+        schema:
+          type: array
+          items:
+            type: string
+            format: uuid
+        style: form
+        explode: true
+        example:
+        - 9fad4412-3fa7-4f49-8cd1-65b0e073fdcf
+        - 9fad3795-70b0-4fb0-ad39-1d9402ed7889
+      - name: search
+        in: query
+        description: Search documents by Nexus Document ID or External Reference ID (case-insensitive partial match)
+        required: false
+        schema:
+          type: string
+          maxLength: 255
+        example: ERP-INV-2026-000123
+      - name: page
+        in: query
+        description: Page number for pagination
+        required: false
+        schema:
+          type: integer
+          minimum: 1
+          default: 1
+        example: 1
+      - name: per_page
+        in: query
+        description: Number of documents per page
+        required: false
+        schema:
+          type: integer
+          enum:
+          - 10
+          - 20
+          - 30
+          - 40
+          - 50
+          default: 10
+        example: 10
+    servers:
+    - url: https://nexus.staging.accredify.io
+      description: Staging
+    - url: https://nexus.uat.accredify.io
+      description: UAT
+    - url: https://nexus.accredify.io
+      description: Production
+  /api/v1/documents/by_recipient:
+    get:
+      summary: Get documents by recipient identifier
+      description: 'Retrieve a paginated list of documents filtered by recipient identifier (email, name, phone). This endpoint searches only the document_recipients table. Name matching is case-insensitive partial match; email and phone require exact match. Note: VC2 documents are excluded because recipient details are stored under credentialSubject and are not extracted to document_recipients.'
+      tags:
+      - Documents
+      security:
+      - OAuth2:
+        - workflow-runs:read
+        - documents:read
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Document'
+                  links:
+                    $ref: '#/components/schemas/PaginationLinks'
+                  meta:
+                    $ref: '#/components/schemas/PaginationMeta'
+                required:
+                - data
+                - links
+                - meta
+              examples:
+                Example 1 - Search by email:
+                  value:
+                    data:
+                    - uuid: 9fad4417-c918-4e28-9dea-b4e212363ad9
+                      status: issued
+                      external_reference_id: ERP-INV-2026-000123
+                      issued_at: '2025-08-20T04:46:45.000000Z'
+                      revoked_at: null
+                      revocation_reason: null
+                      user_provided_content:
+                        id: 07cf07ec-b5a5-41c2-938c-9849a47b9f02
+                        name: Certificate of Participation
+                        issuedOn: '2020-01-01T19:23:24Z'
+                        expiresOn: '2020-01-01T19:23:24Z'
+                        recipient:
+                          name: John Doe
+                          nric: S1234567A
+                          email: john.doe@example.com
+                          studentId: A123456789
+                        admissionDate: '2020-01-01T19:23:24Z'
+                        custom_term_1: null
+                        attainmentDate: '2020-01-01T19:23:24Z'
+                        custom_credits: null
+                        graduationDate: '2020-01-01T19:23:24Z'
+                        custom_course_name_1: Course name 1
+                        custom_course_name_2: Course Name 2
+                        custom_course_name_3: Course Name 3
+                        custom_signatory_1_name: null
+                        custom_recipient_action_1: null
+                        custom_signatory_1_title_1: null
+                        custom_signatory_1_title_2: null
+                      share_link: https://example.com/share/abc123
+                      files:
+                      - url: https://example.com/document.pdf
+                        label: presentation
+                      recipient:
+                        name: John Doe
+                        email: john.doe@example.com
+                    links:
+                      first: https://nexus.staging.accredify.io/api/v1/documents/by_recipient?identifier_value=john.doe%40example.com&identifier_type=email&page=1
+                      last: https://nexus.staging.accredify.io/api/v1/documents/by_recipient?identifier_value=john.doe%40example.com&identifier_type=email&page=1
+                      prev: null
+                      next: null
+                    meta:
+                      current_page: 1
+                      from: 1
+                      last_page: 1
+                      links:
+                      - url: null
+                        label: '&laquo; Previous'
+                        active: false
+                      - url: https://nexus.staging.accredify.io/api/v1/documents/by_recipient?identifier_value=john.doe%40example.com&identifier_type=email&page=1
+                        label: '1'
+                        active: true
+                      - url: null
+                        label: Next &raquo;
+                        active: false
+                      path: https://nexus.staging.accredify.io/api/v1/documents/by_recipient
+                      per_page: 10
+                      to: 1
+                      total: 1
+        '401':
+          $ref: '#/components/responses/401'
+        '403':
+          $ref: '#/components/responses/403'
+        '422':
+          $ref: '#/components/responses/422'
+      operationId: get-documents-by_recipient
+      parameters:
+      - name: identifier_value
+        in: query
+        description: 'Search value for the recipient identifier. Required. - email/phone: exact match - name: partial match (case-insensitive)'
+        required: true
+        schema:
+          type: string
+      - name: identifier_type
+        in: query
+        description: Type of the identifier. When omitted, all supported fields are searched.
+        required: false
+        schema:
+          type: string
+          enum:
+          - email
+          - name
+          - phone
+      - name: group_uuid
+        in: query
+        description: Filter documents to a specific organization group by UUID. Must belong to the caller's current organization.
+        required: false
+        schema:
+          type: string
+          format: uuid
+      - name: workflow_uuid
+        in: query
+        description: Further filter documents to a specific workflow by UUID. Must belong to the caller's current organization.
+        required: false
+        schema:
+          type: string
+          format: uuid
+      - name: page
+        in: query
+        description: Page number for pagination
+        required: false
+        schema:
+          type: integer
+          minimum: 1
+          default: 1
+      - name: per_page
+        in: query
+        description: Number of documents per page
+        required: false
+        schema:
+          type: integer
+          enum:
+          - 10
+          - 20
+          - 30
+          - 40
+          - 50
+          default: 10
+    servers:
+    - url: https://nexus.staging.accredify.io
+      description: Staging
+    - url: https://nexus.uat.accredify.io
+      description: UAT
+    - url: https://nexus.accredify.io
+      description: Production
+  /api/v1/documents/{document}:
+    parameters:
+    - schema:
+        type: string
+        format: uuid
+      name: document
+      in: path
+      required: true
+      description: Document ID
+    get:
+      summary: Get document by ID
+      description: Retrieve detailed information about a specific document including its metadata, status, and download links
+      tags:
+      - Documents
+      security:
+      - OAuth2:
+        - documents:read
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Document'
+              examples:
+                Example 1:
+                  value:
+                    uuid: 9fad4417-c918-4e28-9dea-b4e212363ad9
+                    status: created_public_profile_page
+                    external_reference_id: ERP-INV-2026-000123
+                    issued_at: '2025-08-20T04:46:45.000000Z'
+                    revoked_at: null
+                    revocation_reason: null
+                    user_provided_content:
+                      id: 07cf07ec-b5a5-41c2-938c-9849a47b9f02
+                      name: Certificate of Participation
+                      issuedOn: '2020-01-01T19:23:24Z'
+                      expiresOn: '2020-01-01T19:23:24Z'
+                      recipient:
+                        name: John Doe
+                        nric: S1234567A
+                        email: john.doe@example.com
+                        studentId: A123456789
+                      admissionDate: '2020-01-01T19:23:24Z'
+                      custom_term_1: null
+                      attainmentDate: '2020-01-01T19:23:24Z'
+                      custom_credits: null
+                      graduationDate: '2020-01-01T19:23:24Z'
+                      custom_course_name_1: Course name 1
+                      custom_course_name_2: Course Name 2
+                      custom_course_name_3: Course Name 3
+                      custom_signatory_1_name: null
+                      custom_recipient_action_1: null
+                      custom_signatory_1_title_1: null
+                      custom_signatory_1_title_2: null
+                    share_link: https://example.com/share/abc123
+                    files:
+                    - url: https://example.com/document.pdf
+                      label: presentation
+        '401':
+          $ref: '#/components/responses/401'
+        '403':
+          $ref: '#/components/responses/403'
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                required:
+                - message
+      operationId: get-document-by-id
+    servers:
+    - url: https://nexus.staging.accredify.io
+      description: Staging
+    - url: https://nexus.uat.accredify.io
+      description: UAT
+    - url: https://nexus.accredify.io
+      description: Production
+  /api/v1/documents/{document}/revoke:
+    parameters:
+    - schema:
+        type: string
+        format: uuid
+      name: document
+      in: path
+      required: true
+      description: Document UUID
+    post:
+      summary: Revoke a document
+      description: Revoke a specific document by marking it as void and updating its revocation status. This action cannot be undone.
+      tags:
+      - Documents
+      security:
+      - OAuth2:
+        - documents:write
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - reason
+              properties:
+                reason:
+                  type: string
+                  maxLength: 200
+                  description: Reason for revoking the document
+                  example: Document contains incorrect information
+              example:
+                reason: Document contains incorrect information
+      responses:
+        '204':
+          description: Document revoked successfully
+        '401':
+          $ref: '#/components/responses/401'
+        '403':
+          $ref: '#/components/responses/403'
+        '404':
+          $ref: '#/components/responses/404'
+        '422':
+          $ref: '#/components/responses/422'
+      operationId: revoke-document
+    servers:
+    - url: https://nexus.staging.accredify.io
+      description: Staging
+    - url: https://nexus.uat.accredify.io
+      description: UAT
+    - url: https://nexus.accredify.io
+      description: Production
+components:
+  responses:
+    UnauthenticatedRequest:
+      description: Unauthenticated request
+      content:
+        application/json:
+          schema:
+            properties:
+              status:
+                type: integer
+                example: 401
+              message:
+                type: string
+                example: Unauthenticated. You might have provided an invalid access token or your token has already expired.
+            type: object
+    TooManyRequests:
+      description: Too many requests
+      content:
+        application/json:
+          schema:
+            properties:
+              status:
+                type: integer
+                example: 429
+              message:
+                type: string
+                example: You're submitting requests too quickly. Please retry again after 60 seconds.
+            type: object
+    InternalErrorRequest:
+      description: Internal server error
+      content:
+        application/json:
+          schema:
+            properties:
+              status:
+                type: integer
+                example: 500
+              message:
+                type: string
+                example: There was an unexpected error while performing your last action. Please contact us at support@accredify.io with the error code for internal reference
+              code:
+                type: string
+                example: E500
+            type: object
+    UnprocessableEntityRequest:
+      description: Unprocessable entity
+      content:
+        application/json:
+          schema:
+            properties:
+              status:
+                type: integer
+                example: 422
+              errors:
+                type: array
+                items:
+                  type: string
+              message:
+                type: string
+                example: Validation failed for the request.
+            type: object
+    BadRequest:
+      description: Bad request
+      content:
+        application/json:
+          schema:
+            properties:
+              status:
+                type: integer
+                example: 400
+              message:
+                type: string
+                example: We couldn't find you, please try again.
+            type: object
+    '404':
+      description: Not found
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+          examples:
+            Example 1:
+              value:
+                message: Not found or not accessible.
+    '422':
+      description: Unprocessable Entity (WebDAV)
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+              errors:
+                type: object
+            required:
+            - message
+            - errors
+          examples:
+            Example 1:
+              value:
+                message: The per page field must be an integer. (and 1 more error)
+                errors:
+                  per_page:
+                  - The per page field must be an integer.
+                  - The selected per page is invalid.
+    '403':
+      description: Forbidden
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+          examples:
+            Example 1:
+              value:
+                message: Invalid scope(s) provided.
+    '401':
+      description: Unauthenticated
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+            required:
+            - message
+          examples:
+            Example 1:
+              value:
+                message: Unauthenticated.
+  schemas:
+    PaginationMeta:
+      type: object
+      description: Pagination metadata containing information about the current page and total results
+      required:
+      - current_page
+      - from
+      - last_page
+      - links
+      - path
+      - per_page
+      - to
+      - total
+      properties:
+        current_page:
+          type: integer
+          description: Current page number
+        from:
+          type:
+          - integer
+          - 'null'
+          description: Starting record number for current page
+        last_page:
+          type: integer
+          description: Last page number
+        links:
+          type: array
+          description: Array of pagination link objects
+          items:
+            type: object
+            required:
+            - url
+            - label
+            - active
+            properties:
+              url:
+                type:
+                - 'null'
+                - string
+                description: URL for the pagination link (null for disabled links)
+              label:
+                type: string
+                description: Display label for the pagination link
+              active:
+                type: boolean
+                description: Whether this link represents the current page
+        path:
+          type: string
+          description: Base path for the API endpoint
+        per_page:
+          type: integer
+          description: Number of items per page
+        to:
+          type:
+          - integer
+          - 'null'
+          description: Ending record number for current page
+        total:
+          type: integer
+          description: Total number of records
+      examples:
+      - current_page: 1
+        from: 1
+        last_page: 1
+        links:
+        - url: null
+          label: '&laquo; Previous'
+          active: false
+        - url: http://nexus.localhost:8080/api/workflows?page=1
+          label: '1'
+          active: true
+        - url: null
+          label: Next &raquo;
+          active: false
+        path: http://nexus.localhost:8080/api/workflows
+        per_page: 10
+        to: 3
+        total: 3
+    Group:
+      title: Group
+      type: object
+      description: Organization group information from GroupApiResource
+      examples:
+      - uuid: 9f854436-2e67-439e-bdda-e7ab6a4b5874
+        name: Default Access Group
+        description: null
+      properties:
+        uuid:
+          type: string
+          format: uuid
+          description: Unique identifier for the group
+        name:
+          type: string
+          description: Name of the organization group
+        description:
+          type:
+          - string
+          - 'null'
+          description: Description of the organization group (can be null)
+      required:
+      - uuid
+      - name
+    DocumentRecipient:
+      title: DocumentRecipient
+      type: object
+      description: Document recipient information
+      examples:
+      - name: John Doe
+        email: john.doe@example.com
+      properties:
+        name:
+          type:
+          - string
+          - 'null'
+          description: Recipient's full name
+        email:
+          type:
+          - string
+          - 'null'
+          format: email
+          description: Recipient's email address
+      required:
+      - name
+      - email
+    Document:
+      title: Document
+      type: object
+      examples:
+      - uuid: 9fad4417-c918-4e28-9dea-b4e212363ad9
+        status: created_public_profile_page
+        external_reference_id: ERP-INV-2026-000123
+        issued_at: '2025-08-20T04:46:45.000000Z'
+        revoked_at: null
+        revocation_reason: null
+        user_provided_content:
+          id: 07cf07ec-b5a5-41c2-938c-9849a47b9f02
+          name: Certificate of Participation
+          issuedOn: '2020-01-01T19:23:24Z'
+          expiresOn: '2020-01-01T19:23:24Z'
+          recipient:
+            name: John Doe
+            nric: S1234567A
+            email: john.doe@example.com
+            studentId: A123456789
+          admissionDate: '2020-01-01T19:23:24Z'
+          custom_term_1: null
+          attainmentDate: '2020-01-01T19:23:24Z'
+          custom_credits: null
+          graduationDate: '2020-01-01T19:23:24Z'
+          custom_course_name_1: Course name 1
+          custom_course_name_2: Course Name 2
+          custom_course_name_3: Course Name 3
+          custom_signatory_1_name: null
+          custom_recipient_action_1: null
+          custom_signatory_1_title_1: null
+          custom_signatory_1_title_2: null
+        share_link: https://example.com/share/abc123
+        group:
+          uuid: 9fea6580-5f09-43d0-bee5-b28bb527cb17
+          name: Default Access Group
+        recipient:
+          name: John Doe
+          email: john.doe@example.com
+        files:
+        - url: https://example.com/document.pdf
+          label: presentation
+      properties:
+        uuid:
+          type: string
+          format: uuid
+          description: Unique identifier for the document
+        status:
+          type: string
+          description: Current status of the document
+          enum:
+          - draft
+          - in_review
+          - approved
+          - rejected
+          - issued
+          - pending_claim
+          - claimed
+          - failed
+          - distributed
+          - created_public_profile_page
+          - uploaded_to_skills_passport
+          - external_api_called
+          - paused
+          - void
+        external_reference_id:
+          type:
+          - string
+          - 'null'
+          description: Optional caller-provided business reference for the document
+        issued_at:
+          type:
+          - string
+          - 'null'
+          format: date-time
+          description: When the document was issued (null if not yet issued)
+        revoked_at:
+          type:
+          - string
+          - 'null'
+          format: date-time
+          description: When the document was revoked (null if not revoked)
+        revocation_reason:
+          type:
+          - string
+          - 'null'
+          description: Reason for revocation (null if not revoked)
+        user_provided_content:
+          anyOf:
+          - type: object
+          - type: array
+            items: {}
+          description: User-provided metadata used to identify the document
+        share_link:
+          type: string
+          format: uri
+          description: Share link URL for the document
+        group:
+          $ref: '#/components/schemas/Group'
+          description: Organization group this document belongs to
+        recipient:
+          oneOf:
+          - $ref: '#/components/schemas/DocumentRecipient'
+          - type: 'null'
+          description: Document recipient information (only present when recipient is loaded)
+        files:
+          oneOf:
+          - type: array
+            items:
+              $ref: '#/components/schemas/DocumentFile'
+          - type: 'null'
+          description: Array of downloadable files for the document (only present when document files are loaded)
+      required:
+      - uuid
+      - status
+      - group
+    PaginationLinks:
+      type: object
+      description: Pagination links for navigating through paginated results
+      required:
+      - first
+      - last
+      - prev
+      - next
+      properties:
+        first:
+          type: string
+          description: URL for the first page
+        last:
+          type: string
+          description: URL for the last page
+        prev:
+          type:
+          - string
+          - 'null'
+          description: URL for the previous page (null if on first page)
+        next:
+          type:
+          - string
+          - 'null'
+          description: URL for the next page (null if on last page)
+      examples:
+      - first: http://nexus.localhost:8080/api/workflows?page=1
+        last: http://nexus.localhost:8080/api/workflows?page=1
+        prev: null
+        next: null
+    DocumentFile:
+      title: DocumentFile
+      type: object
+      description: File associated with a document
+      examples:
+      - url: https://example.com/document.pdf
+        label: presentation
+      - url: https://example.com/document.json
+        label: raw
+      - url: https://example.com/document.opencert
+        label: signed
+      properties:
+        url:
+          type: string
+          description: Temporary URL to download the file (null if unavailable)
+        label:
+          type: string
+          description: Type/label of the file (e.g., 'presentation', 'raw', 'signed')
+      required:
+      - url
+      - label
+  securitySchemes:
+    bearerAuth:
+      type: http
+      description: 'JWT Authorization header using the Bearer scheme. Example: ''Authorization: Bearer {token}'''
+      bearerFormat: JWT
+      scheme: bearer
+    OAuth2:
+      type: oauth2
+      description: OAuth2 client credentials flow
+      flows:
+        clientCredentials:
+          tokenUrl: /oauth/token
+          scopes:
+            run-workflow: Ability to run a specific workflow
+            webcomponent-verification: Ability to get the verification access from webcomponent
+            verification-suite: Ability to access the verification suite APIs
+            workflows:read: Ability to read workflows
+            workflows:write: Ability to write workflows
+            workflow-runs:read: Ability to read workflow runs
+            documents:read: Ability to read documents
+            documents:write: Ability to write documents
+            custom-views:read: Ability to read custom views
+            users:read: Ability to read users
+            design-templates:read: Ability to read design templates
+            document-templates:read: Ability to read document templates
+            groups:read: Ability to read groups
+            courses:read: Ability to read courses
+            courses:write: Ability to write courses
+x-refined-from:
+- accredify0604-dashboard-v2-openapi.yaml
+- accredify0604-nexus-workflow-openapi.yaml

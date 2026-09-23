@@ -1,0 +1,116 @@
+openapi: 3.2.0
+info:
+  title: Accredify Dashboard External App Integrations API
+  description: This is the API documentation for the Accredify Dashboard, providing access to our services in a development and production environment.
+  version: 1.0.0
+servers:
+- url: http://dashboard.local.accredify.io/api
+  description: Accredify Local (Local)
+- url: https://dashboard.uat.accredify.io/api
+  description: Accredify Sandbox (UAT)
+- url: https://dashboard.accredify.io/api
+  description: Accredify Main Server (Production)
+tags:
+- name: External App Integrations
+  description: External App Integrations
+paths:
+  /ext/getCertificates:
+    post:
+      tags:
+      - External App Integrations
+      summary: Retrieves an array of Certificates
+      description: Retrieves a user's Certificates based on their identification number
+      operationId: getCertificates
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              required:
+              - identificationNumber
+              - parameters
+              properties:
+                identificationNumber:
+                  description: Identification number of the user whose records are to be retrieved, can be NRIC, FIN, Passport, Student ID
+                  type: string
+                  default: S0000000A
+                  example: S0000000A
+                parameters:
+                  description: The information related to the certificate that should be returned
+                  type: string
+                  example: certName,recipientNric,recipientPassport,recipientName,recipientDob,recipientEmail,hash,qr,shareLink
+              type: object
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                properties:
+                  data:
+                    type: array
+                    items:
+                      properties:
+                        id:
+                          description: The Certificate's ID
+                          type: string
+                          example: Sample001
+                        certName:
+                          description: The name of the Certificate
+                          type: string
+                          example: Computer Science 101
+                        recipientNric:
+                          description: The user's NRIC number
+                          type: string
+                          example: S0000000A
+                        recipientPassport:
+                          description: The user's passport number
+                          type: string
+                          example: E0000000A
+                        recipientStudentId:
+                          description: The user's student id
+                          type: string
+                          example: '123123'
+                        recipientName:
+                          description: The user's name
+                          type: string
+                          example: John Doe
+                        recipientDob:
+                          description: The user's date of birth in yyyy-mm-dd
+                          type: string
+                          example: '2021-03-10'
+                        recipientEmail:
+                          description: The user's email address
+                          type: string
+                          example: test@email.com
+                        hash:
+                          description: The certificate's unique hash
+                          type: string
+                          example: '0x68e6e789de59847ba0e4622460ff26a694ea1443064b7770367d42aba1b93d95'
+                        qr:
+                          description: The certificate's QR code in Base64
+                          type: string
+                          example: data:image/png;base64
+                        shareLink:
+                          description: The sharelink that leads to the Certificate
+                          type: string
+                          example: https://staging.accredify.io/verify?id=7198f2ad-c6e3-4d2a-bfa7-c3284e154e7c
+                      type: object
+                type: object
+        '400':
+          description: Error
+          content:
+            application/json:
+              schema:
+                properties:
+                  error:
+                    type: string
+                    example: The identificationNumber field is required
+                type: object
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      description: 'JWT Authorization header using the Bearer scheme. Example: ''Authorization: Bearer {token}'''
+      bearerFormat: JWT
+      scheme: bearer

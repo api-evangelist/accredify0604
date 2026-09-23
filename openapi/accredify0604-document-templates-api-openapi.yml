@@ -1,0 +1,704 @@
+openapi: 3.2.0
+info:
+  title: Workflow Module Document Templates API
+  version: '1.0'
+  description: Workflow module endpoints
+  contact:
+    name: Accredify
+    url: https://accredify.io
+    email: support@accredify.io
+  termsOfService: https://www.accredify.io/legal
+servers:
+- url: https://nexus.staging.accredify.io
+  description: Staging
+- url: https://nexus.uat.accredify.io
+  description: UAT
+- url: https://nexus.accredify.io
+  description: Production
+tags:
+- name: Document Templates
+paths:
+  /api/v1/document_templates:
+    parameters: []
+    get:
+      summary: Get list of document templates
+      description: Retrieve a paginated list of document templates with optional filtering by type, tags, status, and search terms
+      tags:
+      - Document Templates
+      security:
+      - OAuth2:
+        - document-templates:read
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                - links
+                - meta
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/DocumentTemplate'
+                  links:
+                    $ref: '#/components/schemas/PaginationLinks'
+                  meta:
+                    $ref: '#/components/schemas/PaginationMeta'
+              examples:
+                Example 1:
+                  value:
+                    data:
+                    - id: 1
+                      name: Certificate Template
+                      description: Template for creating certificates
+                      document_standard: OA v2
+                      type: certificate
+                      is_draft: false
+                      created_at: '2025-01-01T00:00:00.000000Z'
+                      updated_at: '2025-01-01T00:00:00.000000Z'
+                      created_by:
+                        uuid: 9f8ed2e8-efa2-400b-ad6e-1caed0767f6d
+                        name: John Doe
+                        role: admin
+                        email: john.doe@example.com
+                        status: active
+                      updated_by:
+                        uuid: 9f8ed2e8-efa2-400b-ad6e-1caed0767f6d
+                        name: John Doe
+                        role: admin
+                        email: john.doe@example.com
+                        status: active
+                      tags:
+                      - education
+                    links:
+                      first: http://nexus.localhost:8080/api/workflows?page=1
+                      last: http://nexus.localhost:8080/api/workflows?page=1
+                      prev: null
+                      next: null
+                    meta:
+                      current_page: 1
+                      from: 1
+                      last_page: 1
+                      links:
+                      - url: null
+                        label: '&laquo; Previous'
+                        active: false
+                      - url: http://nexus.localhost:8080/api/workflows?page=1
+                        label: '1'
+                        active: true
+                      - url: null
+                        label: Next &raquo;
+                        active: false
+                      path: http://nexus.localhost:8080/api/workflows
+                      per_page: 10
+                      to: 3
+                      total: 3
+        '401':
+          $ref: '#/components/responses/401'
+        '403':
+          $ref: '#/components/responses/403'
+        '422':
+          $ref: '#/components/responses/422'
+      operationId: get-document-templates
+      parameters:
+      - schema:
+          type: integer
+          minimum: 1
+          default: 1
+        in: query
+        name: page
+        description: Page number for pagination
+        example: 1
+      - schema:
+          type: integer
+          enum:
+          - 10
+          - 20
+          - 30
+          - 40
+          - 50
+          default: 10
+        in: query
+        name: per_page
+        description: Number of document templates per page
+        example: 10
+      - schema:
+          type: string
+          default: desc
+          enum:
+          - asc
+          - desc
+        in: query
+        name: sort_order
+        description: Sort order for document templates by updated_at timestamp
+        example: desc
+      - schema:
+          type: string
+          default: created
+          enum:
+          - draft
+          - created
+        in: query
+        name: tab
+        description: Filter document templates by draft status
+        example: created
+      - schema:
+          type: string
+          enum:
+          - certificate
+          - badge
+          - digital_pass
+        in: query
+        name: type
+        description: Filter document templates by type
+        example: certificate
+      - schema:
+          type: string
+        in: query
+        name: search
+        description: Search document templates by name (case-insensitive partial match)
+        example: Certificate Template
+      - name: tags[]
+        in: query
+        description: Filter document templates by tag names. Repeat this parameter for multiple tags.
+        required: false
+        schema:
+          type: array
+          items:
+            type: string
+        style: form
+        explode: true
+        example:
+        - certificate
+        - education
+        - professional
+      - schema:
+          type: array
+          items:
+            type: string
+            format: uuid
+          description: Filter document templates by organization group UUIDs
+        in: query
+        name: group_uuids[]
+        style: form
+        explode: true
+        example:
+        - 9f854436-2e67-439e-bdda-e7ab6a4b5874
+        - 9fb13026-0719-4cf5-b559-8fd312eebdbd
+      requestBody:
+        content: {}
+  /api/v1/document_templates/{documentTemplate}:
+    parameters:
+    - schema:
+        type: string
+        format: uuid
+      name: documentTemplate
+      in: path
+      required: true
+      description: Document Template ID
+    get:
+      summary: Get document template by ID
+      description: Retrieve detailed information about a specific document template including its configuration and metadata
+      tags:
+      - Document Templates
+      security:
+      - OAuth2:
+        - document-templates:read
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DocumentTemplate'
+              examples:
+                Example 1:
+                  value:
+                    id: 1
+                    name: Certificate Template
+                    description: Template for creating certificates
+                    document_standard: OA v2
+                    type: certificate
+                    is_draft: false
+                    created_at: '2025-01-01T00:00:00.000000Z'
+                    updated_at: '2025-01-01T00:00:00.000000Z'
+                    created_by:
+                      id: 9f8ed2e8-efa2-400b-ad6e-1caed0767f6d
+                      name: John Doe
+                      email: john.doe@example.com
+                    updated_by:
+                      id: 9f8ed2e8-efa2-400b-ad6e-1caed0767f6d
+                      name: John Doe
+                      email: john.doe@example.com
+                    tags:
+                    - education
+                    attributes:
+                    - name: Recipient Name
+                      key: recipient_name
+                      type: string
+                      description: Full name of the document recipient
+                      example: John Doe
+                      required: true
+                    - name: Document ID
+                      key: id
+                      type: string
+                      description: Document ID
+                      example: '1234567890'
+                      required: true
+        '401':
+          $ref: '#/components/responses/401'
+        '403':
+          $ref: '#/components/responses/403'
+        '404':
+          $ref: '#/components/responses/404'
+      operationId: get-document-template-by-id
+components:
+  responses:
+    '404':
+      description: Not found
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+          examples:
+            Example 1:
+              value:
+                message: Not found or not accessible.
+    '422':
+      description: Unprocessable Entity (WebDAV)
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+              errors:
+                type: object
+            required:
+            - message
+            - errors
+          examples:
+            Example 1:
+              value:
+                message: The per page field must be an integer. (and 1 more error)
+                errors:
+                  per_page:
+                  - The per page field must be an integer.
+                  - The selected per page is invalid.
+    '403':
+      description: Forbidden
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+          examples:
+            Example 1:
+              value:
+                message: Invalid scope(s) provided.
+    '401':
+      description: Unauthenticated
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+            required:
+            - message
+          examples:
+            Example 1:
+              value:
+                message: Unauthenticated.
+  schemas:
+    PaginationMeta:
+      type: object
+      description: Pagination metadata containing information about the current page and total results
+      required:
+      - current_page
+      - from
+      - last_page
+      - links
+      - path
+      - per_page
+      - to
+      - total
+      properties:
+        current_page:
+          type: integer
+          description: Current page number
+        from:
+          type:
+          - integer
+          - 'null'
+          description: Starting record number for current page
+        last_page:
+          type: integer
+          description: Last page number
+        links:
+          type: array
+          description: Array of pagination link objects
+          items:
+            type: object
+            required:
+            - url
+            - label
+            - active
+            properties:
+              url:
+                type:
+                - 'null'
+                - string
+                description: URL for the pagination link (null for disabled links)
+              label:
+                type: string
+                description: Display label for the pagination link
+              active:
+                type: boolean
+                description: Whether this link represents the current page
+        path:
+          type: string
+          description: Base path for the API endpoint
+        per_page:
+          type: integer
+          description: Number of items per page
+        to:
+          type:
+          - integer
+          - 'null'
+          description: Ending record number for current page
+        total:
+          type: integer
+          description: Total number of records
+      examples:
+      - current_page: 1
+        from: 1
+        last_page: 1
+        links:
+        - url: null
+          label: '&laquo; Previous'
+          active: false
+        - url: http://nexus.localhost:8080/api/workflows?page=1
+          label: '1'
+          active: true
+        - url: null
+          label: Next &raquo;
+          active: false
+        path: http://nexus.localhost:8080/api/workflows
+        per_page: 10
+        to: 3
+        total: 3
+    Group:
+      title: Group
+      type: object
+      description: Organization group information from GroupApiResource
+      examples:
+      - uuid: 9f854436-2e67-439e-bdda-e7ab6a4b5874
+        name: Default Access Group
+        description: null
+      properties:
+        uuid:
+          type: string
+          format: uuid
+          description: Unique identifier for the group
+        name:
+          type: string
+          description: Name of the organization group
+        description:
+          type:
+          - string
+          - 'null'
+          description: Description of the organization group (can be null)
+      required:
+      - uuid
+      - name
+    PaginationLinks:
+      type: object
+      description: Pagination links for navigating through paginated results
+      required:
+      - first
+      - last
+      - prev
+      - next
+      properties:
+        first:
+          type: string
+          description: URL for the first page
+        last:
+          type: string
+          description: URL for the last page
+        prev:
+          type:
+          - string
+          - 'null'
+          description: URL for the previous page (null if on first page)
+        next:
+          type:
+          - string
+          - 'null'
+          description: URL for the next page (null if on last page)
+      examples:
+      - first: http://nexus.localhost:8080/api/workflows?page=1
+        last: http://nexus.localhost:8080/api/workflows?page=1
+        prev: null
+        next: null
+    DocumentTemplate:
+      title: DocumentTemplate
+      type: object
+      description: Document template information
+      examples:
+      - id: 1
+        name: Certificate Template
+        description: Template for creating certificates
+        document_standard: OA v2
+        type: certificate
+        group:
+          uuid: 9fea6580-5f09-43d0-bee5-b28bb527cb17
+          name: Default Access Group
+        is_draft: false
+        created_at: '2025-01-01T00:00:00.000000Z'
+        updated_at: '2025-01-01T00:00:00.000000Z'
+        created_by:
+          id: 9f8ed2e8-efa2-400b-ad6e-1caed0767f6d
+          name: John Doe
+          email: john.doe@example.com
+        updated_by:
+          id: 9f8ed2e8-efa2-400b-ad6e-1caed0767f6d
+          name: John Doe
+          email: john.doe@example.com
+        tags:
+        - education
+        attributes:
+        - name: Recipient Name
+          key: recipient_name
+          type: string
+          description: Full name of the document recipient
+          example: John Doe
+          required: true
+        - name: Document ID
+          key: id
+          type: string
+          description: Document ID
+          example: '1234567890'
+          required: true
+      properties:
+        id:
+          type: integer
+          description: Unique identifier for the document template
+        name:
+          type: string
+          description: Name of the document template
+        description:
+          type:
+          - string
+          - 'null'
+          description: Description of the document template (can be null)
+        document_standard:
+          type: string
+          description: Document standard used by this document template (can be null)
+        type:
+          type: string
+          enum:
+          - certificate
+          - badge
+          - digital_pass
+          description: Type of the document template
+        group:
+          $ref: '#/components/schemas/Group'
+          description: Organization group this document template belongs to (only present when loaded directly)
+        is_draft:
+          type: boolean
+          description: Whether this document template is a draft
+        created_at:
+          type: string
+          format: date-time
+          description: When the document template was created
+        updated_at:
+          type: string
+          format: date-time
+          description: When the document template was last updated
+        created_by:
+          $ref: '#/components/schemas/User'
+          description: User who created this document template
+        updated_by:
+          $ref: '#/components/schemas/User'
+          description: User who last updated this document template
+        tags:
+          type: array
+          description: Array of tag names associated with the document template
+          items:
+            type: string
+        attributes:
+          type: array
+          description: Array of attributes associated with this document template (excluding design attributes)
+          items:
+            $ref: '#/components/schemas/TemplateAttribute'
+      required:
+      - id
+      - name
+      - description
+      - document_standard
+      - type
+      - group
+      - is_draft
+      - created_at
+      - updated_at
+      - created_by
+      - updated_by
+      - tags
+    User:
+      title: User
+      type: object
+      description: User information from UserApiResource
+      examples:
+      - uuid: 9fb13043-3833-4f0e-8aff-996a007e0aa5
+        name: John Doe
+        role: member
+        email: john.doe@accredify.io
+        status: active
+        groups:
+        - uuid: 9f854436-2e67-439e-bdda-e7ab6a4b5874
+          name: Default Access Group
+          description: null
+        - uuid: 9fb13026-0719-4cf5-b559-8fd312eebdbd
+          name: Marketing Team
+          description: null
+      properties:
+        uuid:
+          type: string
+          format: uuid
+          description: Unique identifier for the user
+        name:
+          type: string
+          description: Full name of the user
+        role:
+          type: string
+          description: User's role name (or '-' if no role assigned)
+        email:
+          type: string
+          format: email
+          description: Email address of the user
+        status:
+          type: string
+          description: Current status of the user
+        groups:
+          type: array
+          description: Array of organization groups the user belongs to (only present when groups are loaded)
+          items:
+            $ref: '#/components/schemas/Group'
+      required:
+      - uuid
+      - name
+      - role
+      - email
+      - status
+    TemplateAttribute:
+      title: TemplateAttribute
+      type: object
+      description: Attribute information for templates (used by both design and document templates)
+      examples:
+      - name: Recipient Name
+        key: recipient_name
+        type: string
+        description: Full name of the document recipient
+        example: John Doe
+        required: true
+      - name: Document ID
+        key: id
+        type: string
+        description: Document ID
+        example: '1234567890'
+        required: true
+      properties:
+        name:
+          type: string
+          description: Human-readable name of the attribute
+        key:
+          type: string
+          description: Unique key/identifier for the attribute
+        type:
+          type: string
+          enum:
+          - string
+          - number
+          - boolean
+          - email
+          - datetime
+          - date
+          - nric
+          - uen
+          - array
+          - uri
+          - single_enum
+          - multi_enum
+          description: Data type of the attribute
+        description:
+          type:
+          - string
+          - 'null'
+          description: Description of the attribute (can be null)
+        example:
+          type:
+          - string
+          - 'null'
+          description: Example value for the attribute (can be null)
+        required:
+          type: boolean
+          description: Whether this attribute is required
+        allowed_options:
+          type: array
+          description: Allowed options for enum type attributes
+          items:
+            type: object
+            properties:
+              value:
+                type: string
+                description: The option value
+              label:
+                type: string
+                description: The option label
+        items:
+          type: array
+          description: Nested attributes for array type attributes
+          items:
+            $ref: '#/components/schemas/TemplateAttribute'
+      required:
+      - name
+      - key
+      - type
+      - description
+      - example
+      - required
+  securitySchemes:
+    OAuth2:
+      type: oauth2
+      description: OAuth2 client credentials flow
+      flows:
+        clientCredentials:
+          tokenUrl: /oauth/token
+          scopes:
+            run-workflow: Ability to run a specific workflow
+            webcomponent-verification: Ability to get the verification access from webcomponent
+            verification-suite: Ability to access the verification suite APIs
+            workflows:read: Ability to read workflows
+            workflows:write: Ability to write workflows
+            workflow-runs:read: Ability to read workflow runs
+            documents:read: Ability to read documents
+            documents:write: Ability to write documents
+            custom-views:read: Ability to read custom views
+            users:read: Ability to read users
+            design-templates:read: Ability to read design templates
+            document-templates:read: Ability to read document templates
+            groups:read: Ability to read groups
+            courses:read: Ability to read courses
+            courses:write: Ability to write courses

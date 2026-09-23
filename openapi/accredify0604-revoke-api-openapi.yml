@@ -1,0 +1,113 @@
+openapi: 3.2.0
+info:
+  title: Accredify Dashboard Revoke API
+  description: This is the API documentation for the Accredify Dashboard, providing access to our services in a development and production environment.
+  version: 1.0.0
+servers:
+- url: http://dashboard.local.accredify.io/api
+  description: Accredify Local (Local)
+- url: https://dashboard.uat.accredify.io/api
+  description: Accredify Sandbox (UAT)
+- url: https://dashboard.accredify.io/api
+  description: Accredify Main Server (Production)
+tags:
+- name: Revoke
+  description: Revoke
+paths:
+  /v1/revokeCerts:
+    post:
+      tags:
+      - Revoke
+      summary: Revoked certificates by their hashes
+      description: Revokes certificates that were issued by their certificate hash, also supports the removal of the certificate from MySF
+      operationId: revokeCerts
+      requestBody:
+        description: Information require to create a batch
+        required: true
+        content:
+          application/json:
+            schema:
+              required:
+              - instance
+              - targetHashes
+              - delete
+              - timestamp
+              properties:
+                instance:
+                  description: Whether this is meant for the testnet (TST) or mainnet (PRD)
+                  type: string
+                  example: TST
+                targetHashes:
+                  description: The hashes of the certificates to revoke
+                  type: array
+                  items:
+                    type: string
+                    example: '0x95c939b9a64a16ff70590cbed058d141971501d93af8baa4cdd7424ac87fc95c'
+                delete:
+                  description: Whether to remove the certificate from MySF
+                  type: string
+                  example: 'false'
+                timestamp:
+                  description: Timestamp of the request
+                  type: string
+                  format: date-time
+                  example: '2019-09-11T17:21:45+08:00'
+              type: object
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                properties:
+                  instance:
+                    description: Whether this is meant for the testnet (TST) or mainnet (PRD)
+                    type: string
+                    example: TST
+                  timestamp:
+                    description: Timestamp of the request
+                    type: string
+                    format: date-time
+                    example: '2019-09-11T17:21:45+08:00'
+                  certificates:
+                    description: The hashes of the certificates to revoke
+                    type: array
+                    items:
+                      type: string
+                      example: '0x95c939b9a64a16ff70590cbed058d141971501d93af8baa4cdd7424ac87fc95c'
+                  transactionHash:
+                    type: string
+                    example: '0x5c82b6ac1b4a85542ad46fde57688986852b46a6d4203631a0688e804b1f0858'
+                type: object
+        '400':
+          description: Error
+          content:
+            application/json:
+              schema:
+                properties:
+                  instance:
+                    description: Whether this is meant for the testnet (TST) or mainnet (PRD)
+                    type: string
+                    example: TST
+                  timestamp:
+                    description: Timestamp of the request
+                    type: string
+                    format: date-time
+                    example: '2019-09-11T17:21:45+08:00'
+                  status:
+                    type: string
+                    example: ERROR
+                  code:
+                    type: string
+                    example: R402
+                  message:
+                    type: string
+                    example: These hashes were not found
+                type: object
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      description: 'JWT Authorization header using the Bearer scheme. Example: ''Authorization: Bearer {token}'''
+      bearerFormat: JWT
+      scheme: bearer

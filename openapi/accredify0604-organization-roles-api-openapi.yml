@@ -1,0 +1,98 @@
+openapi: 3.2.0
+info:
+  title: Auth Module Organization Roles API
+  version: '1.0'
+  description: Auth module endpoints
+  contact:
+    name: Accredify
+    url: https://accredify.io
+    email: support@accredify.io
+  termsOfService: https://www.accredify.io/legal
+servers:
+- url: https://nexus.staging.accredify.io
+  description: Staging
+- url: https://nexus.uat.accredify.io
+  description: UAT
+- url: https://nexus.accredify.io
+  description: Production
+tags:
+- name: Organization Roles
+paths:
+  /api/v1/organization/roles:
+    get:
+      summary: Get organization roles
+      description: Retrieve available organization roles for role mapping and user-token management flows
+      tags:
+      - Organization Roles
+      security:
+      - OAuth2:
+        - roles:read
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Role'
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+      operationId: getApiV1OrganizationRoles
+      x-operation-id-source: derived
+components:
+  schemas:
+    Role:
+      type: object
+      description: Organization role object
+      required:
+      - uuid
+      - name
+      - description
+      - is_system_role
+      properties:
+        uuid:
+          type: string
+          format: uuid
+          description: Unique identifier for the role
+        name:
+          type: string
+          description: Display name of the role
+        description:
+          type:
+          - string
+          - 'null'
+          description: Description of the role
+        is_system_role:
+          type: boolean
+          description: Whether this role is a predefined system role
+  securitySchemes:
+    OAuth2:
+      type: oauth2
+      description: OAuth2 client credentials flow
+      flows:
+        clientCredentials:
+          tokenUrl: /oauth/token
+          scopes:
+            run-workflow: Ability to run a specific workflow
+            webcomponent-verification: Ability to get the verification access from webcomponent
+            verification-suite: Ability to access the verification suite APIs
+            workflows:read: Ability to read workflows
+            workflows:write: Ability to write workflows
+            workflow-runs:read: Ability to read workflow runs
+            documents:read: Ability to read documents
+            documents:write: Ability to write documents
+            custom-views:read: Ability to read custom views
+            users:read: Ability to read users
+            users:write: Ability to write users
+            design-templates:read: Ability to read design templates
+            document-templates:read: Ability to read document templates
+            groups:read: Ability to read groups
+            groups:write: Ability to write groups
+            courses:read: Ability to read courses
+            courses:write: Ability to write courses
+            roles:read: Ability to read roles
+            user-tokens:read: Ability to read user tokens
+            user-tokens:write: Ability to write user tokens

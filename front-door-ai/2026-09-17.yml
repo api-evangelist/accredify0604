@@ -1,0 +1,30 @@
+# Front Door AI Index — accredify0604 — 2026-09-17
+# AI vocabulary counted on the provider's root page. Generated; do not edit.
+# `score` is null unless ownership is `own` — see front_door_ai.py.
+front_door_ai:
+  slug: accredify0604
+  lexicon_version: '1.0'
+  probed_at: '2026-09-17'
+  host: www.accredify.io
+  final_host: www.accredify.io
+  ownership: own
+  owner: accredify0604
+  shares_host_with: null
+  inherited_from: null
+  verdict: scored
+  score: 3
+  host_score: 3
+  density: 1.85
+  words: 1621
+  tiers:
+    agentic: 0
+    core: 3
+    model: 0
+  ambiguous: 4
+  top_terms:
+    automation: 2
+    AI: 1
+    artificial intelligence: 1
+    intelligence: 1
+    machine learning: 1
+    smart: 1

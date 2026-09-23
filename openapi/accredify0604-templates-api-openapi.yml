@@ -1,0 +1,228 @@
+openapi: 3.2.0
+info:
+  title: Accredify Dashboard Templates API
+  description: This is the API documentation for the Accredify Dashboard, providing access to our services in a development and production environment.
+  version: 2.0.0
+servers:
+- url: http://dashboard.local.accredify.io/api/v2
+  description: Accredify Local (Local)
+- url: https://dashboard.uat.accredify.io/api/v2
+  description: Accredify Sandbox (UAT)
+- url: https://dashboard.accredify.io/api/v2
+  description: Accredify Main Server (Production)
+tags:
+- name: Templates
+  description: Templates
+paths:
+  /templates:
+    get:
+      tags:
+      - Templates
+      summary: Retrieve all templates
+      description: Retrieve a list of templates associated with the issuer of the authenticated user.
+      operationId: 0e5969fa18fdcfe544417bd17c33612d
+      responses:
+        '200':
+          description: Success request
+          content:
+            application/json:
+              schema:
+                properties:
+                  data:
+                    type: array
+                    items:
+                      properties:
+                        id:
+                          description: Provided by Accredify
+                          type: integer
+                          example: 1
+                        name:
+                          description: Provided by Accredify for identifying the template
+                          type: string
+                          example: Standard Template
+                        alias:
+                          description: Provided by customer for identifying the template
+                          type: string
+                          example: standard_template
+                        description:
+                          description: Provided by Accredify for identifying the template
+                          type: string
+                          example: A standard template for general use.
+                      type: object
+                type: object
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/UnauthenticatedRequest'
+        '404':
+          $ref: '#/components/responses/NotFoundRequest'
+        '422':
+          $ref: '#/components/responses/UnprocessableEntityRequest'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalErrorRequest'
+      security:
+      - bearerAuth: []
+  /templates/{id}:
+    get:
+      tags:
+      - Templates
+      summary: Retrieve a single template
+      description: Retrieve details of a specific template by its ID, including sample JSON if authorized.
+      operationId: 80c8f9a5b93009c1d4f3e73356ea8d88
+      parameters:
+      - name: id
+        in: path
+        description: ID of the template to retrieve
+        required: true
+        schema:
+          type: integer
+      responses:
+        '200':
+          description: Success request
+          content:
+            application/json:
+              schema:
+                properties:
+                  data:
+                    properties:
+                      id:
+                        description: Provided by Accredify
+                        type: integer
+                        example: 1
+                      name:
+                        description: Provided by Accredify for identifying the template
+                        type: string
+                        example: Standard Template
+                      alias:
+                        description: Provided by customer for identifying the template
+                        type: string
+                        example: standard_template
+                      description:
+                        description: Provided by Accredify for identifying the template
+                        type: string
+                        example: A standard template for general use.
+                      signed_sample_json:
+                        description: A sample json that can be used for rendering the preview
+                        type: object
+                        example:
+                          key: value
+                        additionalProperties: true
+                      configurations:
+                        description: For a list of configurations, please visit https://accredify.notion.site/Course-Configurations-ec71dbcecdb643a5b2277c76b929ba86
+                        type: object
+                        example:
+                          hasIssuedDate: true
+                          hasCertId: true
+                          hasEmail: false
+                          allMustApprove: false
+                    type: object
+                type: object
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/UnauthenticatedRequest'
+        '404':
+          $ref: '#/components/responses/NotFoundRequest'
+        '422':
+          $ref: '#/components/responses/UnprocessableEntityRequest'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalErrorRequest'
+      security:
+      - bearerAuth: []
+components:
+  responses:
+    NotFoundRequest:
+      description: The specified resource was not found
+      content:
+        application/json:
+          schema:
+            properties:
+              status:
+                type: integer
+                example: 404
+              message:
+                type: string
+                example: Please ensure you are making the request to the correct endpoint.
+            type: object
+    UnauthenticatedRequest:
+      description: Unauthenticated request
+      content:
+        application/json:
+          schema:
+            properties:
+              status:
+                type: integer
+                example: 401
+              message:
+                type: string
+                example: Unauthenticated. You might have provided an invalid access token or your token has already expired.
+            type: object
+    TooManyRequests:
+      description: Too many requests
+      content:
+        application/json:
+          schema:
+            properties:
+              status:
+                type: integer
+                example: 429
+              message:
+                type: string
+                example: You're submitting requests too quickly. Please retry again after 60 seconds.
+            type: object
+    InternalErrorRequest:
+      description: Internal server error
+      content:
+        application/json:
+          schema:
+            properties:
+              status:
+                type: integer
+                example: 500
+              message:
+                type: string
+                example: There was an unexpected error while performing your last action. Please contact us at support@accredify.io with the error code for internal reference
+              code:
+                type: string
+                example: E500
+            type: object
+    UnprocessableEntityRequest:
+      description: Unprocessable entity
+      content:
+        application/json:
+          schema:
+            properties:
+              status:
+                type: integer
+                example: 422
+              errors:
+                type: array
+                items:
+                  type: string
+              message:
+                type: string
+                example: Validation failed for the request.
+            type: object
+    BadRequest:
+      description: Bad request
+      content:
+        application/json:
+          schema:
+            properties:
+              status:
+                type: integer
+                example: 400
+              message:
+                type: string
+                example: We couldn't find you, please try again.
+            type: object
+  securitySchemes:
+    bearerAuth:
+      type: http
+      description: 'JWT Authorization header using the Bearer scheme. Example: ''Authorization: Bearer {token}'''
+      bearerFormat: JWT
+      scheme: bearer

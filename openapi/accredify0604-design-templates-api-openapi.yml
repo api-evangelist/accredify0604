@@ -1,0 +1,982 @@
+openapi: 3.2.0
+info:
+  title: Workflow Module Design Templates API
+  version: '1.0'
+  description: Workflow module endpoints
+  contact:
+    name: Accredify
+    url: https://accredify.io
+    email: support@accredify.io
+  termsOfService: https://www.accredify.io/legal
+servers:
+- url: https://nexus.staging.accredify.io
+  description: Staging
+- url: https://nexus.uat.accredify.io
+  description: UAT
+- url: https://nexus.accredify.io
+  description: Production
+tags:
+- name: Design Templates
+paths:
+  /api/v1/design_templates:
+    parameters: []
+    get:
+      summary: Get list of design templates
+      description: Retrieve a paginated list of design templates with optional filtering by type, tags, and search terms
+      tags:
+      - Design Templates
+      security:
+      - OAuth2:
+        - design-templates:read
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                - links
+                - meta
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/DesignTemplate'
+                  links:
+                    $ref: '#/components/schemas/PaginationLinks'
+                  meta:
+                    $ref: '#/components/schemas/PaginationMeta'
+              examples:
+                Example 1:
+                  value:
+                    data:
+                    - id: 1
+                      name: Certificate Template
+                      description: Template for creating certificates
+                      thumbnails:
+                      - url: https://example.com/thumbnail.png
+                        label: Front View
+                      tags:
+                      - education
+                      document_standard: OA v2
+                      document_templates_count: 5
+                      is_custom_design: false
+                      type: certificate
+                      attributes:
+                      - name: Recipient Name
+                        key: recipient_name
+                        type: string
+                        description: Full name of the document recipient
+                        example: John Doe
+                        required: true
+                    links:
+                      first: http://nexus.localhost:8080/api/v1/design_templates?page=1
+                      last: http://nexus.localhost:8080/api/v1/design_templates?page=1
+                      prev: null
+                      next: null
+                    meta:
+                      current_page: 1
+                      from: 1
+                      last_page: 1
+                      links:
+                      - url: null
+                        label: '&laquo; Previous'
+                        active: false
+                      - url: http://nexus.localhost:8080/api/v1/design_templates?page=1
+                        label: '1'
+                        active: true
+                      - url: null
+                        label: Next &raquo;
+                        active: false
+                      path: http://nexus.localhost:8080/api/v1/design_templates
+                      per_page: 10
+                      to: 1
+                      total: 1
+        '401':
+          $ref: '#/components/responses/401'
+        '403':
+          $ref: '#/components/responses/403'
+        '422':
+          $ref: '#/components/responses/422'
+      operationId: get-design-templates
+      parameters:
+      - schema:
+          type: integer
+          minimum: 1
+          default: 1
+        in: query
+        name: page
+        description: Page number for pagination
+        example: 1
+      - schema:
+          type: integer
+          enum:
+          - 10
+          - 20
+          - 30
+          - 40
+          - 50
+          default: 10
+        in: query
+        name: per_page
+        description: Number of design templates per page
+        example: 10
+      - schema:
+          type: string
+          default: desc
+          enum:
+          - asc
+          - desc
+        in: query
+        name: sort_order
+        description: Sort order for design templates by updated_at timestamp
+        example: desc
+      - schema:
+          type: string
+          enum:
+          - certificate
+          - badge
+          - digital_pass
+        in: query
+        name: type
+        description: Filter design templates by type
+        example: certificate
+      - schema:
+          type: string
+        in: query
+        name: search
+        description: Search design templates by name (case-insensitive partial match)
+        example: Certificate Template
+      - name: tags[]
+        in: query
+        description: Filter design templates by tag names. Repeat this parameter for multiple tags.
+        required: false
+        schema:
+          type: array
+          items:
+            type: string
+        style: form
+        explode: true
+        example:
+        - certificate
+        - education
+        - professional
+      - schema:
+          type: array
+          items:
+            type: string
+            format: uuid
+          description: Filter design templates by organization group UUIDs
+        in: query
+        name: group_uuids[]
+        style: form
+        explode: true
+        example:
+        - 9f854436-2e67-439e-bdda-e7ab6a4b5874
+        - 9fb13026-0719-4cf5-b559-8fd312eebdbd
+      requestBody:
+        content: {}
+  /api/v1/design_templates/{designTemplate}/signed_edit_link:
+    parameters:
+    - schema:
+        type: string
+        format: uuid
+      name: designTemplate
+      in: path
+      required: true
+      description: Design Template ID
+    post:
+      summary: Generate single-use signed edit link
+      description: Generate a single-use, 3-minute signed URL that auto-authenticates the current authenticated user and redirects to the design template edit page.
+      tags:
+      - Design Templates
+      security:
+      - OAuth2:
+        - design-templates:read
+      responses:
+        '201':
+          description: Signed edit link generated
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  url:
+                    type: string
+                    format: uri
+                    description: Temporary signed URL; single-use and valid for 3 minutes
+                  expires_at:
+                    type: string
+                    format: date-time
+                    description: ISO8601 timestamp when the link expires
+                required:
+                - url
+                - expires_at
+              examples:
+                Example 1:
+                  value:
+                    url: https://nexus.accredify.io/signed/design_templates/25/edit?expires=1730208000&signature=abc&nonce=def&user=9f8ed2e8-efa2-400b-ad6e-1caed0767f6d
+                    expires_at: '2025-10-29T12:34:56.000000Z'
+        '401':
+          $ref: '#/components/responses/401'
+        '403':
+          $ref: '#/components/responses/403'
+        '404':
+          $ref: '#/components/responses/404'
+        '422':
+          $ref: '#/components/responses/422'
+      operationId: generate-design-template-signed-edit-link
+  /api/v1/design_templates/{designTemplate}:
+    parameters:
+    - schema:
+        type: string
+        format: uuid
+      name: designTemplate
+      in: path
+      required: true
+      description: Design Template ID
+    get:
+      summary: Get design template by ID
+      description: Retrieve detailed information about a specific design template including its configuration and metadata
+      tags:
+      - Design Templates
+      security:
+      - OAuth2:
+        - design-templates:read
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DesignTemplate'
+              examples:
+                Example 1:
+                  value:
+                    id: 25
+                    name: Default Education
+                    description: This is for default education document
+                    document_standard: OCv2
+                    document_templates_count: 1
+                    is_custom_design: true
+                    type: certificate
+                    tags: []
+                    thumbnails:
+                    - url: http://localhost:9000/local/var/www/html/storage/framework/testing/disks/s3/custom_designs/DEFAULT-EDUCATION/thumbnail.png?X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=sail%2F20250919%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20250919T064126Z&X-Amz-SignedHeaders=host&X-Amz-Expires=1800&X-Amz-Signature=88517fb2e4dfde5f2d24051c95884de55e25de2ee289befed9d3a4877c0e6b8c
+                      label: Custom Certificate
+                    attributes:
+                    - name: ID
+                      key: id
+                      type: string
+                      description: Document ID
+                      example: '1234567890'
+                      required: true
+                    - name: Recipient Name
+                      key: recipient.name
+                      type: string
+                      description: Name of the recipient
+                      example: John Doe
+                      required: true
+                    - name: Certificate Name
+                      key: name
+                      type: string
+                      description: Diploma in Classical Music
+                      example: Diploma in Classical Music
+                      required: true
+                    - name: Issued Date
+                      key: issuedOn
+                      type: date
+                      description: The date a document is issued on
+                      example: '2024-01-01'
+                      required: true
+                    - name: Logo
+                      key: additionalData.extra.logo
+                      type: single_enum
+                      description: The logo to be used on the document
+                      example: utopia
+                      required: false
+                      allowed_options:
+                      - value: utopia
+                        label: Utopia
+                      - value: accredify1
+                        label: Accredify1
+                      - value: accredify2
+                        label: Accredify2
+                    - name: Signatures
+                      key: additionalData.extra.signatures
+                      type: multi_enum
+                      description: Signatures to be included on the document
+                      example:
+                      - accredify
+                      - president
+                      required: false
+                      allowed_options:
+                      - value: accredify
+                        label: Accredify
+                      - value: president
+                        label: President
+                      - value: registra
+                        label: Registra
+                    - name: Transcript
+                      key: transcript
+                      type: array
+                      description: About the transcript
+                      example: Transcript
+                      required: false
+                    - name: Name
+                      key: transcript.$.name
+                      type: string
+                      description: About the transcript name
+                      example: Transcript Name
+                      required: false
+                    - name: CourseCode
+                      key: transcript.$.courseCode
+                      type: string
+                      description: About the transcript course code
+                      example: Transcript courseCode
+                      required: false
+                    - name: Score
+                      key: transcript.$.score
+                      type: string
+                      description: About the transcript score
+                      example: Transcript score
+                      required: false
+                    - name: Description
+                      key: transcript.$.description
+                      type: string
+                      description: About the transcript description
+                      example: Transcript description
+                      required: false
+        '401':
+          $ref: '#/components/responses/401'
+        '403':
+          $ref: '#/components/responses/403'
+        '404':
+          $ref: '#/components/responses/404'
+      operationId: get-design-template-by-id
+  /api/v1/design_templates/{designTemplate}/preview:
+    parameters:
+    - schema:
+        type: string
+        format: uuid
+      name: designTemplate
+      in: path
+      required: true
+      description: Design Template ID
+    - schema:
+        type: string
+        enum:
+        - binary
+        - base64
+        default: binary
+      name: response_format
+      in: query
+      required: false
+      description: Set to `base64` to receive the generated PDF inside a JSON response instead of a binary PDF stream.
+    post:
+      summary: Generate PDF preview for design template
+      description: Generate a PDF preview for a specific design template with provided attribute values. Supports both Polotno and Renderer/Custom designs.
+      tags:
+      - Design Templates
+      security:
+      - OAuth2:
+        - design-templates:read
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              description: Attribute values for the design template preview. Structure varies by design template - check design template details for specific attribute requirements.
+              additionalProperties: true
+            examples:
+              Example 1 - Basic Certificate:
+                value:
+                  recipient:
+                    name: John Doe
+                  id: CERT-2024-001
+                  name: Certificate of Completion
+                  issuedOn: '2024-01-01T00:00:00Z'
+              Example 2 - Complex Certificate with Custom Fields:
+                value:
+                  recipient:
+                    name: Jane Smith
+                    email: jane.smith@example.com
+                  id: CERT-2024-002
+                  name: Advanced React Development Certificate
+                  issuedOn: '2024-01-15T10:30:00Z'
+                  additionalData:
+                    extra:
+                      logo: CDE
+                      signatures:
+                      - Teo Kie Leong
+                      - Dr. Jane Smith
+                      recipientAction1: View Certificate
+                      courseName1: Advanced React Development
+                      courseName2: TypeScript Fundamentals
+                      term1: 2024 Q1
+                      credits: '120'
+                      signatory1Name: Dr. Jane Smith
+                      signatory1Title1: Head of Education
+                      signatory1Title2: Accredify University
+      responses:
+        '200':
+          description: PDF preview generated successfully
+          content:
+            application/pdf:
+              schema:
+                type: string
+                format: binary
+                description: Generated PDF preview file
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: string
+                    description: Data URL containing the generated PDF as a base64-encoded payload.
+                required:
+                - data
+              examples:
+                Base64 PDF Response:
+                  value:
+                    data: data:application/pdf;base64,JVBERi0xLjQKJcTl8uXrp...
+          headers: {}
+        '401':
+          $ref: '#/components/responses/401'
+        '403':
+          $ref: '#/components/responses/403'
+        '404':
+          $ref: '#/components/responses/404'
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Validation failed
+                  errors:
+                    type: object
+                    description: Validation errors with enhanced messages including allowed options for enum fields
+                    additionalProperties:
+                      type: array
+                      items:
+                        type: string
+                required:
+                - message
+                - errors
+              examples:
+                Example 1 - Missing Required Field:
+                  value:
+                    message: Validation failed
+                    errors:
+                      recipient.name:
+                      - The recipient.name field is required.
+                Example 2 - Invalid Enum Value:
+                  value:
+                    message: Validation failed
+                    errors:
+                      additionalData.extra.logo:
+                      - The selected additionalData.extra.logo is invalid.
+                      - 'Allowed values: CDE, Accredify1, Accredify2'
+                Example 3 - Invalid Email Format:
+                  value:
+                    message: Validation failed
+                    errors:
+                      recipient.email:
+                      - The recipient.email must be a valid email address.
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: Failed to generate preview PDF
+                  message:
+                    type: string
+                    example: Design template does not have a Polotno design file. Please complete the design first.
+                required:
+                - error
+                - message
+      operationId: generate-design-template-preview
+components:
+  responses:
+    '404':
+      description: Not found
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+          examples:
+            Example 1:
+              value:
+                message: Not found or not accessible.
+    '422':
+      description: Unprocessable Entity (WebDAV)
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+              errors:
+                type: object
+            required:
+            - message
+            - errors
+          examples:
+            Example 1:
+              value:
+                message: The per page field must be an integer. (and 1 more error)
+                errors:
+                  per_page:
+                  - The per page field must be an integer.
+                  - The selected per page is invalid.
+    '403':
+      description: Forbidden
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+          examples:
+            Example 1:
+              value:
+                message: Invalid scope(s) provided.
+    '401':
+      description: Unauthenticated
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+            required:
+            - message
+          examples:
+            Example 1:
+              value:
+                message: Unauthenticated.
+  schemas:
+    PaginationMeta:
+      type: object
+      description: Pagination metadata containing information about the current page and total results
+      required:
+      - current_page
+      - from
+      - last_page
+      - links
+      - path
+      - per_page
+      - to
+      - total
+      properties:
+        current_page:
+          type: integer
+          description: Current page number
+        from:
+          type:
+          - integer
+          - 'null'
+          description: Starting record number for current page
+        last_page:
+          type: integer
+          description: Last page number
+        links:
+          type: array
+          description: Array of pagination link objects
+          items:
+            type: object
+            required:
+            - url
+            - label
+            - active
+            properties:
+              url:
+                type:
+                - 'null'
+                - string
+                description: URL for the pagination link (null for disabled links)
+              label:
+                type: string
+                description: Display label for the pagination link
+              active:
+                type: boolean
+                description: Whether this link represents the current page
+        path:
+          type: string
+          description: Base path for the API endpoint
+        per_page:
+          type: integer
+          description: Number of items per page
+        to:
+          type:
+          - integer
+          - 'null'
+          description: Ending record number for current page
+        total:
+          type: integer
+          description: Total number of records
+      examples:
+      - current_page: 1
+        from: 1
+        last_page: 1
+        links:
+        - url: null
+          label: '&laquo; Previous'
+          active: false
+        - url: http://nexus.localhost:8080/api/workflows?page=1
+          label: '1'
+          active: true
+        - url: null
+          label: Next &raquo;
+          active: false
+        path: http://nexus.localhost:8080/api/workflows
+        per_page: 10
+        to: 3
+        total: 3
+    Group:
+      title: Group
+      type: object
+      description: Organization group information from GroupApiResource
+      examples:
+      - uuid: 9f854436-2e67-439e-bdda-e7ab6a4b5874
+        name: Default Access Group
+        description: null
+      properties:
+        uuid:
+          type: string
+          format: uuid
+          description: Unique identifier for the group
+        name:
+          type: string
+          description: Name of the organization group
+        description:
+          type:
+          - string
+          - 'null'
+          description: Description of the organization group (can be null)
+      required:
+      - uuid
+      - name
+    Thumbnail:
+      title: Thumbnail
+      type: object
+      description: Thumbnail image information for design templates
+      properties:
+        url:
+          type: string
+          description: URL of the thumbnail image
+        label:
+          type: string
+          description: Label for the thumbnail (e.g., 'Front View', 'Back View')
+      required:
+      - url
+      - label
+      examples:
+      - url: https://example.com/thumbnail.png
+        label: Front View
+      - url: https://example.com/thumbnail-back.png
+        label: Back View
+    PaginationLinks:
+      type: object
+      description: Pagination links for navigating through paginated results
+      required:
+      - first
+      - last
+      - prev
+      - next
+      properties:
+        first:
+          type: string
+          description: URL for the first page
+        last:
+          type: string
+          description: URL for the last page
+        prev:
+          type:
+          - string
+          - 'null'
+          description: URL for the previous page (null if on first page)
+        next:
+          type:
+          - string
+          - 'null'
+          description: URL for the next page (null if on last page)
+      examples:
+      - first: http://nexus.localhost:8080/api/workflows?page=1
+        last: http://nexus.localhost:8080/api/workflows?page=1
+        prev: null
+        next: null
+    DesignTemplate:
+      title: DesignTemplate
+      type: object
+      description: Design template information
+      examples:
+      - id: 25
+        name: Default Education
+        description: This is for default education document
+        document_standard: OCv2
+        document_templates_count: 1
+        is_custom_design: true
+        type: certificate
+        group:
+          uuid: 9fea6580-5f09-43d0-bee5-b28bb527cb17
+          name: Default Access Group
+        tags: []
+        thumbnails:
+        - url: http://localhost:9000/local/var/www/html/storage/framework/testing/disks/s3/custom_designs/DEFAULT-EDUCATION/thumbnail.png?X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=sail%2F20250919%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20250919T064126Z&X-Amz-SignedHeaders=host&X-Amz-Expires=1800&X-Amz-Signature=88517fb2e4dfde5f2d24051c95884de55e25de2ee289befed9d3a4877c0e6b8c
+          label: Custom Certificate
+        attributes:
+        - name: ID
+          key: id
+          type: string
+          description: Document ID
+          example: '1234567890'
+          required: true
+        - name: Recipient Name
+          key: recipient.name
+          type: string
+          description: Name of the recipient
+          example: John Doe
+          required: true
+        - name: Certificate Name
+          key: name
+          type: string
+          description: Diploma in Classical Music
+          example: Diploma in Classical Music
+          required: true
+        - name: Issued Date
+          key: issuedOn
+          type: date
+          description: The date a document is issued on
+          example: '2024-01-01'
+          required: true
+        - name: Logo
+          key: additionalData.extra.logo
+          type: single_enum
+          description: The logo to be used on the document
+          example: utopia
+          required: false
+          allowed_options:
+          - value: utopia
+            label: Utopia
+          - value: accredify1
+            label: Accredify1
+          - value: accredify2
+            label: Accredify2
+        - name: Signatures
+          key: additionalData.extra.signatures
+          type: multi_enum
+          description: Signatures to be included on the document
+          example:
+          - accredify
+          - president
+          required: false
+          allowed_options:
+          - value: accredify
+            label: Accredify
+          - value: president
+            label: President
+          - value: registra
+            label: Registra
+        - name: Transcript
+          key: transcript
+          type: array
+          description: About the transcript
+          example: Transcript
+          required: false
+        - name: Name
+          key: transcript.$.name
+          type: string
+          description: About the transcript name
+          example: Transcript Name
+          required: false
+        - name: CourseCode
+          key: transcript.$.courseCode
+          type: string
+          description: About the transcript course code
+          example: Transcript courseCode
+          required: false
+        - name: Score
+          key: transcript.$.score
+          type: string
+          description: About the transcript score
+          example: Transcript score
+          required: false
+        - name: Description
+          key: transcript.$.description
+          type: string
+          description: About the transcript description
+          example: Transcript description
+          required: false
+      properties:
+        id:
+          type: integer
+          description: Unique identifier for the design template
+        name:
+          type: string
+          description: Name of the design template
+        description:
+          type:
+          - string
+          - 'null'
+          description: Description of the design template (can be null)
+        document_standard:
+          type: string
+          description: Document standard used by this design template (can be null)
+        document_templates_count:
+          type: integer
+          description: Number of document templates using this design template
+        is_custom_design:
+          type: boolean
+          description: Whether this is a custom design template
+        type:
+          type: string
+          enum:
+          - certificate
+          - badge
+          - digital_pass
+          description: Type of the design template
+        group:
+          $ref: '#/components/schemas/Group'
+          description: Organization group this design template belongs to (only present when loaded directly)
+        tags:
+          type: array
+          description: Array of tag names associated with the design template
+          items:
+            type: string
+        thumbnails:
+          type: array
+          description: Array of thumbnail images for the design template
+          items:
+            $ref: '#/components/schemas/Thumbnail'
+        attributes:
+          type: array
+          description: Array of attributes associated with this design template
+          items:
+            $ref: '#/components/schemas/TemplateAttribute'
+      required:
+      - id
+      - name
+      - description
+      - document_standard
+      - document_templates_count
+      - is_custom_design
+      - type
+      - group
+      - tags
+    TemplateAttribute:
+      title: TemplateAttribute
+      type: object
+      description: Attribute information for templates (used by both design and document templates)
+      examples:
+      - name: Recipient Name
+        key: recipient_name
+        type: string
+        description: Full name of the document recipient
+        example: John Doe
+        required: true
+      - name: Document ID
+        key: id
+        type: string
+        description: Document ID
+        example: '1234567890'
+        required: true
+      properties:
+        name:
+          type: string
+          description: Human-readable name of the attribute
+        key:
+          type: string
+          description: Unique key/identifier for the attribute
+        type:
+          type: string
+          enum:
+          - string
+          - number
+          - boolean
+          - email
+          - datetime
+          - date
+          - nric
+          - uen
+          - array
+          - uri
+          - single_enum
+          - multi_enum
+          description: Data type of the attribute
+        description:
+          type:
+          - string
+          - 'null'
+          description: Description of the attribute (can be null)
+        example:
+          type:
+          - string
+          - 'null'
+          description: Example value for the attribute (can be null)
+        required:
+          type: boolean
+          description: Whether this attribute is required
+        allowed_options:
+          type: array
+          description: Allowed options for enum type attributes
+          items:
+            type: object
+            properties:
+              value:
+                type: string
+                description: The option value
+              label:
+                type: string
+                description: The option label
+        items:
+          type: array
+          description: Nested attributes for array type attributes
+          items:
+            $ref: '#/components/schemas/TemplateAttribute'
+      required:
+      - name
+      - key
+      - type
+      - description
+      - example
+      - required
+  securitySchemes:
+    OAuth2:
+      type: oauth2
+      description: OAuth2 client credentials flow
+      flows:
+        clientCredentials:
+          tokenUrl: /oauth/token
+          scopes:
+            run-workflow: Ability to run a specific workflow
+            webcomponent-verification: Ability to get the verification access from webcomponent
+            verification-suite: Ability to access the verification suite APIs
+            workflows:read: Ability to read workflows
+            workflows:write: Ability to write workflows
+            workflow-runs:read: Ability to read workflow runs
+            documents:read: Ability to read documents
+            documents:write: Ability to write documents
+            custom-views:read: Ability to read custom views
+            users:read: Ability to read users
+            design-templates:read: Ability to read design templates
+            document-templates:read: Ability to read document templates
+            groups:read: Ability to read groups
+            courses:read: Ability to read courses
+            courses:write: Ability to write courses

@@ -1,0 +1,278 @@
+openapi: 3.2.0
+info:
+  title: Accredify Dashboard OAuth 2.0 API
+  description: This is the API documentation for the Accredify Dashboard, providing access to our services in a development and production environment.
+  version: 1.0.0
+servers:
+- url: http://dashboard.local.accredify.io/api
+  description: Accredify Local (Local)
+- url: https://dashboard.uat.accredify.io/api
+  description: Accredify Sandbox (UAT)
+- url: https://dashboard.accredify.io/api
+  description: Accredify Main Server (Production)
+tags:
+- name: OAuth 2.0
+  description: OAuth 2.0
+paths:
+  /v1/oauth/grant:
+    post:
+      tags:
+      - OAuth 2.0
+      summary: Generate an access token
+      operationId: authorizationCodeGrant
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              required:
+              - grant_type
+              - client_id
+              - client_secret
+              properties:
+                grant_type:
+                  description: Type of grant you are requesting for
+                  type: string
+                  default: authorization_code
+                  enum:
+                  - authorization_code
+                  - password
+                  example: authorization_code
+                client_id:
+                  description: client_id of your application which you have registered with Accredify
+                  type: string
+                  example: e55d957f-3c09-4276-bc3e-1f3e333c4645
+                client_secret:
+                  description: client_secret of your application which you have registered with Accredify
+                  type: string
+                  example: 3Xr4lVLBz2hhoFtnngxQTWFiZUJABRaX2g5pcpra
+                authorization_code:
+                  description: code that was previously returned to callback endpoint which was registered with Accredify
+                  type: string
+                  example: def50200bbc143dd0a58d85ef86deeebdf75fee730e3496f4c4d6f7afd6e3d1cdbc8bf6b0615e991dd43bbfafd503d6f39d1419a258ddc3c7b6e6a6f0dbce123f47e7ec88fa551e2d207f57d20d288d92a3c8dab8569432047c993bff7bbd4bc882910965ba72f956d9fc2a0f0a330ab94fd5c1338a2df2b536727a409e2ab50c6563773495623ae92ead74d6218606e9e7ec328b059a7ce1d4ceb705260a14a44058f2372f5048d5b1e36c83763023ba1da90d4b8898d49bb7c7dd9d4687b78c3f1082793a1c36967426af93ae6740ae8bb53f77b57a933ec97e2b0f323078f77e9e08cc09a4327a72026d939ae0eaacd46efafeaed785d26e2962f2e5473d2f9876e7e7ba1ffd41b599fb539edafecd2e895093d6aee63d36c0b144d4ea5752d558a2fce47bc2da9ad5f331c9d5bb72d7bb2f9aead6c86e401025c263ed21ab35a7e3b9e6129f063fca08b97efdeb5406fb53ff5d32b096e58c9443a0c2480a6ff183a8a755c5369ef985f1e5b12fcf7dfd1bae67f398ae64760eeae19c76d78947dd4d5387842b2ra
+                scope:
+                  description: Provide a list of scopes separated by space.
+                  type: string
+                  example: renderer verification read.document
+              type: object
+      responses:
+        '200':
+          $ref: '#/components/responses/SuccessRequest'
+        '302':
+          $ref: '#/components/responses/RedirectRequest'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/UnauthenticatedRequest'
+        '404':
+          $ref: '#/components/responses/NotFoundRequest'
+        '422':
+          $ref: '#/components/responses/UnprocessableEntityRequest'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalErrorRequest'
+  /v1/oauth/redirect:
+    get:
+      tags:
+      - OAuth 2.0
+      summary: Request for user to authorize third party application access to their account.
+      description: returns redirect with authorization code and state which can be used to request for an access token. This authorization code is returned if the user approves the request.
+      operationId: redirect
+      parameters:
+      - name: client_id
+        in: query
+        description: client_id of your application which you have registered with Accredify
+        required: true
+        schema:
+          type: string
+        example: e55d957f-3c09-4276-bc3e-1f3e333c4645
+      - name: state
+        in: query
+        description: random string up to 40 characters, to be stored and linked to the user session. this stored state value will be used to verify the redirect to your application's callback.
+        required: true
+        schema:
+          type: string
+        example: e55d957f-3c09-4276-bc3e-1f3e333c4645
+      responses:
+        '302':
+          $ref: '#/components/responses/RedirectRequest'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/UnauthenticatedRequest'
+        '404':
+          $ref: '#/components/responses/NotFoundRequest'
+        '422':
+          $ref: '#/components/responses/UnprocessableEntityRequest'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalErrorRequest'
+  /v1/oauth/refresh:
+    post:
+      tags:
+      - OAuth 2.0
+      summary: Refresh expired access tokens
+      description: Refresh access tokens via the refresh token that was provided to them when the access token was issued
+      operationId: refresh
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              required:
+              - client_id
+              - client_secret
+              - refresh_token
+              properties:
+                client_id:
+                  description: client_id of your application which you have registered with Accredify
+                  type: string
+                  example: e55d957f-3c09-4276-bc3e-1f3e333c4645
+                client_secret:
+                  description: client_secret of your application which you have registered with Accredify
+                  type: string
+                  example: 3Xr4lVLBz2hhoFtnngxQTWFiZUJABRaX2g5pcpra
+                refresh_token:
+                  description: code that was previously returned with access token
+                  type: string
+                  example: def50200bbc143dd0a58d85ef86deeebdf75fee730e3496f4c4d6f7afd6e3d1cdbc8bf6b0615e991dd43bbfafd503d6f39d1419a258ddc3c7b6e6a6f0dbce123f47e7ec88fa551e2d207f57d20d288d92a3c8dab8569432047c993bff7bbd4bc882910965ba72f956d9fc2a0f0a330ab94fd5c1338a2df2b536727a409e2ab50c6563773495623ae92ead74d6218606e9e7ec328b059a7ce1d4ceb705260a14a44058f2372f5048d5b1e36c83763023ba1da90d4b8898d49bb7c7dd9d4687b78c3f1082793a1c36967426af93ae6740ae8bb53f77b57a933ec97e2b0f323078f77e9e08cc09a4327a72026d939ae0eaacd46efafeaed785d26e2962f2e5473d2f9876e7e7ba1ffd41b599fb539edafecd2e895093d6aee63d36c0b144d4ea5752d558a2fce47bc2da9ad5f331c9d5bb72d7bb2f9aead6c86e401025c263ed21ab35a7e3b9e6129f063fca08b97efdeb5406fb53ff5d32b096e58c9443a0c2480a6ff183a8a755c5369ef985f1e5b12fcf7dfd1bae67f398ae64760eeae19c76d78947dd4d5387842b2ra
+              type: object
+      responses:
+        '200':
+          $ref: '#/components/responses/SuccessRequest'
+        '302':
+          $ref: '#/components/responses/RedirectRequest'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/UnauthenticatedRequest'
+        '404':
+          $ref: '#/components/responses/NotFoundRequest'
+        '422':
+          $ref: '#/components/responses/UnprocessableEntityRequest'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalErrorRequest'
+  /v1/login/userTokenToLogin:
+    get:
+      tags:
+      - OAuth 2.0
+      summary: Logs in user using access token in authorization header
+      operationId: 6566d88c4b075dc49ecd14f458068a33
+      responses:
+        '200':
+          description: Success, redirect to recipient dashboard
+components:
+  responses:
+    NotFoundRequest:
+      description: The specified resource was not found
+      content:
+        application/json:
+          schema:
+            properties:
+              status:
+                description: The HTTP status code
+                type: integer
+                example: 404
+              message:
+                description: The message returned from the request
+                type: string
+                example: Please ensure you are making the request to the correct endpoint.
+            type: object
+    UnauthenticatedRequest:
+      description: Unauthenticated request
+      content:
+        application/json:
+          schema:
+            properties:
+              status:
+                description: The HTTP status code
+                type: integer
+                example: 401
+              message:
+                description: The message returned from the request
+                type: string
+                example: Unauthenticated. You might have provided an invalid access token or your token has already expired.
+            type: object
+    SuccessRequest:
+      description: Success request
+    UnprocessableEntityRequest:
+      description: Unprocessable entity
+      content:
+        application/json:
+          schema:
+            properties:
+              status:
+                description: The HTTP status code
+                type: integer
+                example: 422
+              error:
+                description: A list of the errors in the request
+                properties:
+                  string:
+                    type: array
+                    items:
+                      type: string
+                      example: error message
+                type: object
+            type: object
+    TooManyRequests:
+      description: Too many requests
+      content:
+        application/json:
+          schema:
+            properties:
+              status:
+                description: The HTTP status code
+                type: integer
+                example: 429
+              message:
+                description: The message returned from the request
+                type: string
+                example: You're submitting requests too quickly. Please retry again after 60 seconds.
+            type: object
+    InternalErrorRequest:
+      description: Internal error, please contact us at support@accredify with the code
+      content:
+        application/json:
+          schema:
+            properties:
+              status:
+                description: The HTTP status code
+                type: integer
+                example: 500
+              code:
+                description: The error code for reporting and internal reference
+                type: string
+                example: E400
+              message:
+                description: The message returned from the request
+                type: string
+                example: There was an unexpected error while performing your last action. Please contact us at support@accredify.io with the error code for internal reference
+            type: object
+    RedirectRequest:
+      description: Redirect request
+    BadRequest:
+      description: Bad request
+      content:
+        application/json:
+          schema:
+            properties:
+              status:
+                description: The HTTP status code
+                type: integer
+                example: 400
+              message:
+                description: The message returned from the request
+                type: string
+                example: We couldn't find you, please try again.
+            type: object
+  securitySchemes:
+    bearerAuth:
+      type: http
+      description: 'JWT Authorization header using the Bearer scheme. Example: ''Authorization: Bearer {token}'''
+      bearerFormat: JWT
+      scheme: bearer

@@ -1,0 +1,220 @@
+openapi: 3.2.0
+info:
+  title: Accredify Dashboard Email Templates API
+  description: This is the API documentation for the Accredify Dashboard, providing access to our services in a development and production environment.
+  version: 2.0.0
+servers:
+- url: http://dashboard.local.accredify.io/api/v2
+  description: Accredify Local (Local)
+- url: https://dashboard.uat.accredify.io/api/v2
+  description: Accredify Sandbox (UAT)
+- url: https://dashboard.accredify.io/api/v2
+  description: Accredify Main Server (Production)
+tags:
+- name: Email Templates
+  description: Email Templates
+paths:
+  /email-templates:
+    get:
+      tags:
+      - Email Templates
+      summary: Retrieve all email-templates
+      description: Retrieve a list of email-templates associated with the issuer of the authenticated user.
+      operationId: 4a862272f8543a47968f625f87dbc219
+      responses:
+        '200':
+          description: Success request
+          content:
+            application/json:
+              schema:
+                properties:
+                  data:
+                    type: array
+                    items:
+                      properties:
+                        id:
+                          description: Provided by Accredify
+                          type: integer
+                          example: 1
+                        name:
+                          description: Name of your email template
+                          type: string
+                          example: Standard Email Template
+                        description:
+                          description: Description of your email template
+                          type: string
+                          example: A standard template for general use.
+                        subject:
+                          description: The title that appears as the subject header of the email
+                          type: string
+                          example: Congratulations on your certification!
+                        template:
+                          description: The contents of the email template in markdown
+                          type: string
+                      type: object
+                type: object
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/UnauthenticatedRequest'
+        '404':
+          $ref: '#/components/responses/NotFoundRequest'
+        '422':
+          $ref: '#/components/responses/UnprocessableEntityRequest'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalErrorRequest'
+      security:
+      - bearerAuth: []
+  /email-templates/{id}:
+    get:
+      tags:
+      - Email Templates
+      summary: Retrieve a single email template
+      description: Retrieve details of a specific email template by its ID
+      operationId: 414a1ddc1aa9899758e173741648b698
+      parameters:
+      - name: id
+        in: path
+        description: ID of the email template to retrieve
+        required: true
+        schema:
+          type: integer
+      responses:
+        '200':
+          description: Success request
+          content:
+            application/json:
+              schema:
+                properties:
+                  data:
+                    properties:
+                      id:
+                        description: Provided by Accredify
+                        type: integer
+                        example: 1
+                      name:
+                        description: Name of your email template
+                        type: string
+                        example: Standard Email Template
+                      description:
+                        description: Description of your email template
+                        type: string
+                        example: A standard template for general use.
+                      subject:
+                        description: The title that appears as the subject header of the email
+                        type: string
+                        example: Congratulations on your certification!
+                      template:
+                        description: The contents of the email template in markdown
+                        type: string
+                    type: object
+                type: object
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/UnauthenticatedRequest'
+        '404':
+          $ref: '#/components/responses/NotFoundRequest'
+        '422':
+          $ref: '#/components/responses/UnprocessableEntityRequest'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalErrorRequest'
+      security:
+      - bearerAuth: []
+components:
+  responses:
+    NotFoundRequest:
+      description: The specified resource was not found
+      content:
+        application/json:
+          schema:
+            properties:
+              status:
+                type: integer
+                example: 404
+              message:
+                type: string
+                example: Please ensure you are making the request to the correct endpoint.
+            type: object
+    UnauthenticatedRequest:
+      description: Unauthenticated request
+      content:
+        application/json:
+          schema:
+            properties:
+              status:
+                type: integer
+                example: 401
+              message:
+                type: string
+                example: Unauthenticated. You might have provided an invalid access token or your token has already expired.
+            type: object
+    TooManyRequests:
+      description: Too many requests
+      content:
+        application/json:
+          schema:
+            properties:
+              status:
+                type: integer
+                example: 429
+              message:
+                type: string
+                example: You're submitting requests too quickly. Please retry again after 60 seconds.
+            type: object
+    InternalErrorRequest:
+      description: Internal server error
+      content:
+        application/json:
+          schema:
+            properties:
+              status:
+                type: integer
+                example: 500
+              message:
+                type: string
+                example: There was an unexpected error while performing your last action. Please contact us at support@accredify.io with the error code for internal reference
+              code:
+                type: string
+                example: E500
+            type: object
+    UnprocessableEntityRequest:
+      description: Unprocessable entity
+      content:
+        application/json:
+          schema:
+            properties:
+              status:
+                type: integer
+                example: 422
+              errors:
+                type: array
+                items:
+                  type: string
+              message:
+                type: string
+                example: Validation failed for the request.
+            type: object
+    BadRequest:
+      description: Bad request
+      content:
+        application/json:
+          schema:
+            properties:
+              status:
+                type: integer
+                example: 400
+              message:
+                type: string
+                example: We couldn't find you, please try again.
+            type: object
+  securitySchemes:
+    bearerAuth:
+      type: http
+      description: 'JWT Authorization header using the Bearer scheme. Example: ''Authorization: Bearer {token}'''
+      bearerFormat: JWT
+      scheme: bearer

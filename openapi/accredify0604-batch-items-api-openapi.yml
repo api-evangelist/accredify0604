@@ -1,0 +1,341 @@
+openapi: 3.2.0
+info:
+  title: Accredify Dashboard Batch Items API
+  description: This is the API documentation for the Accredify Dashboard, providing access to our services in a development and production environment.
+  version: 2.0.0
+servers:
+- url: http://dashboard.local.accredify.io/api/v2
+  description: Accredify Local (Local)
+- url: https://dashboard.uat.accredify.io/api/v2
+  description: Accredify Sandbox (UAT)
+- url: https://dashboard.accredify.io/api/v2
+  description: Accredify Main Server (Production)
+tags:
+- name: Batch Items
+  description: Batch Items
+paths:
+  /batch-items:
+    get:
+      tags:
+      - Batch Items
+      summary: Get batch items
+      description: Returns a paginated list of batch items scoped to the authenticated user's issuer or institution affiliation.
+      operationId: getBatchItems
+      parameters:
+      - name: page
+        in: query
+        description: The page number to retrieve.
+        required: false
+        schema:
+          type: integer
+          default: 1
+          minimum: 1
+      - name: per_page
+        in: query
+        description: The number of batch items per page.
+        required: false
+        schema:
+          type: integer
+          default: 10
+          enum:
+          - 10
+          - 25
+          - 50
+          - 100
+      - name: exclude_files
+        in: query
+        description: Whether to exclude base64-encoded file payloads from nested documents. Defaults to true for collection responses.
+        required: false
+        schema:
+          type: boolean
+          default: true
+      responses:
+        '200':
+          description: Batch items retrieved successfully.
+          content:
+            application/json:
+              schema:
+                properties:
+                  data:
+                    type: array
+                    items:
+                      properties:
+                        id:
+                          description: Batch item ID
+                          type: integer
+                        status:
+                          description: Current status of the batch item
+                          type: string
+                        documents:
+                          type: array
+                          items:
+                            properties:
+                              id:
+                                description: Document ID
+                                type: integer
+                              hash:
+                                description: Document hash
+                                type:
+                                - string
+                                - 'null'
+                              type:
+                                description: Document type
+                                type: string
+                              status:
+                                description: Current status of the document
+                                type: string
+                              links:
+                                description: Document links
+                                type: object
+                              meta_data:
+                                description: Document metadata
+                                type: object
+                              recipient:
+                                description: Recipient data
+                                type: object
+                              files:
+                                description: Base64-encoded files, included only when exclude_files is false
+                                type: object
+                            type: object
+                      type: object
+                  links:
+                    description: Pagination links
+                    type: object
+                  meta:
+                    description: Pagination metadata
+                    type: object
+                type: object
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/UnauthenticatedRequest'
+        '422':
+          $ref: '#/components/responses/UnprocessableEntityRequest'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalErrorRequest'
+      security:
+      - bearerAuth: []
+  /batch-items/{id}:
+    get:
+      tags:
+      - Batch Items
+      summary: Get a specific batch item
+      description: Returns detailed information about a specific batch item, including its documents and their files, for the authorized user.
+      operationId: getBatchItemById
+      parameters:
+      - name: id
+        in: path
+        description: The ID of the batch item to retrieve
+        required: true
+        schema:
+          type: integer
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                properties:
+                  data:
+                    properties:
+                      id:
+                        description: Batch item ID
+                        type: integer
+                      status:
+                        description: Status of the batch item
+                        type: string
+                      documents:
+                        description: Documents associated with the batch item
+                        type: array
+                        items:
+                          properties:
+                            id:
+                              description: Document ID
+                              type: integer
+                            hash:
+                              description: Document hash
+                              type: string
+                            type:
+                              description: Document type
+                              type: string
+                            status:
+                              description: Document status
+                              type: string
+                            files:
+                              description: Files associated with the document, encoded in base64
+                              properties:
+                                unsigned:
+                                  description: Base64 encoded content of the unsigned file
+                                  type: string
+                                signed:
+                                  description: Base64 encoded content of the signed file
+                                  type: string
+                                pdf:
+                                  description: Base64 encoded content of the PDF file
+                                  type: string
+                              type: object
+                            links:
+                              description: Links associated with the document
+                              properties:
+                                verification_link:
+                                  description: Link to the verification page
+                                  type: string
+                                badge_image_link:
+                                  description: Link to download the badge image
+                                  type: string
+                              type: object
+                          type: object
+                    type: object
+                type: object
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/UnauthenticatedRequest'
+        '404':
+          $ref: '#/components/responses/NotFoundRequest'
+        '422':
+          $ref: '#/components/responses/UnprocessableEntityRequest'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalErrorRequest'
+      security:
+      - bearerAuth: []
+    delete:
+      tags:
+      - Batch Items
+      summary: Revoke a specific batch item
+      description: Revokes a specific batch item and its associated documents, given a reason for the revocation. Supports revocation for both internal certificates and badges.
+      operationId: revokeBatchItem
+      parameters:
+      - name: id
+        in: path
+        description: The ID of the batch item to revoke
+        required: true
+        schema:
+          type: integer
+      requestBody:
+        description: Revocation reason
+        required: true
+        content:
+          application/json:
+            schema:
+              required:
+              - reason
+              properties:
+                reason:
+                  description: Reason for revoking the batch item
+                  type: string
+              type: object
+      responses:
+        '204':
+          description: No Content - Batch item revoked successfully
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/UnauthenticatedRequest'
+        '404':
+          $ref: '#/components/responses/NotFoundRequest'
+        '422':
+          $ref: '#/components/responses/UnprocessableEntityRequest'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalErrorRequest'
+      security:
+      - bearerAuth: []
+components:
+  responses:
+    NotFoundRequest:
+      description: The specified resource was not found
+      content:
+        application/json:
+          schema:
+            properties:
+              status:
+                type: integer
+                example: 404
+              message:
+                type: string
+                example: Please ensure you are making the request to the correct endpoint.
+            type: object
+    UnauthenticatedRequest:
+      description: Unauthenticated request
+      content:
+        application/json:
+          schema:
+            properties:
+              status:
+                type: integer
+                example: 401
+              message:
+                type: string
+                example: Unauthenticated. You might have provided an invalid access token or your token has already expired.
+            type: object
+    TooManyRequests:
+      description: Too many requests
+      content:
+        application/json:
+          schema:
+            properties:
+              status:
+                type: integer
+                example: 429
+              message:
+                type: string
+                example: You're submitting requests too quickly. Please retry again after 60 seconds.
+            type: object
+    InternalErrorRequest:
+      description: Internal server error
+      content:
+        application/json:
+          schema:
+            properties:
+              status:
+                type: integer
+                example: 500
+              message:
+                type: string
+                example: There was an unexpected error while performing your last action. Please contact us at support@accredify.io with the error code for internal reference
+              code:
+                type: string
+                example: E500
+            type: object
+    UnprocessableEntityRequest:
+      description: Unprocessable entity
+      content:
+        application/json:
+          schema:
+            properties:
+              status:
+                type: integer
+                example: 422
+              errors:
+                type: array
+                items:
+                  type: string
+              message:
+                type: string
+                example: Validation failed for the request.
+            type: object
+    BadRequest:
+      description: Bad request
+      content:
+        application/json:
+          schema:
+            properties:
+              status:
+                type: integer
+                example: 400
+              message:
+                type: string
+                example: We couldn't find you, please try again.
+            type: object
+  securitySchemes:
+    bearerAuth:
+      type: http
+      description: 'JWT Authorization header using the Bearer scheme. Example: ''Authorization: Bearer {token}'''
+      bearerFormat: JWT
+      scheme: bearer

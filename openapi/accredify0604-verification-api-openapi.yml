@@ -1,0 +1,522 @@
+openapi: 3.2.0
+info:
+  title: Module Verification API
+  version: '1.0'
+  description: Verification module endpoints
+  contact:
+    name: Accredify
+    url: https://accredify.io
+    email: support@accredify.io
+  termsOfService: https://www.accredify.io/legal
+servers:
+- url: https://nexus.staging.accredify.io
+  description: Staging
+- url: https://nexus.uat.accredify.io
+  description: UAT
+- url: https://nexus.accredify.io
+  description: Production
+tags:
+- name: Verification
+paths:
+  /verification/v1/verify:
+    parameters: []
+    post:
+      summary: Verify Document
+      tags:
+      - Verification
+      security:
+      - OAuth2:
+        - verification-suite
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  not_tampered:
+                    type: boolean
+                  valid_issuer:
+                    type: boolean
+                  recognized_institute:
+                    type: boolean
+                  not_revoked:
+                    type: boolean
+                  trace_id:
+                    type: string
+                  verified_data:
+                    type: object
+                    description: Returned when `keys` are specified in the request. Maps each requested key (dot-notation path) to its verified value.
+                    additionalProperties:
+                      type: string
+                x-examples:
+                  Example 1:
+                    not_tampered: true
+                    valid_issuer: true
+                    recognized_institute: true
+                    not_revoked: true
+                    trace_id: 80c426f4-398e-4760-b030-3dee593c819e
+              examples:
+                Valid document:
+                  value:
+                    not_tampered: true
+                    valid_issuer: true
+                    recognized_institute: true
+                    not_revoked: true
+                    trace_id: 80c426f4-398e-4760-b030-3dee593c819e
+                Tampered document:
+                  value:
+                    not_tampered: false
+                    valid_issuer: true
+                    recognized_institute: true
+                    not_revoked: true
+                    trace_id: 80c426f4-398e-4760-b030-3dee593c819e
+                Document not issued:
+                  value:
+                    not_tampered: true
+                    valid_issuer: false
+                    recognized_institute: true
+                    not_revoked: true
+                    trace_id: 80c426f4-398e-4760-b030-3dee593c819e
+                Issuer verification failed:
+                  value:
+                    not_tampered: true
+                    valid_issuer: true
+                    recognized_institute: false
+                    not_revoked: true
+                    trace_id: 80c426f4-398e-4760-b030-3dee593c819e
+                Document revoked:
+                  value:
+                    not_tampered: true
+                    valid_issuer: true
+                    recognized_institute: true
+                    not_revoked: false
+                    trace_id: 80c426f4-398e-4760-b030-3dee593c819e
+                OpenCert with Keys specified:
+                  value:
+                    not_tampered: true
+                    valid_issuer: true
+                    recognized_institute: true
+                    not_revoked: true
+                    trace_id: 82d31e98-2257-402a-8038-c82798d3ba3e
+                    verified_data:
+                      data.issuers.0.name: 9e593110-13bc-41c4-9f97-372e91fe25a6:string:EdgarCorp
+                '[IDVC] Corporate ID with Keys':
+                  value:
+                    not_tampered: true
+                    valid_issuer: true
+                    recognized_institute: true
+                    not_revoked: true
+                    trace_id: eba16382-e630-4d91-a6bb-17ebb47595cb
+                    verified_data:
+                      credentialSubject.companyName: Acme Singapore Pte Ltd
+                      credentialSubject.companyUEN: 201912345N
+                      credentialSubject.companyAddress.addressCountry: SG
+                      credentialSubject.companyAddress.streetAddress: '123 Acme Street, #01-01'
+          headers: {}
+        '422':
+          description: Unprocessable Entity (WebDAV)
+          content:
+            application/json:
+              schema:
+                oneOf:
+                - type: object
+                  description: Validation error returned when the request fails input validation.
+                  properties:
+                    message:
+                      type: string
+                    errors:
+                      type: object
+                      additionalProperties:
+                        type: array
+                        items:
+                          type: string
+                - type: string
+                  description: Plain-text error returned when the supplied file or payload type is not supported.
+              examples:
+                Invalid request:
+                  value:
+                    message: Either a JSON body or a file must be present.
+                    errors:
+                      body:
+                      - Either a JSON body or a file must be present.
+                Unsupported payload:
+                  value: Unsupported file or payload type
+      operationId: verify-document
+      x-stoplight:
+        id: c4susdbtwjqus
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              x-examples:
+                Example 1:
+                  schema: https://raw.githubusercontent.com/OpenCerts/open-certificate/master/schema/transcripts/2.1/schema.json
+                  version: https://schema.openattestation.com/2.0/schema.json
+                  data:
+                    id: f3bda1da-b1c9-4061-bdbd-1dd648bf43a7:string:1
+                    name: b87cabdf-573b-41aa-ad03-5a985f639814:string:Honorable Knight
+                    issuedOn: dde3f4c3-c37c-4522-bb94-370fea8ddc91:string:2024-03-31T12:00:00+08:00
+                    recipient:
+                      name: 3e7331d6-11b2-4609-a9a5-eb5ce6160869:string:Vasya 1
+                      email: fd65d00f-bc62-4b44-83ad-78266cef8cb5:string:demo+example1@accredify.io
+                      studentId: f93f7a4a-f5c4-49d7-ae28-a6a16e8b99d8:string:123
+                    issuers:
+                    - name: 9e593110-13bc-41c4-9f97-372e91fe25a6:string:EdgarCorp
+                      id: ab91b8e6-121b-4d02-a864-007bb05ccd86:string:did:ethr:0x586f3871b25acbe4c494fb25ba54a98ffa58a5ab#controller
+                      identityProof:
+                        type: 5010234c-7a29-4ee0-bf76-e3b8b7fafd55:string:DNS-DID
+                        key: 641b0f35-c157-4915-ad2b-f9f543e7813a:string:did:ethr:0x586f3871b25acbe4c494fb25ba54a98ffa58a5ab#controller
+                        location: 6dfe331b-10d1-4c0c-a9df-71a8c71463d0:string:edgarcorp.demo.nexus.staging.accredify.io
+                      revocation:
+                        type: e314e66a-aebb-4374-98f8-c40c42b4252f:string:OCSP_RESPONDER
+                        location: e5c7f90b-6d69-4fc8-aa47-578e5c4bcf14:string:https://ocsp.staging.accredify.io
+                    $template:
+                      name: de2adce2-ab89-4f74-bd77-dc58379440e6:string:GENERIC-IR-2023-1
+                      type: bb5a0687-ff04-4143-8237-b6a8e0e57b7e:string:EMBEDDED_RENDERER
+                      url: bdc1ddc2-1c60-444b-8a10-9ae5c9eec373:string:https://renderer.cheetham.me
+                    graduationDate: e83ee697-fc23-40bc-b93b-fb34493c0dd2:string:2024-03-31T12:00:00+08:00
+                    additionalData:
+                      shareLink: 681693fa-31f9-49da-9769-2ce9aeaf57c9:string:https://nexus.staging.accredify.io/short/9ef46998-8cd7-4e27-a617-aa179c1896e2
+                  signature:
+                    type: SHA3MerkleProof
+                    targetHash: 17415f3b663fa83e6deaac7f265cce616c2be8a49220cd830f3751601e56ecfb
+                    proof: []
+                    merkleRoot: 17415f3b663fa83e6deaac7f265cce616c2be8a49220cd830f3751601e56ecfb
+                  proof:
+                  - type: OpenAttestationSignature2018
+                    created: '2025-05-20T15:23:29+08:00'
+                    proofPurpose: assertionMethod
+                    verificationMethod: did:ethr:0x586f3871b25acbe4c494fb25ba54a98ffa58a5ab#controller
+                    signature: '0x9194e9655f26f8c7b5cf76af60b00a93659e5ad16f99ad06642f19b825dd159f0e96333e4d8731cf61a312d447078d6502f40f4d39d5398c0f1db352469c41141b'
+              additionalProperties: true
+              description: A verifiable document or credential — e.g. OpenCerts, OpenAttestation, OpenBadges, or a W3C Verifiable Credential 2.0.
+            examples:
+              OpenCert with no Keys specified:
+                value:
+                  schema: https://raw.githubusercontent.com/OpenCerts/open-certificate/master/schema/transcripts/2.1/schema.json
+                  version: https://schema.openattestation.com/2.0/schema.json
+                  data:
+                    id: f3bda1da-b1c9-4061-bdbd-1dd648bf43a7:string:1
+                    name: b87cabdf-573b-41aa-ad03-5a985f639814:string:Honorable Knight
+                    issuedOn: dde3f4c3-c37c-4522-bb94-370fea8ddc91:string:2024-03-31T12:00:00+08:00
+                    recipient:
+                      name: 3e7331d6-11b2-4609-a9a5-eb5ce6160869:string:Vasya 1
+                      email: fd65d00f-bc62-4b44-83ad-78266cef8cb5:string:demo+example1@accredify.io
+                      studentId: f93f7a4a-f5c4-49d7-ae28-a6a16e8b99d8:string:123
+                    issuers:
+                    - name: 9e593110-13bc-41c4-9f97-372e91fe25a6:string:EdgarCorp
+                      id: ab91b8e6-121b-4d02-a864-007bb05ccd86:string:did:ethr:0x586f3871b25acbe4c494fb25ba54a98ffa58a5ab#controller
+                      identityProof:
+                        type: 5010234c-7a29-4ee0-bf76-e3b8b7fafd55:string:DNS-DID
+                        key: 641b0f35-c157-4915-ad2b-f9f543e7813a:string:did:ethr:0x586f3871b25acbe4c494fb25ba54a98ffa58a5ab#controller
+                        location: 6dfe331b-10d1-4c0c-a9df-71a8c71463d0:string:edgarcorp.demo.nexus.staging.accredify.io
+                      revocation:
+                        type: e314e66a-aebb-4374-98f8-c40c42b4252f:string:OCSP_RESPONDER
+                        location: e5c7f90b-6d69-4fc8-aa47-578e5c4bcf14:string:https://ocsp.staging.accredify.io
+                    $template:
+                      name: de2adce2-ab89-4f74-bd77-dc58379440e6:string:GENERIC-IR-2023-1
+                      type: bb5a0687-ff04-4143-8237-b6a8e0e57b7e:string:EMBEDDED_RENDERER
+                      url: bdc1ddc2-1c60-444b-8a10-9ae5c9eec373:string:https://renderer.cheetham.me
+                    graduationDate: e83ee697-fc23-40bc-b93b-fb34493c0dd2:string:2024-03-31T12:00:00+08:00
+                    additionalData:
+                      shareLink: 681693fa-31f9-49da-9769-2ce9aeaf57c9:string:https://nexus.staging.accredify.io/short/9ef46998-8cd7-4e27-a617-aa179c1896e2
+                  signature:
+                    type: SHA3MerkleProof
+                    targetHash: 17415f3b663fa83e6deaac7f265cce616c2be8a49220cd830f3751601e56ecfb
+                    proof: []
+                    merkleRoot: 17415f3b663fa83e6deaac7f265cce616c2be8a49220cd830f3751601e56ecfb
+                  proof:
+                  - type: OpenAttestationSignature2018
+                    created: '2025-05-20T15:23:29+08:00'
+                    proofPurpose: assertionMethod
+                    verificationMethod: did:ethr:0x586f3871b25acbe4c494fb25ba54a98ffa58a5ab#controller
+                    signature: '0x9194e9655f26f8c7b5cf76af60b00a93659e5ad16f99ad06642f19b825dd159f0e96333e4d8731cf61a312d447078d6502f40f4d39d5398c0f1db352469c41141b'
+              '[IDVC] Corporate ID':
+                value:
+                  '@context':
+                  - https://www.w3.org/ns/credentials/v2
+                  - https://schemas.accredify.io/idvc/contexts/corporate-id-v1.jsonld
+                  credentialSubject:
+                    companyName: Acme Singapore Pte Ltd
+                    companyUEN: 201912345N
+                    id: did:example:singaporean123
+                    name: Tan Wei Ming
+                    nationalRegistrationIdentityCard: S1234567A
+                    passportNumber: E98765432
+                    position: Director
+                    type: CorporateIDCredential
+                  id: urn:uuid:3a5f3d2e-d3a7-4932-822a-0838f0fd01b9
+                  issuer: did:example:accredify
+                  proof:
+                    created: '2021-11-13T18:19:39Z'
+                    cryptosuite: eddsa-rdfc-2022
+                    proofPurpose: assertionMethod
+                    proofValue: z58DAdFfa9SkqZMVPxAQp...jQCrfFPP2oumHKtz
+                    type: DataIntegrityProof
+                    verificationMethod: https://example/issuers/14#key-1
+                  type:
+                  - VerifiableCredential
+                  - CorporateIDCredential
+                  validFrom: '2010-01-01T19:23:24Z'
+                  validUntil: '2020-01-01T19:23:24Z'
+              '[IDVC] Citizen ID':
+                value:
+                  '@context':
+                  - https://www.w3.org/ns/credentials/v2
+                  - https://schemas.accredify.io/idvc/contexts/citizen-id-v1.jsonld
+                  credentialSubject:
+                    fullName: Tan Wei Ming
+                    id: did:example:singaporean123
+                    mobileNumber: +65 9123 4567
+                    nationalRegistrationIdentityCard: S1234567A
+                    passportNumber: E98765432
+                    type: CitizenIDCredential
+                  id: urn:uuid:e1234567-89ab-cdef-0123-456789abcdef
+                  issuer: did:example:accredify
+                  proof:
+                    created: '2021-11-13T18:19:39Z'
+                    cryptosuite: eddsa-rdfc-2022
+                    proofPurpose: assertionMethod
+                    proofValue: z58DAdFfa9SkqZMVPxAQp...jQCrfFPP2oumHKtz
+                    type: DataIntegrityProof
+                    verificationMethod: https://example/issuers/14#key-1
+                  type:
+                  - VerifiableCredential
+                  - CitizenIDCredential
+                  validFrom: '2010-01-01T19:23:24Z'
+                  validUntil: '2020-01-01T19:23:24Z'
+              OpenAttestation:
+                value:
+                  version: https://schema.openattestation.com/2.0/schema.json
+                  data:
+                    productCode: 73a8d48c-c7ed-4590-8b97-988afc8f18e2:string:I003
+                    entityType: 344015f3-9c53-40e7-acec-0cedca45a04e:string:Company
+                    entityName: 752eb960-68cc-4b74-9d4e-506ecebb6e7c:string:ABC COMPANY PTE. LTD.
+                    registrationTransferDate: 62295bf1-bfbc-49ea-8b69-a5c4e196a7f6:string:01/10/2016
+                    uen: 53624869-4b0e-44a2-9f68-b2f24e20b4e8:string:201688888A
+                    incorporationDate: f557527c-b349-4544-8cb8-8ce67941044a:string:08/08/2016
+                    companyType: e6a23196-d968-495e-a3aa-2c411580eea0:string:LIMITED EXEMPT PRIVATE COMPANY
+                    status: 9880e404-e8a5-4433-b9c3-25a12132f369:string:Live
+                    statusDate: f1a09b57-4177-4b2a-90d2-b51d0067363c:string:08/08/2016
+                    address:
+                      type: bc8dc5ed-7873-43bf-a5ac-7b74d9917096:string:local
+                      houseNumber: b1500f1d-6b08-45d9-b699-a5c189493459:string:123
+                      streetName: 3a853d77-2082-4c84-b49f-caca8be9e5fa:string:ABC ROAD
+                      floor: 63dfcad9-b4c7-40a9-85a8-f720f8fba69a:string:01
+                      unit: 1518dddb-0611-43d5-9c14-e04dc30c161b:string:02
+                      buildingName: 324ff99b-e5f0-4f8a-a1ba-1d4770c8e0c5:string:ABC Building
+                      postalCode: 8f594238-c964-4788-a78f-fa4747edabd6:string:123456
+                      formattedAddress: "990acc6d-9fd8-4e20-a5b9-6159e66644e2:string:123 ABC ROAD\n#01-02\nABC BUILDING \nSINGAPORE (123456)"
+                    registrationDate: 44890bf8-a171-4734-80a0-21f6f5b7b12f:string:08/08/2016
+                    lastAgmDate: 6cbd58c2-ba7b-4986-bcb3-6b63a9ed2fbf:string:30/11/2019
+                    lastArDate: 0139d36b-cd5b-4a68-99e0-48a16a6ee180:string:24/08/2020
+                    lastArDateFye: 5cfc0b69-9dcb-42de-a0d0-d9d2548335db:string:31/07/2020
+                    activities:
+                    - name: a270e0ed-e8eb-422e-85fa-ac8db4f007d8:string:MINI-MARTS, CONVENIENCE STORES AND PROVISION SHOPS (47112)
+                      description: b1090795-0df2-400c-9166-8b2e244b8dbd:string:GROCERIES
+                    - name: 81f9599a-8b3c-47c9-b4da-7e11a0626840:string:WHOLESALE TRADE OF A VARIETY OF GOODS WITHOUT A DOMINANT PRODUCT (46900)
+                      description: b5e69ef7-ca16-4ce7-a829-e2d36382906d:string:FOOD AND BEVERAGES
+                    capitals:
+                    - type: 9db6f2a5-2e3b-4980-b391-c750c9248659:string:Issued Share Capital
+                      amount: c711d6fe-d734-4005-84cf-d60aa21084e5:string:1000
+                      shares: e4539750-aa93-4545-8ffc-5273a755bae5:string:1000
+                      currency: 5d0fa071-7aeb-4d89-982f-4784c26c77bd:string:Singapore, Dollars
+                      sharesType: 382627ca-5b6b-4db7-8571-860804887bcf:string:ORDINARY
+                    - type: bf59fa35-56bf-4321-bd5b-28ac1f4cc453:string:Paid Up Share Capital
+                      amount: fb2142d9-b484-4946-8d8f-4b05eaa769eb:string:1000
+                      currency: 033b50cc-013d-4aa0-a347-deeb02688b8d:string:Singapore, Dollars
+                      sharesType: fa2a6b31-e595-41e9-8fec-05ea74357f30:string:ORDINARY
+                    treasuryShares: []
+                    auditFirms:
+                    - name: aeea199d-b64e-4ec6-b8c3-1b8ded92d3e2:string:ABCD LLP
+                    charges: []
+                    representatives:
+                    - name: 37448bc0-ed04-4bde-a9fd-c73f39d3de04:string:LIM AH SEE
+                      id: 2371be94-8b8a-4fd2-9b59-3de2e4275cfc:string:S7654321Z
+                      nationality: 442e09ef-43b4-4264-969e-7dcbb6036d49:string:SINGAPORE CITIZEN
+                      position: c7aff613-b805-4e0f-97fd-d6902cbda8e8:string:Director
+                      address:
+                        type: c065c2a9-99dc-4b77-b9ee-766280c0213c:string:local
+                        houseNumber: 9dcefe79-1296-4bb2-85ac-47d028448850:string:123
+                        streetName: 0004e92d-33f7-4db6-9661-d40baede51d0:string:CBA ROAD
+                        floor: ef0f546c-8148-4c28-8d86-3429699b3533:string:01
+                        unit: 689ba73a-2035-498b-b6e6-7c766c44d3bc:string:02
+                        buildingName: 66341003-e725-4442-93c4-7059b1e92942:string:ABC CONDO
+                        postalCode: 262cf051-5907-43b1-9bc9-2660a3bef75a:string:123456
+                        formattedAddress: 'b57d7736-61be-45a6-946c-ff51f2cde048:string:123 CBA STREET, #01-02, ABC CONDO, SINGAPORE (123456)'
+                      addressSource: 378b42a2-06b7-4a7a-930c-9944ba5e3e70:string:OSCARS
+                      appointmentDate: c84be458-18f8-4125-b53d-f10ea66868d7:string:08/08/2016
+                    shareholders:
+                    - name: 52222af3-67d5-465b-af7a-c34d75c0a016:string:LIM AH SEE
+                      id: da1c4d5e-34ee-460e-a924-48357f49f56b:string:S7654321Z
+                      nationality: 6a048a53-6290-47b7-b93d-47c5ca619889:string:SINGAPORE CITIZEN
+                      address:
+                        type: 2bccb444-8c9c-44e3-9895-3781abdb1394:string:local
+                        houseNumber: b5d512ad-9cfd-40b4-859c-9de618901c9b:string:123
+                        streetName: 032f0ff1-e14a-4800-89da-88a26495045e:string:CBA ROAD
+                        floor: 9bde5339-283e-4e39-87f4-2da4b9c215d9:string:01
+                        unit: 7dc148a9-d741-4186-b970-6358256e4fda:string:02
+                        buildingName: b1b56b0a-375b-4146-8ff6-9c50368c29c1:string:ABC CONDO
+                        postalCode: f15491c5-dc67-46ad-affd-7dc8735c0aa8:string:123456
+                        formattedAddress: 'c8f9be9c-8489-47e1-81b8-deca62077336:string:123 CBA STREET, #01-02, ABC CONDO, SINGAPORE (123456)'
+                      addressSource: 6fa3d081-b1ca-4089-9bca-22e50f1401e0:string:OSCARS
+                      shares: 8f2490a9-3c3f-4b11-8220-e8411b499cbc:string:500
+                      sharesType: c4dee81a-e9ed-4752-91f1-74c926541366:string:ORDINARY
+                      currency: 96799685-ed4f-4fdf-b865-09d4313d6948:string:Singapore, Dollars
+                    - name: bd39cd40-3eec-489d-a548-9b169d5867c4:string:LIM AH HUAT
+                      id: 8498568c-fdf5-4af8-916e-c86ecef45160:string:S8888888H
+                      nationality: 36e2ebe5-6512-4034-9769-8363ad4375e7:string:SINGAPORE CITIZEN
+                      address:
+                        type: df83b4ec-94ae-492e-9287-0153f79428cc:string:local
+                        houseNumber: 734f3a77-28c4-496e-b50b-df39124c2551:string:123
+                        streetName: 81e3f85c-557e-4630-8871-5cf72a25753d:string:ABC AVENUE 8
+                        floor: 6fb79da6-d08e-47f2-afb4-69768f4aa376:string:01
+                        unit: 231d7bdf-a2aa-4a17-9c0f-ca82874c0cef:string:02
+                        buildingName: 7bffed40-65c3-48b8-8fc5-f647da9e2f05:string:DEF CONDO
+                        postalCode: 65065e8c-41c9-4ba9-8150-34784c8c06fd:string:123456
+                        formattedAddress: '18d5ff87-3c2a-484f-9cf6-d966cf74a9dd:string:123 ABC AVENUE 8, #01-02, DEF CONDO, SINGAPORE (123456)'
+                      addressSource: 0c04feb0-efb5-4050-88db-282e407a214b:string:OSCARS
+                      shares: 83c5dd3d-5611-4468-a867-d48dc86e1f21:string:500
+                      sharesType: 1b0c4d7f-f134-4ddb-a513-536776eee51b:string:ORDINARY
+                      currency: 639d0381-b1a5-465b-a042-646060039ac1:string:Singapore, Dollars
+                    receiptNumber: 45f20e61-e30d-461e-990b-709ba63ddd1b:string:ACRAXXXXXXXXXX06
+                    receiptDate: 300aa278-db4b-41ec-88a7-27ce1a610ab9:string:22/10/2019
+                    signatureName: 3b2115fb-7b01-45ad-8425-31050ebcaf9f:string:Tan Yong Tat
+                    authenticationNumber: e315b460-3133-4a7a-8e8f-8d89e4ece4ae:string:IXXXXXXX49
+                    transactionNumber: a471e531-2df3-4080-a5ce-52f5717d0152:string:ACRASAMPLEBP03
+                    qrCode: 58228e38-5a2b-4317-bdd2-bc7237514f54:string:data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAA...<base64 truncated for docs>...
+                    verifyLink: 0d74953d-0d6d-4ebe-9557-b5b789881d7d:string:https://www.acratrustbar.gov.sg/verify/5UPd2yAJcP
+                    issuers:
+                    - id: 5cf448a6-4402-4d4f-8d05-c83e99f716dd:string:did:ethr:0xaFA2760F6157a67658f11651CBF83bB16Ea156aF
+                      name: 58dad76a-2bf7-4abd-ada3-145a813105e6:string:TRUSTBAR
+                      identityProof:
+                        type: 1d0f9f7c-24f4-4e27-b257-69fe2156b866:string:DNS-DID
+                        location: 9093c2f6-a292-4983-b18d-7820db8c6d7a:string:acratrustbar.gov.sg
+                        key: 156f8235-c442-4322-9687-273f826efdda:string:did:ethr:0xaFA2760F6157a67658f11651CBF83bB16Ea156aF#controller
+                      revocation:
+                        type: ce9f56b9-d926-4ea1-89de-4e476186ad45:string:NONE
+                    $template:
+                      name: 24888224-abd6-451b-a27f-f2eeab212c71:string:BP-SAMPLE-2022-1
+                      type: 7a37bd6f-6758-4407-8144-4319300f2542:string:EMBEDDED_RENDERER
+                      url: 59712880-3e7c-4bd7-bd23-ce9de1f16ae7:string:https://renderer.acratrustbar.gov.sg
+                  signature:
+                    type: SHA3MerkleProof
+                    targetHash: a7a207f5417ce7378710483cc85b499aafe5ce20b9a0c115c4560d0773dd48a1
+                    proof: []
+                    merkleRoot: a7a207f5417ce7378710483cc85b499aafe5ce20b9a0c115c4560d0773dd48a1
+                  proof:
+                  - type: OpenAttestationSignature2018
+                    created: '2023-04-05T14:19:50.670Z'
+                    proofPurpose: assertionMethod
+                    verificationMethod: did:ethr:0xaFA2760F6157a67658f11651CBF83bB16Ea156aF#controller
+                    signature: '0x78dbdbb7540303687bd7847de5799d576f4a723ae5b76e8c2f60d4c5bf22b48e48d7cc873440917422a11993b786a56666524bed331f59a30102e7654651388c1b'
+          multipart/form-data:
+            schema:
+              type: object
+              additionalProperties: false
+              description: Upload a document via `file`, or send the credential as a `json` string field. Optionally include `keys` to receive verified values in `verified_data`.
+              properties:
+                file:
+                  type: string
+                  format: binary
+                  description: A document/credential file to verify (.oa, .opencert, .json, .pdf, .png, .svg). Provide either `file` or `json`.
+                json:
+                  type: string
+                  description: The verifiable credential/document as a JSON string. Provide either `json` or `file`.
+                keys:
+                  type: array
+                  items:
+                    type: string
+                  description: Optional keys whose verified values should be returned in `verified_data`. Retrieve available keys from the /extract-keys endpoint.
+                expectedHolder:
+                  type: string
+                  description: 'Optional. Only applies to VerifiableCredential 2.0 presentations. When provided, the presentation''s holder must match this DID exactly; a mismatch is reported as `not_tampered: false`. Ignored for plain Verifiable Credentials (use `allowedIssuers` to constrain the issuer).'
+                allowedIssuers:
+                  type: array
+                  items:
+                    type: object
+                    required:
+                    - did
+                    properties:
+                      did:
+                        type: string
+                        description: The issuer DID to trust.
+                      publicKeyMultibase:
+                        type: string
+                        description: Optional. Pins the public key used to verify this issuer's signature. Accepts a `publicKeyMultibase` value as published in the issuer's DID document (e.g. `z6Mk...` Ed25519 or `zDnae...` P-256) or hex. When omitted, the key is resolved from the issuer's DID / the document's `verificationMethod`.
+                    additionalProperties: false
+                  description: 'Optional. Only applies to VerifiableCredential 2.0 documents. Exclusive allow-list of trusted issuers — a document whose issuer is not listed is reported as `recognized_institute: false`. An entry with `publicKeyMultibase` additionally pins the verification key, defeating documents that carry attacker-controlled keys in their own `verificationMethod`; an entry without it trusts whatever key the DID currently resolves to. May also be sent as a JSON-encoded string.'
+            examples:
+              OpenCert with Keys specified:
+                value:
+                  keys:
+                  - data.issuers.0.name
+                  json: '{"schema":"https://raw.githubusercontent.com/OpenCerts/open-certificate/master/schema/transcripts/2.1/schema.json","version":"https://schema.openattestation.com/2.0/schema.json","data":{"id":"f3bda1da-b1c9-4061-bdbd-1dd648bf43a7:string:1","name":"b87cabdf-573b-41aa-ad03-5a985f639814:string:Honorable Knight","issuedOn":"dde3f4c3-c37c-4522-bb94-370fea8ddc91:string:2024-03-31T12:00:00+08:00","recipient":{"name":"3e7331d6-11b2-4609-a9a5-eb5ce6160869:string:Vasya 1","email":"fd65d00f-bc62-4b44-83ad-78266cef8cb5:string:demo+example1@accredify.io","studentId":"f93f7a4a-f5c4-49d7-ae28-a6a16e8b99d8:string:123"},"issuers":[{"name":"9e593110-13bc-41c4-9f97-372e91fe25a6:string:EdgarCorp","id":"ab91b8e6-121b-4d02-a864-007bb05ccd86:string:did:ethr:0x586f3871b25acbe4c494fb25ba54a98ffa58a5ab#controller","identityProof":{"type":"5010234c-7a29-4ee0-bf76-e3b8b7fafd55:string:DNS-DID","key":"641b0f35-c157-4915-ad2b-f9f543e7813a:string:did:ethr:0x586f3871b25acbe4c494fb25ba54a98ffa58a5ab#controller","location":"6dfe331b-10d1-4c0c-a9df-71a8c71463d0:string:edgarcorp.demo.nexus.staging.accredify.io"},"revocation":{"type":"e314e66a-aebb-4374-98f8-c40c42b4252f:string:OCSP_RESPONDER","location":"e5c7f90b-6d69-4fc8-aa47-578e5c4bcf14:string:https://ocsp.staging.accredify.io"}}],"$template":{"name":"de2adce2-ab89-4f74-bd77-dc58379440e6:string:GENERIC-IR-2023-1","type":"bb5a0687-ff04-4143-8237-b6a8e0e57b7e:string:EMBEDDED_RENDERER","url":"bdc1ddc2-1c60-444b-8a10-9ae5c9eec373:string:https://renderer.cheetham.me"},"graduationDate":"e83ee697-fc23-40bc-b93b-fb34493c0dd2:string:2024-03-31T12:00:00+08:00","additionalData":{"shareLink":"681693fa-31f9-49da-9769-2ce9aeaf57c9:string:https://nexus.staging.accredify.io/short/9ef46998-8cd7-4e27-a617-aa179c1896e2"}},"signature":{"type":"SHA3MerkleProof","targetHash":"17415f3b663fa83e6deaac7f265cce616c2be8a49220cd830f3751601e56ecfb","proof":[],"merkleRoot":"17415f3b663fa83e6deaac7f265cce616c2be8a49220cd830f3751601e56ecfb"},"proof":[{"type":"OpenAttestationSignature2018","created":"2025-05-20T15:23:29+08:00","proofPurpose":"assertionMethod","verificationMethod":"did:ethr:0x586f3871b25acbe4c494fb25ba54a98ffa58a5ab#controller","signature":"0x9194e9655f26f8c7b5cf76af60b00a93659e5ad16f99ad06642f19b825dd159f0e96333e4d8731cf61a312d447078d6502f40f4d39d5398c0f1db352469c41141b"}]}'
+              VC 2.0 with issuer constraints:
+                value:
+                  allowedIssuers: '[{"did":"did:web:vc-issuer.accredify.io:organizations:9c7308e9-a770-4be8-bc0d-21d9cac585bc","publicKeyMultibase":"z6MkiTBz1ymuepAQ4HEHYSF1H8quG5GLVVQR3djdX3mDooWp"},{"did":"did:web:idvc.imda.gov.sg:organizations:9f3ca713-48f4-4ecc-8335-1660a4ec0d9e"}]'
+                  json: '{"@context":["https://www.w3.org/ns/credentials/v2","https://schemas.accredify.io/idvc/contexts/corporate-id-v1.jsonld"],"credentialSubject":{"companyName":"Acme Singapore Pte Ltd","companyUEN":"201912345N","id":"did:example:singaporean123","type":"CorporateIDCredential"},"id":"urn:uuid:3a5f3d2e-d3a7-4932-822a-0838f0fd01b9","issuer":{"id":"did:web:vc-issuer.accredify.io:organizations:9c7308e9-a770-4be8-bc0d-21d9cac585bc","name":"Accredify"},"type":["VerifiableCredential","CorporateIDCredential"],"validFrom":"2025-08-06T00:00:00Z","validUntil":"2026-08-06T00:00:00Z","proof":[{"type":"DataIntegrityProof","cryptosuite":"eddsa-rdfc-2022","created":"2025-07-23T00:00:00Z","verificationMethod":"did:web:vc-issuer.accredify.io:organizations:9c7308e9-a770-4be8-bc0d-21d9cac585bc#key-iAGgYQTUeDjqcf2OdNINUtE7hXM5caMKV4pFxsxkp7U","proofPurpose":"assertionMethod","proofValue":"z2ofP7Zv67PSou1C9g3YBbk71bi5zEMkpdeVvGP8QR5dEZt9mVgS98QpGkV8Lt7f3apfPLjZ6xQiysp3pJDxbgZVP"}]}'
+              '[IDVC] Corporate ID with Keys':
+                value:
+                  keys:
+                  - credentialSubject.companyName
+                  - credentialSubject.companyUEN
+                  - credentialSubject.companyAddress.addressCountry
+                  - credentialSubject.companyAddress.streetAddress
+                  json: '{"@context":["https://www.w3.org/ns/credentials/v2","https://schemas.accredify.io/idvc/contexts/corporate-id-v1.jsonld"],"credentialSubject":{"authorisationScope":["Registration of establishment","Registration of changes"],"companyName":"Acme Singapore Pte Ltd","companyUEN":"201912345N","companyAddress":{"@type":"PostalAddress","addressCountry":"SG","postalCode":"123456","streetAddress":"123 Acme Street, #01-01"},"id":"did:example:singaporean123","mobileNumber":"18221102559","fullName":"John Doe","nationalRegistrationIdentityCard":"S7654321A","passportNumber":"S7654321A","position":"Director","type":"CorporateIDCredential"},"id":"urn:uuid:3a5f3d2e-d3a7-4932-822a-0838f0fd01b9","issuer":{"id":"did:web:vc-issuer.accredify.io:organizations:9c7308e9-a770-4be8-bc0d-21d9cac585bc","name":"Accredify"},"type":["VerifiableCredential","CorporateIDCredential"],"validFrom":"2025-08-06T00:00:00Z","validUntil":"2026-08-06T00:00:00Z","proof":[{"type":"DataIntegrityProof","cryptosuite":"eddsa-rdfc-2022","created":"2025-07-23T00:00:00Z","verificationMethod":"did:web:vc-issuer.accredify.io:organizations:9c7308e9-a770-4be8-bc0d-21d9cac585bc#key-iAGgYQTUeDjqcf2OdNINUtE7hXM5caMKV4pFxsxkp7U","proofPurpose":"assertionMethod","proofValue":"z2ofP7Zv67PSou1C9g3YBbk71bi5zEMkpdeVvGP8QR5dEZt9mVgS98QpGkV8Lt7f3apfPLjZ6xQiysp3pJDxbgZVP"}]}'
+        description: 'For JSON formatted documents, the request body should just contain the document/credential.
+
+
+          For PDF documents, the request should contain the file'
+      parameters:
+      - name: keys[]
+        in: query
+        required: false
+        description: When sending the credential as a raw JSON request body, specify the keys whose verified values should be returned in `verified_data`. Repeat this parameter for multiple keys. Retrieve available keys from the /extract-keys endpoint.
+        schema:
+          type: array
+          items:
+            type: string
+        style: form
+        explode: true
+      - name: expectedHolder
+        in: query
+        required: false
+        description: When sending the credential as a raw JSON request body, constrains a VerifiableCredential 2.0 presentation's holder to this exact DID. See the `expectedHolder` form field for details.
+        schema:
+          type: string
+      - name: allowedIssuers
+        in: query
+        required: false
+        description: When sending the credential as a raw JSON request body, supplies the allowed issuers for VerifiableCredential 2.0 documents as a JSON-encoded array of objects, each with a `did` and an optional `publicKeyMultibase`. See the `allowedIssuers` form field for details.
+        schema:
+          type: string
+        example: '[{"did":"did:example:accredify","publicKeyMultibase":"z6Mk..."},{"did":"did:example:partner"}]'
+      description: 'Endpoint allows for the verification of documents and credentials.
+
+
+        Currently supported types:
+
+        - OpenCerts
+
+        - OpenAttestation
+
+        - OpenBadges
+
+        - Verifiable PDFs
+
+        - VerifiableCredential 2.0'
+components:
+  securitySchemes:
+    OAuth2:
+      type: oauth2
+      description: OAuth2 client credentials flow
+      flows:
+        clientCredentials:
+          tokenUrl: /oauth/token
+          scopes:
+            verification-suite: Ability to access the verification suite APIs

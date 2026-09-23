@@ -1,0 +1,430 @@
+openapi: 3.2.0
+info:
+  title: Workflow Module Workflow Runs API
+  version: '1.0'
+  description: Workflow module endpoints
+  contact:
+    name: Accredify
+    url: https://accredify.io
+    email: support@accredify.io
+  termsOfService: https://www.accredify.io/legal
+servers:
+- url: https://nexus.staging.accredify.io
+  description: Staging
+- url: https://nexus.uat.accredify.io
+  description: UAT
+- url: https://nexus.accredify.io
+  description: Production
+tags:
+- name: Workflow Runs
+paths:
+  /api/v1/workflow-runs/{run}:
+    parameters:
+    - schema:
+        type: string
+      name: run
+      in: path
+      required: true
+    get:
+      summary: Get workflow run by workflow run ID
+      description: Retrieve detailed information about a specific workflow run including its status, execution details, and any errors encountered
+      tags:
+      - Workflow Runs
+      security:
+      - OAuth2:
+        - workflow-runs:read
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WorkflowRun'
+              examples:
+                Example 1:
+                  value:
+                    uuid: 9fad4412-3fa7-4f49-8cd1-65b0e073fdcf
+                    status: completed
+                    status_label: Completed
+                    batch_name: Default batch name
+                    created_by:
+                      uuid: 9f8ed2e8-efa2-400b-ad6e-1caed0767f6d
+                      current_organization_id: 9f001aff-57b4-4bd6-b069-6b07609798a8
+                      name: John Doe
+                      email: api9f001aff-57b4-4bd6-b069-6b07609798a8@accredify.io
+                      email_verified_at: null
+                    started_at: '2025-08-20T04:46:42.000000Z'
+                    ended_at: '2025-08-20T04:46:59.000000Z'
+                    updated_at: '2025-08-20T04:46:59.000000Z'
+                    current_action_sequence_number: 2
+                    workflow_actions_list:
+                    - sequence: 1
+                      type: create_documents
+                      status: completed
+                    - sequence: 2
+                      type: issue_documents
+                      status: running
+        '401':
+          $ref: '#/components/responses/401'
+        '403':
+          $ref: '#/components/responses/403'
+        '404':
+          $ref: '#/components/responses/404'
+      operationId: get-workflow-run-by-id
+    delete:
+      summary: Delete a workflow run
+      description: Permanently delete a workflow run and its associated data. The workflow run must not have issued documents and must be in "failed", "paused", "cancelled" or "rejected" status. Requires the "run-workflow" scope.
+      tags:
+      - Workflow Runs
+      security:
+      - OAuth2:
+        - run-workflow
+      responses:
+        '204':
+          description: Workflow run deleted successfully
+        '401':
+          $ref: '#/components/responses/401'
+        '403':
+          $ref: '#/components/responses/403'
+        '404':
+          $ref: '#/components/responses/404'
+      operationId: delete-workflow-run
+  /api/v1/workflow-runs/{run}/resume:
+    parameters:
+    - schema:
+        type: string
+      name: run
+      in: path
+      required: true
+    post:
+      summary: Resume a paused workflow run
+      description: Resume execution of a paused workflow run. The workflow run must be in "paused" status and the access token must have the "run-workflow" scope.
+      tags:
+      - Workflow Runs
+      security:
+      - OAuth2:
+        - run-workflow
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WorkflowRun'
+              examples:
+                Example 1:
+                  value:
+                    uuid: 9fad4412-3fa7-4f49-8cd1-65b0e073fdcf
+                    status: running
+                    status_label: Running
+                    batch_name: Default batch name
+                    created_by:
+                      uuid: 9f8ed2e8-efa2-400b-ad6e-1caed0767f6d
+                      name: John Doe
+                      role: api_user
+                      email: api9f001aff-57b4-4bd6-b069-6b07609798a8@accredify.io
+                      status: active
+                    started_at: '2025-08-20T04:46:42.000000Z'
+                    ended_at: null
+                    updated_at: '2025-08-20T04:46:43.000000Z'
+        '401':
+          $ref: '#/components/responses/401'
+        '403':
+          $ref: '#/components/responses/403'
+        '404':
+          $ref: '#/components/responses/404'
+      operationId: resume-workflow-run
+  /api/v1/workflow-runs/{run}/documents/download:
+    parameters:
+    - schema:
+        type: string
+        format: uuid
+      name: run
+      in: path
+      required: true
+      description: Workflow Run ID
+    get:
+      summary: Download all documents from workflow run as ZIP
+      description: Download all documents generated by a specific workflow run as a compressed ZIP file
+      tags:
+      - Workflow Runs
+      security:
+      - OAuth2:
+        - workflow-runs:read
+        - documents:read
+      responses:
+        '200':
+          description: OK
+          content:
+            application/zip:
+              schema:
+                type: string
+                format: binary
+                description: ZIP file containing all downloadable documents from the workflow run
+          headers:
+            Content-Disposition:
+              schema:
+                type: string
+                example: attachment; filename="workflow-run-{run-id}-documents.zip"
+              description: Indicates the file should be downloaded with the specified filename
+        '401':
+          $ref: '#/components/responses/401'
+        '403':
+          $ref: '#/components/responses/403'
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: No documents found for this workflow run
+                required:
+                - message
+        '422':
+          $ref: '#/components/responses/422'
+      operationId: download-workflow-run-documents
+components:
+  responses:
+    '404':
+      description: Not found
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+          examples:
+            Example 1:
+              value:
+                message: Not found or not accessible.
+    '422':
+      description: Unprocessable Entity (WebDAV)
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+              errors:
+                type: object
+            required:
+            - message
+            - errors
+          examples:
+            Example 1:
+              value:
+                message: The per page field must be an integer. (and 1 more error)
+                errors:
+                  per_page:
+                  - The per page field must be an integer.
+                  - The selected per page is invalid.
+    '403':
+      description: Forbidden
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+          examples:
+            Example 1:
+              value:
+                message: Invalid scope(s) provided.
+    '401':
+      description: Unauthenticated
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+            required:
+            - message
+          examples:
+            Example 1:
+              value:
+                message: Unauthenticated.
+  schemas:
+    Group:
+      title: Group
+      type: object
+      description: Organization group information from GroupApiResource
+      examples:
+      - uuid: 9f854436-2e67-439e-bdda-e7ab6a4b5874
+        name: Default Access Group
+        description: null
+      properties:
+        uuid:
+          type: string
+          format: uuid
+          description: Unique identifier for the group
+        name:
+          type: string
+          description: Name of the organization group
+        description:
+          type:
+          - string
+          - 'null'
+          description: Description of the organization group (can be null)
+      required:
+      - uuid
+      - name
+    WorkflowRun:
+      type: object
+      properties:
+        uuid:
+          type: string
+          format: uuid
+        status:
+          type: string
+          enum:
+          - running
+          - creating_documents
+          - issuing
+          - pending_confirmation
+          - distributing
+          - creating_public_profile_page
+          - uploading_to_skills_passport
+          - calling_workflow_http_request
+          - in_review
+          - paused
+          - pending_claim
+          - completed
+          - completed_with_failures
+          - cancelled
+          - rejected
+          - failed
+        status_label:
+          type: string
+        batch_name:
+          type: string
+          description: Provided batch_name or generated default
+        created_by:
+          $ref: '#/components/schemas/User'
+          description: User who created this workflow run
+        started_at:
+          type: string
+          format: date-time
+        ended_at:
+          type:
+          - string
+          - 'null'
+          format: date-time
+          description: When the workflow run ended (null if still running)
+        updated_at:
+          type: string
+          format: date-time
+        current_action_sequence_number:
+          type:
+          - integer
+          - 'null'
+          description: Sequence number of the latest workflow action run (null when no action run has started yet)
+        workflow_actions_list:
+          type: array
+          items:
+            type: object
+            properties:
+              sequence:
+                type: integer
+              type:
+                type: string
+              status:
+                type: string
+      examples:
+      - uuid: 9fad4412-3fa7-4f49-8cd1-65b0e073fdcf
+        status: completed
+        status_label: Completed
+        batch_name: Provided batch name
+        created_by:
+          uuid: 9f8ed2e8-efa2-400b-ad6e-1caed0767f6d
+          name: John Doe
+          role: api_user
+          email: api9f001aff-57b4-4bd6-b069-6b07609798a8@accredify.io
+          status: active
+        started_at: '2025-08-20T04:46:42.000000Z'
+        ended_at: '2025-08-20T04:46:59.000000Z'
+        updated_at: '2025-08-20T04:46:59.000000Z'
+        current_action_sequence_number: 2
+        workflow_actions_list:
+        - sequence: 1
+          type: create_documents
+          status: completed
+        - sequence: 2
+          type: issue_documents
+          status: running
+    User:
+      title: User
+      type: object
+      description: User information from UserApiResource
+      examples:
+      - uuid: 9fb13043-3833-4f0e-8aff-996a007e0aa5
+        name: John Doe
+        role: member
+        email: john.doe@accredify.io
+        status: active
+        groups:
+        - uuid: 9f854436-2e67-439e-bdda-e7ab6a4b5874
+          name: Default Access Group
+          description: null
+        - uuid: 9fb13026-0719-4cf5-b559-8fd312eebdbd
+          name: Marketing Team
+          description: null
+      properties:
+        uuid:
+          type: string
+          format: uuid
+          description: Unique identifier for the user
+        name:
+          type: string
+          description: Full name of the user
+        role:
+          type: string
+          description: User's role name (or '-' if no role assigned)
+        email:
+          type: string
+          format: email
+          description: Email address of the user
+        status:
+          type: string
+          description: Current status of the user
+        groups:
+          type: array
+          description: Array of organization groups the user belongs to (only present when groups are loaded)
+          items:
+            $ref: '#/components/schemas/Group'
+      required:
+      - uuid
+      - name
+      - role
+      - email
+      - status
+  securitySchemes:
+    OAuth2:
+      type: oauth2
+      description: OAuth2 client credentials flow
+      flows:
+        clientCredentials:
+          tokenUrl: /oauth/token
+          scopes:
+            run-workflow: Ability to run a specific workflow
+            webcomponent-verification: Ability to get the verification access from webcomponent
+            verification-suite: Ability to access the verification suite APIs
+            workflows:read: Ability to read workflows
+            workflows:write: Ability to write workflows
+            workflow-runs:read: Ability to read workflow runs
+            documents:read: Ability to read documents
+            documents:write: Ability to write documents
+            custom-views:read: Ability to read custom views
+            users:read: Ability to read users
+            design-templates:read: Ability to read design templates
+            document-templates:read: Ability to read document templates
+            groups:read: Ability to read groups
+            courses:read: Ability to read courses
+            courses:write: Ability to write courses

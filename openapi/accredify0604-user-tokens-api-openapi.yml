@@ -1,0 +1,421 @@
+openapi: 3.2.0
+info:
+  title: Auth Module User Tokens API
+  version: '1.0'
+  description: Auth module endpoints
+  contact:
+    name: Accredify
+    url: https://accredify.io
+    email: support@accredify.io
+  termsOfService: https://www.accredify.io/legal
+servers:
+- url: https://nexus.staging.accredify.io
+  description: Staging
+- url: https://nexus.uat.accredify.io
+  description: UAT
+- url: https://nexus.accredify.io
+  description: Production
+tags:
+- name: User Tokens
+paths:
+  /api/v1/organization/users/{user_uuid}/user_tokens:
+    get:
+      summary: Get user tokens for an organization user
+      description: Retrieve paginated user-token metadata for the specified organization user. Tokens can be auto-revoked when the subject user is locked.
+      tags:
+      - User Tokens
+      security:
+      - OAuth2:
+        - user-tokens:read
+      parameters:
+      - name: user_uuid
+        in: path
+        required: true
+        description: The UUID of the target user
+        schema:
+          type: string
+          format: uuid
+      - name: page
+        in: query
+        required: false
+        description: Page number for pagination (starts from 1)
+        schema:
+          type: integer
+          minimum: 1
+          default: 1
+      - name: per_page
+        in: query
+        required: false
+        description: Number of tokens per page (10-50)
+        schema:
+          type: integer
+          enum:
+          - 10
+          - 20
+          - 30
+          - 40
+          - 50
+          default: 10
+      - name: status
+        in: query
+        required: false
+        description: Filter by token status
+        schema:
+          type: string
+          enum:
+          - active
+          - revoked
+          - all
+          default: all
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/UserToken'
+                  links:
+                    $ref: '#/components/schemas/PaginationLinks'
+                  meta:
+                    $ref: '#/components/schemas/PaginationMeta'
+                required:
+                - data
+                - links
+                - meta
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '404':
+          description: User not found
+        '422':
+          description: Validation Error
+      operationId: getApiV1OrganizationUsersByUserUuidUserTokens
+      x-operation-id-source: derived
+    post:
+      summary: Create a user token for an organization user
+      description: 'Create a new user token and return the plaintext bearer token once. Issued tokens may later be auto-revoked when the subject user is locked.
+
+
+        To override the default scopes, pass the `scopes` field as a JSON array. User tokens support only the following scopes:
+
+
+        | Scope | Permission granted |
+
+        | --- | --- |
+
+        | `run-workflow` | Ability to run a specific workflow. |
+
+        | `workflows:read` | Ability to read workflows. |
+
+        | `workflows:write` | Ability to write workflows. |
+
+        | `workflow-runs:read` | Ability to read workflow runs. |
+
+        | `documents:read` | Ability to read documents. |
+
+        | `documents:write` | Ability to write documents. |
+
+        | `users:read` | Ability to read organization users. |
+
+        | `groups:read` | Ability to read organization groups. |
+
+        | `design-templates:read` | Ability to read design templates. |
+
+        | `document-templates:read` | Ability to read document templates. |
+
+        | `courses:read` | Ability to read courses. |
+
+        | `courses:write` | Ability to write courses. |'
+      tags:
+      - User Tokens
+      security:
+      - OAuth2:
+        - user-tokens:write
+      parameters:
+      - name: user_uuid
+        in: path
+        required: true
+        description: The UUID of the target user
+        schema:
+          type: string
+          format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                  maxLength: 255
+                  description: Optional human-readable token name
+                scopes:
+                  type: array
+                  description: Optional scope overrides as a JSON array. Defaults apply when omitted or empty. See the endpoint description for scope permissions.
+                  items:
+                    type: string
+                    enum:
+                    - run-workflow
+                    - workflows:read
+                    - workflows:write
+                    - workflow-runs:read
+                    - documents:read
+                    - documents:write
+                    - users:read
+                    - groups:read
+                    - design-templates:read
+                    - document-templates:read
+                    - courses:read
+                    - courses:write
+                  example:
+                  - workflows:read
+                  - workflow-runs:read
+                  - documents:read
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreatedUserToken'
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '404':
+          description: User not found
+        '422':
+          description: Validation Error
+      operationId: postApiV1OrganizationUsersByUserUuidUserTokens
+      x-operation-id-source: derived
+  /api/v1/organization/user_tokens/{token_uuid}/revoke:
+    post:
+      summary: Revoke a user token
+      description: Manually revoke a user token using its user-token context UUID. Tokens are also revoked automatically when the subject user is locked.
+      tags:
+      - User Tokens
+      security:
+      - OAuth2:
+        - user-tokens:write
+      parameters:
+      - name: token_uuid
+        in: path
+        required: true
+        description: The user-token context UUID
+        schema:
+          type: string
+          format: uuid
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserToken'
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '404':
+          description: User token not found
+      operationId: postApiV1OrganizationUserTokensByTokenUuidRevoke
+      x-operation-id-source: derived
+components:
+  schemas:
+    PaginationMeta:
+      type: object
+      description: Pagination metadata containing information about the current page and total results
+      required:
+      - current_page
+      - from
+      - last_page
+      - links
+      - path
+      - per_page
+      - to
+      - total
+      properties:
+        current_page:
+          type: integer
+          description: Current page number
+        from:
+          type:
+          - 'null'
+          - integer
+          description: Starting record number for current page (null if no results)
+        last_page:
+          type: integer
+          description: Last page number
+        links:
+          type: array
+          description: Array of pagination link objects
+          items:
+            type: object
+            required:
+            - url
+            - label
+            - active
+            properties:
+              url:
+                type:
+                - 'null'
+                - string
+                description: URL for the pagination link (null for disabled links)
+              label:
+                type: string
+                description: Display label for the pagination link
+              active:
+                type: boolean
+                description: Whether this link represents the current page
+        path:
+          type: string
+          description: Base path for the API endpoint
+        per_page:
+          type: integer
+          description: Number of items per page
+        to:
+          type:
+          - 'null'
+          - integer
+          description: Ending record number for current page (null if no results)
+        total:
+          type: integer
+          description: Total number of records
+      examples:
+      - current_page: 1
+        from: 1
+        last_page: 1
+        links:
+        - url: null
+          label: '&laquo; Previous'
+          active: false
+        - url: http://nexus.localhost:8080/api/v1/organization/users?page=1
+          label: '1'
+          active: true
+        - url: null
+          label: Next &raquo;
+          active: false
+        path: http://nexus.localhost:8080/api/v1/organization/users
+        per_page: 10
+        to: 3
+        total: 3
+    CreatedUserTokenSecret:
+      type: object
+      required:
+      - token
+      properties:
+        token:
+          type: string
+          description: Plaintext bearer token shown only once at creation
+    PaginationLinks:
+      type: object
+      description: Pagination links for navigating through paginated results
+      required:
+      - first
+      - last
+      - prev
+      - next
+      properties:
+        first:
+          type: string
+          description: URL for the first page
+        last:
+          type: string
+          description: URL for the last page
+        prev:
+          type:
+          - string
+          - 'null'
+          description: URL for the previous page (null if on first page)
+        next:
+          type:
+          - string
+          - 'null'
+          description: URL for the next page (null if on last page)
+      examples:
+      - first: http://nexus.localhost:8080/api/workflows?page=1
+        last: http://nexus.localhost:8080/api/workflows?page=1
+        prev: null
+        next: null
+    CreatedUserToken:
+      allOf:
+      - $ref: '#/components/schemas/UserToken'
+      - $ref: '#/components/schemas/CreatedUserTokenSecret'
+    UserToken:
+      type: object
+      description: User token metadata object
+      required:
+      - uuid
+      - name
+      - scopes
+      - created_at
+      - expires_at
+      - last_used_at
+      - is_revoked
+      properties:
+        uuid:
+          type: string
+          format: uuid
+          description: User-token context UUID
+        name:
+          type: string
+          description: Human-readable token name
+        scopes:
+          type: array
+          items:
+            type: string
+          description: OAuth scopes granted to the token
+        created_at:
+          type: string
+          format: date-time
+          description: Token creation timestamp
+        expires_at:
+          type:
+          - string
+          - 'null'
+          format: date-time
+          description: Token expiry timestamp
+        last_used_at:
+          type:
+          - string
+          - 'null'
+          format: date-time
+          description: Last usage timestamp
+        is_revoked:
+          type: boolean
+          description: Whether token is revoked (manually or automatically when subject user is locked)
+  securitySchemes:
+    OAuth2:
+      type: oauth2
+      description: OAuth2 client credentials flow
+      flows:
+        clientCredentials:
+          tokenUrl: /oauth/token
+          scopes:
+            run-workflow: Ability to run a specific workflow
+            webcomponent-verification: Ability to get the verification access from webcomponent
+            verification-suite: Ability to access the verification suite APIs
+            workflows:read: Ability to read workflows
+            workflows:write: Ability to write workflows
+            workflow-runs:read: Ability to read workflow runs
+            documents:read: Ability to read documents
+            documents:write: Ability to write documents
+            custom-views:read: Ability to read custom views
+            users:read: Ability to read users
+            users:write: Ability to write users
+            design-templates:read: Ability to read design templates
+            document-templates:read: Ability to read document templates
+            groups:read: Ability to read groups
+            groups:write: Ability to write groups
+            courses:read: Ability to read courses
+            courses:write: Ability to write courses
+            roles:read: Ability to read roles
+            user-tokens:read: Ability to read user tokens
+            user-tokens:write: Ability to write user tokens

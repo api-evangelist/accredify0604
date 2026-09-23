@@ -1,0 +1,614 @@
+openapi: 3.2.0
+info:
+  title: Accredify Dashboard Issue API
+  description: This is the API documentation for the Accredify Dashboard, providing access to our services in a development and production environment.
+  version: 1.0.0
+servers:
+- url: http://dashboard.local.accredify.io/api
+  description: Accredify Local (Local)
+- url: https://dashboard.uat.accredify.io/api
+  description: Accredify Sandbox (UAT)
+- url: https://dashboard.accredify.io/api
+  description: Accredify Main Server (Production)
+tags:
+- name: Issue
+  description: Issue
+paths:
+  /v1/uploadBatch:
+    post:
+      tags:
+      - Issue
+      summary: Upload a batch to the dashboard
+      description: Uploads a batch consisting of unsigned JSON files. Once the batch has been generated the users can log into the dashboard to complete the issuance process
+      operationId: uploadBatch
+      requestBody:
+        description: Information require to create a batch
+        required: true
+        content:
+          application/json:
+            schema:
+              required:
+              - instance
+              - batchNo
+              - courseCode
+              - batchSize
+              - totalMsgs
+              - msgSeq
+              - numOfDocs
+              - timestamp
+              - file
+              properties:
+                instance:
+                  description: Whether this is meant for the testnet (TST) or mainnet (PRD)
+                  type: string
+                  example: TST
+                batchNo:
+                  description: The name of the batch that is to be created
+                  type: string
+                  example: Batch 001
+                courseCode:
+                  description: The name of the course to which this batch will be created under
+                  type: string
+                  example: Course001
+                batchSize:
+                  description: The total number of documents that will be in this batch
+                  type: integer
+                  format: int32
+                  example: '1'
+                totalMsgs:
+                  description: The total number of requests that will be sent as part of this batch
+                  type: integer
+                  format: int32
+                  example: '1'
+                msgSeq:
+                  description: The sequence number of this request
+                  type: integer
+                  format: int32
+                  example: '1'
+                numOfDocs:
+                  description: The number of documents that are in this request
+                  type: integer
+                  format: int32
+                  example: '1'
+                timestamp:
+                  description: Timestamp of the request
+                  type: string
+                  format: date-time
+                  example: '2019-09-11T17:21:45+08:00'
+                file:
+                  description: The base64 encoded version of the zip file containing the JSON files
+                  type: string
+                  example: UEsDBBQACAgIAON7XVEAAAAAAAAAAAAAAAAxAAAATlVTLUEwMDAw.........
+              type: object
+      responses:
+        '200':
+          description: Success, all requests received, batch is now creating
+          content:
+            application/json:
+              schema:
+                properties:
+                  instance:
+                    description: Whether this is meant for the testnet (TST) or mainnet (PRD)
+                    type: string
+                    example: TST
+                  batchNo:
+                    description: The name of the batch that is to be created
+                    type: string
+                    example: Batch 001
+                  courseCode:
+                    description: The name of the course to which this batch will be created under
+                    type: string
+                    example: Course001
+                  batchSize:
+                    description: The total number of documents that will be in this batch
+                    type: integer
+                    format: int32
+                    example: '1'
+                  totalMsgs:
+                    description: The total number of requests that will be sent as part of this batch
+                    type: integer
+                    format: int32
+                    example: '1'
+                  msgSeq:
+                    description: The sequence number of this request
+                    type: integer
+                    format: int32
+                    example: '1'
+                  numOfDocs:
+                    description: The number of documents that are in this request
+                    type: integer
+                    format: int32
+                    example: '1'
+                  status:
+                    description: The status of the batch
+                    type: string
+                    example: Creating
+                type: object
+        '201':
+          description: Success, request acknowledged
+          content:
+            application/json:
+              schema:
+                properties:
+                  instance:
+                    description: Whether this is meant for the testnet (TST) or mainnet (PRD)
+                    type: string
+                    example: TST
+                  batchNo:
+                    description: The name of the batch that is to be created
+                    type: string
+                    example: Batch 001
+                  courseCode:
+                    description: The name of the course to which this batch will be created under
+                    type: string
+                    example: Course001
+                  batchSize:
+                    description: The total number of documents that will be in this batch
+                    type: integer
+                    format: int32
+                    example: '1'
+                  totalMsgs:
+                    description: The total number of requests that will be sent as part of this batch
+                    type: integer
+                    format: int32
+                    example: '1'
+                  msgSeq:
+                    description: The sequence number of this request
+                    type: integer
+                    format: int32
+                    example: '1'
+                  numOfDocs:
+                    description: The number of documents that are in this request
+                    type: integer
+                    format: int32
+                    example: '1'
+                  status:
+                    description: The status of the batch
+                    type: string
+                    example: ACK
+                type: object
+        '400':
+          description: Error
+          content:
+            application/json:
+              schema:
+                properties:
+                  instance:
+                    description: Whether this is meant for the testnet (TST) or mainnet (PRD)
+                    type: string
+                    example: TST
+                  batchNo:
+                    description: The name of the batch that is to be created
+                    type: string
+                    example: Batch 001
+                  courseCode:
+                    description: The name of the course to which this batch will be created under
+                    type: string
+                    example: Course001
+                  batchSize:
+                    description: The total number of documents that will be in this batch
+                    type: integer
+                    format: int32
+                    example: '1'
+                  totalMsgs:
+                    description: The total number of requests that will be sent as part of this batch
+                    type: integer
+                    format: int32
+                    example: '1'
+                  msgSeq:
+                    description: The sequence number of this request
+                    type: integer
+                    format: int32
+                    example: '1'
+                  numOfDocs:
+                    description: The number of documents that are in this request
+                    type: integer
+                    format: int32
+                    example: '1'
+                  status:
+                    description: The status of the batch
+                    type: string
+                    example: ERROR
+                  code:
+                    description: The error code of the error encounted
+                    type: string
+                    example: U403
+                  message:
+                    type: string
+                    example: BatchNo has already been issued before
+                type: object
+  /v1/uploadBatchExcel:
+    post:
+      tags:
+      - Issue
+      summary: Upload a batch via Excel to the dashboard
+      description: Uploads a batch consisting of an Excel file. Once the batch has been generated the users can log into the dashboard to complete the issuance process
+      operationId: uploadBatchExcel
+      requestBody:
+        description: Information require to create a batch
+        required: true
+        content:
+          application/json:
+            schema:
+              required:
+              - instance
+              - batchNo
+              - courseCode
+              - timestamp
+              - file
+              properties:
+                instance:
+                  description: Whether this is meant for the testnet (TST) or mainnet (PRD)
+                  type: string
+                  example: TST
+                timestamp:
+                  description: Timestamp of the request
+                  type: string
+                  format: date-time
+                  example: '2019-09-11T17:21:45+08:00'
+                batchNo:
+                  description: The name of the batch that is to be created
+                  type: string
+                  example: Batch 001
+                courseCode:
+                  description: The name of the course to which this batch will be created under
+                  type: string
+                  example: Course001
+                file:
+                  description: The base64 encoded version of the Excel file
+                  type: string
+                  example: UEsDBBQACAgIAON7XVEAAAAAAAAAAAAAAAAxAAAATlVTLUEwMDAw.........
+              type: object
+      responses:
+        '200':
+          description: Success, all requests received, batch is now creating
+          content:
+            application/json:
+              schema:
+                properties:
+                  instance:
+                    description: Whether this is meant for the testnet (TST) or mainnet (PRD)
+                    type: string
+                    example: TST
+                  batchNo:
+                    description: The name of the batch that is to be created
+                    type: string
+                    example: Batch 001
+                  courseCode:
+                    description: The name of the course to which this batch will be created under
+                    type: string
+                    example: Course001
+                  status:
+                    description: The status of the batch
+                    type: string
+                    example: Creating
+                type: object
+        '201':
+          description: Success, request acknowledged
+          content:
+            application/json:
+              schema:
+                properties:
+                  instance:
+                    description: Whether this is meant for the testnet (TST) or mainnet (PRD)
+                    type: string
+                    example: TST
+                  batchNo:
+                    description: The name of the batch that is to be created
+                    type: string
+                    example: Batch 001
+                  courseCode:
+                    description: The name of the course to which this batch will be created under
+                    type: string
+                    example: Course001
+                  status:
+                    description: The status of the batch
+                    type: string
+                    example: ACK
+                type: object
+        '400':
+          description: Error
+          content:
+            application/json:
+              schema:
+                properties:
+                  instance:
+                    description: Whether this is meant for the testnet (TST) or mainnet (PRD)
+                    type: string
+                    example: TST
+                  batchNo:
+                    description: The name of the batch that is to be created
+                    type: string
+                    example: Batch 001
+                  courseCode:
+                    description: The name of the course to which this batch will be created under
+                    type: string
+                    example: Course001
+                  status:
+                    description: The status of the batch
+                    type: string
+                    example: ERROR
+                  code:
+                    description: The error code of the error encounted
+                    type: string
+                    example: U403
+                  message:
+                    type: string
+                    example: BatchNo has already been issued before
+                type: object
+  /v1/uploadIssueBatch:
+    post:
+      tags:
+      - Issue
+      summary: Uploads and issue a batch to the dashboard
+      description: Uploads a batch consisting of unsigned JSON files. This process is straight through, so the certificates will be immediately appended on the blockchain
+      operationId: uploadIssueBatch
+      parameters:
+      - name: json
+        in: query
+        description: Whether the response should contain the json of the certificate
+        required: false
+        schema:
+          type: boolean
+        example: 'true'
+      requestBody:
+        description: Information require to create a batch
+        required: true
+        content:
+          application/json:
+            schema:
+              required:
+              - instance
+              - batchNo
+              - courseCode
+              - batchSize
+              - totalMsgs
+              - msgSeq
+              - numOfDocs
+              - timestamp
+              - file
+              properties:
+                instance:
+                  description: Whether this is meant for the testnet (TST) or mainnet (PRD)
+                  type: string
+                  example: TST
+                batchNo:
+                  description: The name of the batch that is to be created
+                  type: string
+                  example: Batch 001
+                courseCode:
+                  description: The name of the course to which this batch will be created under
+                  type: string
+                  example: Course001
+                batchSize:
+                  description: The total number of documents that will be in this batch
+                  type: integer
+                  format: int32
+                  example: '1'
+                totalMsgs:
+                  description: The total number of requests that will be sent as part of this batch
+                  type: integer
+                  format: int32
+                  example: '1'
+                msgSeq:
+                  description: The sequence number of this request
+                  type: integer
+                  format: int32
+                  example: '1'
+                numOfDocs:
+                  description: The number of documents that are in this request
+                  type: integer
+                  format: int32
+                  example: '1'
+                timestamp:
+                  description: Timestamp of the request
+                  type: string
+                  format: date-time
+                  example: '2019-09-11T17:21:45+08:00'
+                file:
+                  description: The base64 encoded version of the zip file containing the JSON files
+                  type: string
+                  example: UEsDBBQACAgIAON7XVEAAAAAAAAAAAAAAAAxAAAATlVTLUEwMDAw.........
+              type: object
+      responses:
+        '200':
+          description: Success
+          content:
+            application/json:
+              schema:
+                properties:
+                  instance:
+                    description: Whether this is meant for the testnet (TST) or mainnet (PRD)
+                    type: string
+                    example: TST
+                  batchNo:
+                    description: The name of the batch that is to be created
+                    type: string
+                    example: Batch 001
+                  courseCode:
+                    description: The name of the course to which this batch will be created under
+                    type: string
+                    example: Course001
+                  batchSize:
+                    description: The total number of documents that will be in this batch
+                    type: integer
+                    format: int32
+                    example: '1'
+                  totalMsgs:
+                    description: The total number of requests that will be sent as part of this batch
+                    type: integer
+                    format: int32
+                    example: '1'
+                  msgSeq:
+                    description: The sequence number of this request
+                    type: integer
+                    format: int32
+                    example: '1'
+                  numOfDocs:
+                    description: The number of documents that are in this request
+                    type: integer
+                    format: int32
+                    example: '1'
+                  status:
+                    type: string
+                    example: Issued
+                  merkleRoot:
+                    type: string
+                    example: '0x091f976c8492ef73da7b43d9a0535e6ebd392f2a8372fadaaac5c415504a5cd6'
+                  certificates:
+                    properties:
+                      transactionHash:
+                        type: string
+                        example: '0x5c82b6ac1b4a85542ad46fde57688986852b46a6d4203631a0688e804b1f0858'
+                    type: array
+                    items:
+                      properties:
+                        CertId:
+                          description: The certificate's ID in the batch
+                          type: string
+                          example: Test001
+                        certHash:
+                          description: The certificate's unique hash
+                          type: string
+                          example: '0x597d55f4bda76fe1b56840c81537ef26425ecd7f278a25a4f7f33259691e2b57'
+                        qrCode:
+                          description: The QR code leading to the certificate (Share must be enabled)
+                          type: string
+                          example: data:image/png;base64,
+                        shareLink:
+                          description: The link leading to the certificate (Share must be enabled)
+                          type: string
+                          example: https://www.accredify.io/health?id=89933af8-c139-4870-a4ff-a064cae32d43
+                        json:
+                          description: The JSON of the certificate (json parameter must be true)
+                          type: string
+                      type: object
+                type: object
+        '400':
+          description: Error
+          content:
+            application/json:
+              schema:
+                properties:
+                  instance:
+                    description: Whether this is meant for the testnet (TST) or mainnet (PRD)
+                    type: string
+                    example: TST
+                  batchNo:
+                    description: The name of the batch that is to be created
+                    type: string
+                    example: Batch 001
+                  courseCode:
+                    description: The name of the course to which this batch will be created under
+                    type: string
+                    example: Course001
+                  batchSize:
+                    description: The total number of documents that will be in this batch
+                    type: integer
+                    format: int32
+                    example: '1'
+                  totalMsgs:
+                    description: The total number of requests that will be sent as part of this batch
+                    type: integer
+                    format: int32
+                    example: '1'
+                  msgSeq:
+                    description: The sequence number of this request
+                    type: integer
+                    format: int32
+                    example: '1'
+                  numOfDocs:
+                    description: The number of documents that are in this request
+                    type: integer
+                    format: int32
+                    example: '1'
+                  status:
+                    type: string
+                    example: ERROR
+                  code:
+                    type: string
+                    example: U403
+                  message:
+                    type: string
+                    example: BatchNo has already been issued before
+                type: object
+  /v1/sendEmails:
+    post:
+      tags:
+      - Issue
+      summary: Triggers the sending of emails for the certificates provided
+      description: Triggers the sending of emails based on the certificate hashes provided
+      operationId: sendEmails
+      requestBody:
+        description: Information on the certificates that should be sent by email
+        required: true
+        content:
+          application/json:
+            schema:
+              properties:
+                certificates:
+                  type: array
+                  items:
+                    required:
+                    - certHash
+                    - encrypt
+                    properties:
+                      certHash:
+                        description: The certificate's hash
+                        type: string
+                        example: '0x36b4232312e454252904ca36b1bf208909481ee0d5e593670af08086411b73c5'
+                      encrypt:
+                        description: Whether the files should be encrypted upon distribution
+                        type: boolean
+                        example: 'true'
+                    type: object
+              type: object
+      responses:
+        '200':
+          description: Success, all the emails will be sent for the specified certs
+          content:
+            application/json:
+              schema:
+                properties:
+                  message:
+                    description: The sucess message
+                    type: string
+                    example: Successfully sent emails
+                  code:
+                    description: The status of the call
+                    type: string
+                    example: '200'
+                  status:
+                    description: The status of the batch
+                    type: string
+                    example: '200'
+                type: object
+        '400':
+          description: Error
+          content:
+            application/json:
+              schema:
+                properties:
+                  status:
+                    description: The reason why the call was unsuccessful
+                    type: string
+                    example: Certificate(s) could not be sent as they are invalid
+                  errors:
+                    properties:
+                      certHash:
+                        type: array
+                        items:
+                          description: Why the certificate could not be sent
+                          type: string
+                          example: '''0x36b4232312e454252904ca36b1bf208909481ee0d5e593670af08086411b73c5'' does not exist'
+                    type: object
+                type: object
+      security:
+      - bearerAuth: []
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      description: 'JWT Authorization header using the Bearer scheme. Example: ''Authorization: Bearer {token}'''
+      bearerFormat: JWT
+      scheme: bearer

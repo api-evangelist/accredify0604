@@ -1,0 +1,2084 @@
+openapi: 3.2.0
+info:
+  title: Accredify0604 Courses API
+  version: '1.0'
+  description: 'Operations tagged Courses across 2 of this provider''s published API definitions: accredify0604-dashboard-v2-openapi.yaml, accredify0604-nexus-workflow-openapi.yaml. Each path carries the servers of the definition it was published in.'
+servers:
+- url: http://dashboard.local.accredify.io/api/v2
+  description: Accredify Local (Local)
+- url: https://dashboard.uat.accredify.io/api/v2
+  description: Accredify Sandbox (UAT)
+- url: https://dashboard.accredify.io/api/v2
+  description: Accredify Main Server (Production)
+- url: https://nexus.staging.accredify.io
+  description: Staging
+- url: https://nexus.uat.accredify.io
+  description: UAT
+- url: https://nexus.accredify.io
+  description: Production
+tags:
+- name: Courses
+  description: Courses
+paths:
+  /courses:
+    get:
+      tags:
+      - Courses
+      summary: Get list of courses
+      description: Returns a paginated list of courses for the logged-in issuer. Clients can specify 'page' and 'per_page' query parameters to control pagination. Setting 'per_page' to -1 returns all courses without pagination.
+      operationId: getCourses
+      parameters:
+      - name: search
+        in: query
+        description: Search term for filtering courses by courseCode.
+        required: false
+        schema:
+          type: string
+      - name: page
+        in: query
+        description: The page number to retrieve
+        required: false
+        schema:
+          type: integer
+          default: 1
+      - name: per_page
+        in: query
+        description: The number of courses per page. Set to -1 to return all courses.
+        required: false
+        schema:
+          type: integer
+          default: 10
+          enum:
+          - 10
+          - 25
+          - 50
+          - 100
+          - -1
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                properties:
+                  data:
+                    type: array
+                    items:
+                      properties:
+                        id:
+                          description: Provided by Accredify
+                          type: integer
+                          example: 1
+                        course_code:
+                          description: The code to identify the course
+                          type: string
+                          example: COURSE101
+                        course_title:
+                          description: The course's title
+                          type: string
+                          example: Introduction to Course
+                        course_description:
+                          description: The course's description
+                          type: string
+                          example: A detailed course description.
+                        schema:
+                          description: The course's schema
+                          type: string
+                          example: OAv2
+                        issuance_method:
+                          description: The course's issuance method, ['badge', 'certificate', 'certificate_and_badge', 'certificate_with_user_pdf']
+                          type: string
+                          example: badge
+                        template:
+                          properties:
+                            id:
+                              description: Provided by Accredify
+                              type: integer
+                              example: 1
+                            name:
+                              description: Provided by Accredify for identifying the template
+                              type: string
+                              example: Standard Template
+                            alias:
+                              description: Provided by customer for identifying the template
+                              type: string
+                              example: standard_template
+                            description:
+                              description: Provided by Accredify for identifying the template
+                              type: string
+                              example: A standard template for general use.
+                          type: object
+                        email_template:
+                          properties:
+                            id:
+                              description: Provided by Accredify
+                              type: integer
+                              example: 1
+                            name:
+                              description: Name of your email template
+                              type: string
+                              example: Standard Email Template
+                            description:
+                              description: Description of your email template
+                              type: string
+                              example: A standard template for general use.
+                            subject:
+                              description: The title that appears as the subject header of the email
+                              type: string
+                              example: Congratulations on your certification!
+                            template:
+                              description: The contents of the email template in markdown
+                              type: string
+                          type: object
+                        sharing:
+                          properties:
+                            share_enabled:
+                              description: Is sharing enabled
+                              type: boolean
+                            share_link:
+                              description: Share link (defaults to Accredify's share link if none provided)
+                              type: string
+                          type: object
+                        configurations:
+                          description: For a list of configurations, please visit https://accredify.notion.site/Course-Configurations-ec71dbcecdb643a5b2277c76b929ba86
+                          type: object
+                          example:
+                            hasIssuedDate: true
+                            hasCertId: true
+                            hasEmail: false
+                            allMustApprove: false
+                        expected_attributes:
+                          type: array
+                          items:
+                            type: string
+                      type: object
+                  links:
+                    description: Links for pagination
+                    properties:
+                      first:
+                        type: string
+                        example: https://api.example.com/courses?page=1
+                      last:
+                        type: string
+                        example: https://api.example.com/courses?page=10
+                      prev:
+                        type: string
+                        example: 'null'
+                      next:
+                        type: string
+                        example: https://api.example.com/courses?page=2
+                    type: object
+                  meta:
+                    description: Additional metadata for pagination
+                    properties:
+                      current_page:
+                        type: integer
+                        example: 1
+                      from:
+                        type: integer
+                        example: 1
+                      last_page:
+                        type: integer
+                        example: 10
+                      path:
+                        type: string
+                        example: https://api.example.com/courses
+                      per_page:
+                        type: integer
+                        example: 10
+                      to:
+                        type: integer
+                        example: 10
+                      total:
+                        type: integer
+                        example: 100
+                    type: object
+                type: object
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/UnauthenticatedRequest'
+        '404':
+          $ref: '#/components/responses/NotFoundRequest'
+        '422':
+          $ref: '#/components/responses/UnprocessableEntityRequest'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalErrorRequest'
+      security:
+      - bearerAuth: []
+    post:
+      tags:
+      - Courses
+      summary: Add a new course
+      description: Creates a new course with the given settings
+      operationId: createCourse
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              required:
+              - course_code
+              - course_title
+              - course_description
+              - issuance_method
+              - configurations
+              properties:
+                course_code:
+                  description: Unique code for the course
+                  type: string
+                  example: COURSE101
+                course_title:
+                  description: Title of the course
+                  type: string
+                  example: Introduction to Course
+                course_description:
+                  description: Description of the course
+                  type: string
+                  example: A detailed course description.
+                issuance_method:
+                  description: The course's issuance method, ['badge', 'certificate', 'certificate_and_badge', 'certificate_with_user_pdf']
+                  type: string
+                  example: badge
+                schema:
+                  description: Schema version for the course, required only when the issuance_method is ['certificate', 'certificate_and_badge']
+                  type: string
+                  example: OAv2
+                template_id:
+                  description: ID of the template to be used for this course, required only when the issuance_method is ['certificate', 'certificate_and_badge']
+                  type: integer
+                  example: 1
+                email_template_id:
+                  description: ID of the email template to be used for this course
+                  type: integer
+                  example: 1
+                sharing:
+                  properties:
+                    share_enabled:
+                      description: Whether or not sharing is enabled for the course
+                      type: boolean
+                      example: true
+                    share_link:
+                      description: Custom share link for the course
+                      type: string
+                      example: http://example.com/share
+                  type: object
+                configurations:
+                  description: Array of course-specific configurations. For a list of configurations, please visit https://accredify.notion.site/Course-Configurations-ec71dbcecdb643a5b2277c76b929ba86
+                  type: array
+                  items:
+                    properties:
+                      key:
+                        description: Configuration key
+                        type: string
+                      value:
+                        description: Configuration value
+                        type: string
+                    type: object
+              type: object
+      responses:
+        '201':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                properties:
+                  data:
+                    properties:
+                      id:
+                        description: Provided by Accredify
+                        type: integer
+                        example: 1
+                      course_code:
+                        description: The code to identify the course
+                        type: string
+                        example: COURSE101
+                      course_title:
+                        description: The course's title
+                        type: string
+                        example: Introduction to Course
+                      course_description:
+                        description: The course's description
+                        type: string
+                        example: A detailed course description.
+                      schema:
+                        description: The course's schema
+                        type: string
+                        example: OAv2
+                      issuance_method:
+                        description: The course's issuance method, ['badge', 'certificate', 'certificate_and_badge', 'certificate_with_user_pdf']
+                        type: string
+                        example: badge
+                      template:
+                        properties:
+                          id:
+                            description: Provided by Accredify
+                            type: integer
+                            example: 1
+                          name:
+                            description: Provided by Accredify for identifying the template
+                            type: string
+                            example: Standard Template
+                          alias:
+                            description: Provided by customer for identifying the template
+                            type: string
+                            example: standard_template
+                          description:
+                            description: Provided by Accredify for identifying the template
+                            type: string
+                            example: A standard template for general use.
+                        type: object
+                      email_template:
+                        properties:
+                          id:
+                            description: Provided by Accredify
+                            type: integer
+                            example: 1
+                          name:
+                            description: Name of your email template
+                            type: string
+                            example: Standard Email Template
+                          description:
+                            description: Description of your email template
+                            type: string
+                            example: A standard template for general use.
+                          subject:
+                            description: The title that appears as the subject header of the email
+                            type: string
+                            example: Congratulations on your certification!
+                          template:
+                            description: The contents of the email template in markdown
+                            type: string
+                        type: object
+                      sharing:
+                        properties:
+                          share_enabled:
+                            description: Is sharing enabled
+                            type: boolean
+                          share_link:
+                            description: Share link (defaults to Accredify's share link if none provided)
+                            type: string
+                        type: object
+                      configurations:
+                        description: For a list of configurations, please visit https://accredify.notion.site/Course-Configurations-ec71dbcecdb643a5b2277c76b929ba86
+                        type: object
+                        example:
+                          hasIssuedDate: true
+                          hasCertId: true
+                          hasEmail: false
+                          allMustApprove: false
+                      expected_attributes:
+                        type: array
+                        items:
+                          type: string
+                    type: object
+                type: object
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/UnauthenticatedRequest'
+        '404':
+          $ref: '#/components/responses/NotFoundRequest'
+        '422':
+          $ref: '#/components/responses/UnprocessableEntityRequest'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalErrorRequest'
+      security:
+      - bearerAuth: []
+    servers:
+    - url: http://dashboard.local.accredify.io/api/v2
+      description: Accredify Local (Local)
+    - url: https://dashboard.uat.accredify.io/api/v2
+      description: Accredify Sandbox (UAT)
+    - url: https://dashboard.accredify.io/api/v2
+      description: Accredify Main Server (Production)
+  /courses/{id}:
+    get:
+      tags:
+      - Courses
+      summary: Get course by ID
+      description: Returns a single course
+      operationId: getCourseById
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                properties:
+                  data:
+                    properties:
+                      id:
+                        description: Provided by Accredify
+                        type: integer
+                        example: 1
+                      course_code:
+                        description: The code to identify the course
+                        type: string
+                        example: COURSE101
+                      course_title:
+                        description: The course's title
+                        type: string
+                        example: Introduction to Course
+                      course_description:
+                        description: The course's description
+                        type: string
+                        example: A detailed course description.
+                      schema:
+                        description: The course's schema
+                        type: string
+                        example: OAv2
+                      issuance_method:
+                        description: The course's issuance method, ['badge', 'certificate', 'certificate_and_badge', 'certificate_with_user_pdf']
+                        type: string
+                        example: badge
+                      template:
+                        properties:
+                          id:
+                            description: Provided by Accredify
+                            type: integer
+                            example: 1
+                          name:
+                            description: Provided by Accredify for identifying the template
+                            type: string
+                            example: Standard Template
+                          alias:
+                            description: Provided by customer for identifying the template
+                            type: string
+                            example: standard_template
+                          description:
+                            description: Provided by Accredify for identifying the template
+                            type: string
+                            example: A standard template for general use.
+                        type: object
+                      email_template:
+                        properties:
+                          id:
+                            description: Provided by Accredify
+                            type: integer
+                            example: 1
+                          name:
+                            description: Name of your email template
+                            type: string
+                            example: Standard Email Template
+                          description:
+                            description: Description of your email template
+                            type: string
+                            example: A standard template for general use.
+                          subject:
+                            description: The title that appears as the subject header of the email
+                            type: string
+                            example: Congratulations on your certification!
+                          template:
+                            description: The contents of the email template in markdown
+                            type: string
+                        type: object
+                      sharing:
+                        properties:
+                          share_enabled:
+                            description: Is sharing enabled
+                            type: boolean
+                          share_link:
+                            description: Share link (defaults to Accredify's share link if none provided)
+                            type: string
+                        type: object
+                      configurations:
+                        description: For a list of configurations, please visit https://accredify.notion.site/Course-Configurations-ec71dbcecdb643a5b2277c76b929ba86
+                        type: object
+                        example:
+                          hasIssuedDate: true
+                          hasCertId: true
+                          hasEmail: false
+                          allMustApprove: false
+                      expected_attributes:
+                        type: array
+                        items:
+                          type: string
+                    type: object
+                type: object
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/UnauthenticatedRequest'
+        '404':
+          $ref: '#/components/responses/NotFoundRequest'
+        '422':
+          $ref: '#/components/responses/UnprocessableEntityRequest'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalErrorRequest'
+      security:
+      - bearerAuth: []
+    patch:
+      tags:
+      - Courses
+      summary: Update an existing course
+      description: Updates an existing course with the given settings. Fields are optional.
+      operationId: updateCourse
+      parameters:
+      - name: id
+        in: path
+        description: ID of the course to update
+        required: true
+        schema:
+          type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              properties:
+                course_code:
+                  description: Unique code for the course
+                  type: string
+                  example: COURSE101
+                course_title:
+                  description: Title of the course
+                  type: string
+                  example: Introduction to Course
+                course_description:
+                  description: Description of the course
+                  type: string
+                  example: A detailed course description.
+                template_id:
+                  description: ID of the template to be used for this course
+                  type: integer
+                  example: 1
+                email_template_id:
+                  description: ID of the email template to be used for this course
+                  type: integer
+                  example: 1
+                sharing:
+                  properties:
+                    share_enabled:
+                      description: Whether or not sharing is enabled for the course
+                      type: boolean
+                      example: true
+                    share_link:
+                      description: Custom share link for the course
+                      type: string
+                      example: http://example.com/share
+                  type: object
+                configurations:
+                  description: Array of course-specific configurations. For a list of configurations, please visit https://accredify.notion.site/Course-Configurations-ec71dbcecdb643a5b2277c76b929ba86
+                  type: array
+                  items:
+                    properties:
+                      key:
+                        description: Configuration key
+                        type: string
+                      value:
+                        description: Configuration value
+                        type: string
+                    type: object
+              type: object
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                properties:
+                  data:
+                    properties:
+                      id:
+                        description: Provided by Accredify
+                        type: integer
+                        example: 1
+                      course_code:
+                        description: The code to identify the course
+                        type: string
+                        example: COURSE101
+                      course_title:
+                        description: The course's title
+                        type: string
+                        example: Introduction to Course
+                      course_description:
+                        description: The course's description
+                        type: string
+                        example: A detailed course description.
+                      schema:
+                        description: The course's schema
+                        type: string
+                        example: OAv2
+                      issuance_method:
+                        description: The course's issuance method, ['badge', 'certificate', 'certificate_and_badge', 'certificate_with_user_pdf']
+                        type: string
+                        example: badge
+                      template:
+                        properties:
+                          id:
+                            description: Provided by Accredify
+                            type: integer
+                            example: 1
+                          name:
+                            description: Provided by Accredify for identifying the template
+                            type: string
+                            example: Standard Template
+                          alias:
+                            description: Provided by customer for identifying the template
+                            type: string
+                            example: standard_template
+                          description:
+                            description: Provided by Accredify for identifying the template
+                            type: string
+                            example: A standard template for general use.
+                        type: object
+                      email_template:
+                        properties:
+                          id:
+                            description: Provided by Accredify
+                            type: integer
+                            example: 1
+                          name:
+                            description: Name of your email template
+                            type: string
+                            example: Standard Email Template
+                          description:
+                            description: Description of your email template
+                            type: string
+                            example: A standard template for general use.
+                          subject:
+                            description: The title that appears as the subject header of the email
+                            type: string
+                            example: Congratulations on your certification!
+                          template:
+                            description: The contents of the email template in markdown
+                            type: string
+                        type: object
+                      sharing:
+                        properties:
+                          share_enabled:
+                            description: Is sharing enabled
+                            type: boolean
+                          share_link:
+                            description: Share link (defaults to Accredify's share link if none provided)
+                            type: string
+                        type: object
+                      configurations:
+                        description: For a list of configurations, please visit https://accredify.notion.site/Course-Configurations-ec71dbcecdb643a5b2277c76b929ba86
+                        type: object
+                        example:
+                          hasIssuedDate: true
+                          hasCertId: true
+                          hasEmail: false
+                          allMustApprove: false
+                      expected_attributes:
+                        type: array
+                        items:
+                          type: string
+                    type: object
+                type: object
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/UnauthenticatedRequest'
+        '404':
+          $ref: '#/components/responses/NotFoundRequest'
+        '422':
+          $ref: '#/components/responses/UnprocessableEntityRequest'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalErrorRequest'
+      security:
+      - bearerAuth: []
+    servers:
+    - url: http://dashboard.local.accredify.io/api/v2
+      description: Accredify Local (Local)
+    - url: https://dashboard.uat.accredify.io/api/v2
+      description: Accredify Sandbox (UAT)
+    - url: https://dashboard.accredify.io/api/v2
+      description: Accredify Main Server (Production)
+  /api/v1/courses:
+    get:
+      summary: Get list of courses
+      description: Retrieve a paginated list of courses with optional filtering by groups and search terms. Each course includes the workflows its latest published version is attached to.
+      tags:
+      - Courses
+      security:
+      - OAuth2:
+        - courses:read
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Course'
+                  links:
+                    $ref: '#/components/schemas/PaginationLinks'
+                  meta:
+                    $ref: '#/components/schemas/PaginationMeta'
+                required:
+                - data
+                - links
+                - meta
+              examples:
+                Example 1:
+                  value:
+                    data:
+                    - uuid: 9feb59d1-27fe-4607-9e1c-fe212f0d8691
+                      title: Introduction to Statistics
+                      code: IS10131
+                      group_uuid: 9fea6580-5f09-43d0-bee5-b28bb527cb17
+                      versions:
+                      - uuid: 9feb59d1-2906-4e18-8731-43551191a684
+                        title: Introduction to Statistics
+                        version: '1'
+                        course_type: skills_passport
+                        settings:
+                          ssec_version: '2020'
+                          eqa_code: '11'
+                          eqa_title: Primary School Leaving Examination (PSLE) / Primary School Proficiency Examination (PSPE) certificate or equivalent
+                          fos_code: '011'
+                          fos_title: TEACHER TRAINING
+                          skills_passport_course_type: academic
+                      latest_version:
+                        uuid: 9feb59d1-2906-4e18-8731-43551191a684
+                        title: Introduction to Statistics
+                        version: '1'
+                        course_type: skills_passport
+                        settings:
+                          ssec_version: '2020'
+                          eqa_code: '11'
+                          eqa_title: Primary School Leaving Examination (PSLE) / Primary School Proficiency Examination (PSPE) certificate or equivalent
+                          fos_code: '011'
+                          fos_title: TEACHER TRAINING
+                          skills_passport_course_type: academic
+                      workflows:
+                      - uuid: 9f001c24-eef9-4b82-8399-d4eaa1add4c5
+                        name: OA Workflow (No Design)
+                    - uuid: 9feb59ac-2a04-42e5-a783-c980e9e8deed
+                      title: Introduction to Programming
+                      code: IS1013
+                      group_uuid: 9fea6580-5f09-43d0-bee5-b28bb527cb17
+                      versions:
+                      - uuid: 9feb59ac-2ae7-4f5f-9a04-7cc070eda1ba
+                        title: Introduction to Programming
+                        version: '1'
+                        course_type: skills_passport
+                        settings:
+                          ssec_version: '2020'
+                          eqa_code: '11'
+                          eqa_title: Primary School Leaving Examination (PSLE) / Primary School Proficiency Examination (PSPE) certificate or equivalent
+                          fos_code: '011'
+                          fos_title: TEACHER TRAINING
+                          skills_passport_course_type: academic
+                      latest_version:
+                        uuid: 9feb59ac-2ae7-4f5f-9a04-7cc070eda1ba
+                        title: Introduction to Programming
+                        version: '1'
+                        course_type: skills_passport
+                        settings:
+                          ssec_version: '2020'
+                          eqa_code: '11'
+                          eqa_title: Primary School Leaving Examination (PSLE) / Primary School Proficiency Examination (PSPE) certificate or equivalent
+                          fos_code: '011'
+                          fos_title: TEACHER TRAINING
+                          skills_passport_course_type: academic
+                      workflows: []
+                    links:
+                      first: https://john.doe.ngrok.io/api/v1/courses?page=1
+                      last: https://john.doe.ngrok.io/api/v1/courses?page=1
+                      prev: null
+                      next: null
+                    meta:
+                      current_page: 1
+                      from: 1
+                      last_page: 1
+                      links:
+                      - url: null
+                        label: '&laquo; Previous'
+                        active: false
+                      - url: https://john.doe.ngrok.io/api/v1/courses?page=1
+                        label: '1'
+                        active: true
+                      - url: null
+                        label: Next &raquo;
+                        active: false
+                      path: https://john.doe.ngrok.io/api/v1/courses
+                      per_page: 10
+                      to: 3
+                      total: 3
+        '401':
+          $ref: '#/components/responses/401'
+        '403':
+          $ref: '#/components/responses/403'
+        '422':
+          $ref: '#/components/responses/422'
+      operationId: get-courses
+      parameters:
+      - schema:
+          type: integer
+          minimum: 1
+          default: 1
+        in: query
+        name: page
+        description: Page number for pagination
+        example: 1
+      - schema:
+          type: integer
+          enum:
+          - 10
+          - 20
+          - 30
+          - 40
+          - 50
+          default: 10
+        in: query
+        name: per_page
+        description: Number of courses per page
+        example: 10
+      - schema:
+          type: string
+        in: query
+        name: search
+        description: Search courses by name (case-insensitive partial match)
+        example: Introduction to Statistics
+      - schema:
+          type: array
+          items:
+            type: string
+            format: uuid
+          description: Filter courses by organization group UUIDs
+        in: query
+        name: group_uuids[]
+        style: form
+        explode: true
+        example:
+        - 9f854436-2e67-439e-bdda-e7ab6a4b5874
+        - 9fb13026-0719-4cf5-b559-8fd312eebdbd
+    post:
+      summary: Create a new course
+      description: Create a new course with optional workflow attachment. If workflow_uuids are provided, the course will be automatically attached to each specified workflow and the workflows will be republished. Each workflow UUID must belong to the specified group_uuid. Unlike PUT/PATCH updates, workflow_uuids on create is attach-only — the course is new, so no workflows are detached.
+      tags:
+      - Courses
+      security:
+      - OAuth2:
+        - courses:write
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Course'
+              examples:
+                Example 1:
+                  value:
+                    uuid: 9feb59d1-27fe-4607-9e1c-fe212f0d8691
+                    title: Introduction to Statistics
+                    code: IS10131
+                    group_uuid: 9fea6580-5f09-43d0-bee5-b28bb527cb17
+                    versions:
+                    - uuid: 9feb59d1-2906-4e18-8731-43551191a684
+                      title: Introduction to Statistics
+                      version: '1'
+                      course_type: skills_passport
+                      settings:
+                        ssec_version: '2020'
+                        eqa_code: '11'
+                        eqa_title: Primary School Leaving Examination (PSLE) / Primary School Proficiency Examination (PSPE) certificate or equivalent
+                        fos_code: '011'
+                        fos_title: TEACHER TRAINING
+                        skills_passport_course_type: academic
+                    latest_version:
+                      uuid: 9feb59d1-2906-4e18-8731-43551191a684
+                      title: Introduction to Statistics
+                      version: '1'
+                      course_type: skills_passport
+                      settings:
+                        ssec_version: '2020'
+                        eqa_code: '11'
+                        eqa_title: Primary School Leaving Examination (PSLE) / Primary School Proficiency Examination (PSPE) certificate or equivalent
+                        fos_code: '011'
+                        fos_title: TEACHER TRAINING
+                        skills_passport_course_type: academic
+                    workflows: []
+        '401':
+          $ref: '#/components/responses/401'
+        '403':
+          $ref: '#/components/responses/403'
+        '422':
+          description: Unprocessable Entity
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  errors:
+                    type: object
+                required:
+                - message
+                - errors
+              examples:
+                Example 1 - Validation error:
+                  value:
+                    message: The title field is required. (and 1 more error)
+                    errors:
+                      title:
+                      - The title field is required.
+                      code:
+                      - The code has already been taken.
+                Example 2 - Workflow republish failure:
+                  value:
+                    message: Failed to publish workflow version
+                    errors:
+                      workflow:
+                      - The workflow version could not be published because it is invalid.
+      operationId: create-course
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                title:
+                  type: string
+                  maxLength: 255
+                  description: Course title
+                code:
+                  type: string
+                  maxLength: 255
+                  description: Course code (must be unique within organization group)
+                ssec:
+                  type: string
+                  enum:
+                  - '2020'
+                  - '2015'
+                  description: SSEC version
+                eqa:
+                  type: string
+                  description: EQA code from SSEC framework
+                fos:
+                  type: string
+                  description: FOS code from SSEC framework
+                skills_passport_course_type:
+                  type: string
+                  enum:
+                  - academic
+                  - professional
+                  description: Skills passport course type
+                group_uuid:
+                  type: string
+                  format: uuid
+                  description: Organization group UUID where the course will be created
+                workflow_uuids:
+                  type: array
+                  items:
+                    type: string
+                    format: uuid
+                  description: Optional array of workflow UUIDs to automatically attach the course to and republish. Each workflow must belong to the specified group_uuid.
+              required:
+              - title
+              - code
+              - ssec
+              - eqa
+              - fos
+              - skills_passport_course_type
+              - group_uuid
+            examples:
+              Example 1:
+                value:
+                  title: Introduction to Statistics
+                  code: IS10131
+                  ssec: '2020'
+                  eqa: '11'
+                  fos: '011'
+                  skills_passport_course_type: academic
+                  group_uuid: 9fea6580-5f09-43d0-bee5-b28bb527cb17
+              Example 2:
+                value:
+                  title: Advanced Programming Course
+                  code: ADV101
+                  ssec: '2020'
+                  eqa: '71'
+                  fos: '011'
+                  skills_passport_course_type: professional
+                  group_uuid: 9fea6580-5f09-43d0-bee5-b28bb527cb17
+                  workflow_uuids:
+                  - 9f001c24-eef9-4b82-8399-d4eaa1add4c5
+              Example 3:
+                value:
+                  title: Multi Workflow Course
+                  code: MWF101
+                  ssec: '2020'
+                  eqa: '71'
+                  fos: '011'
+                  skills_passport_course_type: academic
+                  group_uuid: 9fea6580-5f09-43d0-bee5-b28bb527cb17
+                  workflow_uuids:
+                  - 9f001c24-eef9-4b82-8399-d4eaa1add4c5
+                  - 9f06bd25-c468-4b2a-8f47-cb5725dc02b2
+        required: true
+    servers:
+    - url: https://nexus.staging.accredify.io
+      description: Staging
+    - url: https://nexus.uat.accredify.io
+      description: UAT
+    - url: https://nexus.accredify.io
+      description: Production
+  /api/v1/courses/{course}:
+    parameters:
+    - schema:
+        type: string
+        format: uuid
+      name: course
+      in: path
+      required: true
+      description: Course UUID
+    get:
+      summary: Get course by ID
+      description: Retrieve detailed information about a specific course including its versions, latest version, and attached workflows
+      tags:
+      - Courses
+      security:
+      - OAuth2:
+        - courses:read
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Course'
+              examples:
+                Example 1:
+                  value:
+                    uuid: 9feb59d1-27fe-4607-9e1c-fe212f0d8691
+                    title: Introduction to Statistics
+                    code: IS10131
+                    group_uuid: 9fea6580-5f09-43d0-bee5-b28bb527cb17
+                    versions:
+                    - uuid: 9feb59d1-2906-4e18-8731-43551191a684
+                      title: Introduction to Statistics
+                      version: '1'
+                      course_type: skills_passport
+                      settings:
+                        ssec_version: '2020'
+                        eqa_code: '11'
+                        eqa_title: Primary School Leaving Examination (PSLE) / Primary School Proficiency Examination (PSPE) certificate or equivalent
+                        fos_code: '011'
+                        fos_title: TEACHER TRAINING
+                        skills_passport_course_type: academic
+                    latest_version:
+                      uuid: 9feb59d1-2906-4e18-8731-43551191a684
+                      title: Introduction to Statistics
+                      version: '1'
+                      course_type: skills_passport
+                      settings:
+                        ssec_version: '2020'
+                        eqa_code: '11'
+                        eqa_title: Primary School Leaving Examination (PSLE) / Primary School Proficiency Examination (PSPE) certificate or equivalent
+                        fos_code: '011'
+                        fos_title: TEACHER TRAINING
+                        skills_passport_course_type: academic
+                    workflows:
+                    - uuid: 9f001c24-eef9-4b82-8399-d4eaa1add4c5
+                      name: OA Workflow (No Design)
+        '401':
+          $ref: '#/components/responses/401'
+        '403':
+          $ref: '#/components/responses/403'
+        '404':
+          $ref: '#/components/responses/404'
+      operationId: get-course-by-id
+    put:
+      summary: Update a course (full update)
+      description: 'Fully update a course. All fields must be provided; a new course version is created with the updated values. The course code and group cannot be changed after creation. workflow_uuids is mandatory and represents the complete desired set of workflow associations: the course is attached to newly listed workflows, detached from workflows that are no longer listed, and every affected workflow is republished as a new version. An empty array clears all workflow associations. Unlike course creation, where workflow_uuids is attach-only, this endpoint replaces the full set of associations.'
+      tags:
+      - Courses
+      security:
+      - OAuth2:
+        - courses:write
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                title:
+                  type: string
+                  maxLength: 255
+                  description: Course title
+                ssec:
+                  type: string
+                  enum:
+                  - '2020'
+                  - '2015'
+                  description: SSEC version
+                eqa:
+                  type: string
+                  description: EQA code from SSEC framework
+                fos:
+                  type: string
+                  description: FOS code from SSEC framework
+                skills_passport_course_type:
+                  type: string
+                  enum:
+                  - academic
+                  - professional
+                  description: Skills passport course type
+                workflow_uuids:
+                  type: array
+                  items:
+                    type: string
+                    format: uuid
+                  description: Complete desired set of workflow UUIDs the course should be attached to. The course is attached to newly listed workflows, detached from workflows that are no longer listed, and all affected workflows are republished. An empty array clears all workflow associations.
+              required:
+              - title
+              - ssec
+              - eqa
+              - fos
+              - skills_passport_course_type
+              - workflow_uuids
+            examples:
+              Example 1:
+                value:
+                  title: Introduction to Statistics (2026)
+                  ssec: '2020'
+                  eqa: '11'
+                  fos: '011'
+                  skills_passport_course_type: academic
+                  workflow_uuids:
+                  - 9f001c24-eef9-4b82-8399-d4eaa1add4c5
+              Example 2:
+                value:
+                  title: Introduction to Statistics (2026)
+                  ssec: '2020'
+                  eqa: '11'
+                  fos: '011'
+                  skills_passport_course_type: academic
+                  workflow_uuids: []
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Course'
+              examples:
+                Example 1:
+                  value:
+                    uuid: 9feb59d1-27fe-4607-9e1c-fe212f0d8691
+                    title: Introduction to Statistics (2026)
+                    code: IS10131
+                    group_uuid: 9fea6580-5f09-43d0-bee5-b28bb527cb17
+                    versions:
+                    - uuid: 9feb59d1-2906-4e18-8731-43551191a684
+                      title: Introduction to Statistics
+                      version: '1'
+                      course_type: skills_passport
+                      settings:
+                        ssec_version: '2020'
+                        eqa_code: '11'
+                        eqa_title: Primary School Leaving Examination (PSLE) / Primary School Proficiency Examination (PSPE) certificate or equivalent
+                        fos_code: '011'
+                        fos_title: TEACHER TRAINING
+                        skills_passport_course_type: academic
+                    - uuid: 9feb6064-e64d-4520-99a1-d05403028dfa
+                      title: Introduction to Statistics (2026)
+                      version: '2'
+                      course_type: skills_passport
+                      settings:
+                        ssec_version: '2020'
+                        eqa_code: '11'
+                        eqa_title: Primary School Leaving Examination (PSLE) / Primary School Proficiency Examination (PSPE) certificate or equivalent
+                        fos_code: '011'
+                        fos_title: TEACHER TRAINING
+                        skills_passport_course_type: academic
+                    latest_version:
+                      uuid: 9feb6064-e64d-4520-99a1-d05403028dfa
+                      title: Introduction to Statistics (2026)
+                      version: '2'
+                      course_type: skills_passport
+                      settings:
+                        ssec_version: '2020'
+                        eqa_code: '11'
+                        eqa_title: Primary School Leaving Examination (PSLE) / Primary School Proficiency Examination (PSPE) certificate or equivalent
+                        fos_code: '011'
+                        fos_title: TEACHER TRAINING
+                        skills_passport_course_type: academic
+                    workflows:
+                    - uuid: 9f001c24-eef9-4b82-8399-d4eaa1add4c5
+                      name: OA Workflow (No Design)
+        '401':
+          $ref: '#/components/responses/401'
+        '403':
+          $ref: '#/components/responses/403'
+        '404':
+          $ref: '#/components/responses/404'
+        '422':
+          description: Unprocessable Entity
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  errors:
+                    type: object
+                required:
+                - message
+                - errors
+              examples:
+                Example 1 - Validation error:
+                  value:
+                    message: The title field is required. (and 1 more error)
+                    errors:
+                      title:
+                      - The title field is required.
+                      workflow_uuids:
+                      - The workflow uuids field is required.
+                Example 2 - Workflow republish failure:
+                  value:
+                    message: Failed to publish workflow version
+                    errors:
+                      workflow:
+                      - The workflow version could not be published because it is invalid.
+      operationId: update-course
+    patch:
+      summary: Update a course (partial update)
+      description: 'Partially update a course. Omitted fields are left unchanged; provided fields result in a new course version with the updated values. ssec, eqa and fos describe a single SSEC framework selection and must be provided together. The course code and group cannot be changed after creation. If workflow_uuids is provided, it is treated as the complete desired set of workflow associations: the course is attached to newly listed workflows, detached from workflows that are no longer listed, and every affected workflow is republished as a new version. An empty array clears all workflow associations. When workflow_uuids is omitted, the current associations are kept and every attached workflow is automatically republished with the new course version.'
+      tags:
+      - Courses
+      security:
+      - OAuth2:
+        - courses:write
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                title:
+                  type: string
+                  maxLength: 255
+                  description: Course title
+                ssec:
+                  type: string
+                  enum:
+                  - '2020'
+                  - '2015'
+                  description: SSEC version
+                eqa:
+                  type: string
+                  description: EQA code from SSEC framework
+                fos:
+                  type: string
+                  description: FOS code from SSEC framework
+                skills_passport_course_type:
+                  type: string
+                  enum:
+                  - academic
+                  - professional
+                  description: Skills passport course type
+                workflow_uuids:
+                  type: array
+                  items:
+                    type: string
+                    format: uuid
+                  description: Complete desired set of workflow UUIDs the course should be attached to. When provided, the course is attached to newly listed workflows, detached from workflows that are no longer listed, and all affected workflows are republished. An empty array clears all workflow associations. When omitted, the current associations are kept and every attached workflow is automatically republished with the new course version.
+            examples:
+              Example 1:
+                value:
+                  title: Introduction to Statistics (2026)
+              Example 2:
+                value:
+                  workflow_uuids:
+                  - 9f001c24-eef9-4b82-8399-d4eaa1add4c5
+                  - 9f06bd25-c468-4b2a-8f47-cb5725dc02b2
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Course'
+              examples:
+                Example 1:
+                  value:
+                    uuid: 9feb59d1-27fe-4607-9e1c-fe212f0d8691
+                    title: Introduction to Statistics (2026)
+                    code: IS10131
+                    group_uuid: 9fea6580-5f09-43d0-bee5-b28bb527cb17
+                    versions:
+                    - uuid: 9feb59d1-2906-4e18-8731-43551191a684
+                      title: Introduction to Statistics
+                      version: '1'
+                      course_type: skills_passport
+                      settings:
+                        ssec_version: '2020'
+                        eqa_code: '11'
+                        eqa_title: Primary School Leaving Examination (PSLE) / Primary School Proficiency Examination (PSPE) certificate or equivalent
+                        fos_code: '011'
+                        fos_title: TEACHER TRAINING
+                        skills_passport_course_type: academic
+                    - uuid: 9feb6064-e64d-4520-99a1-d05403028dfa
+                      title: Introduction to Statistics (2026)
+                      version: '2'
+                      course_type: skills_passport
+                      settings:
+                        ssec_version: '2020'
+                        eqa_code: '11'
+                        eqa_title: Primary School Leaving Examination (PSLE) / Primary School Proficiency Examination (PSPE) certificate or equivalent
+                        fos_code: '011'
+                        fos_title: TEACHER TRAINING
+                        skills_passport_course_type: academic
+                    latest_version:
+                      uuid: 9feb6064-e64d-4520-99a1-d05403028dfa
+                      title: Introduction to Statistics (2026)
+                      version: '2'
+                      course_type: skills_passport
+                      settings:
+                        ssec_version: '2020'
+                        eqa_code: '11'
+                        eqa_title: Primary School Leaving Examination (PSLE) / Primary School Proficiency Examination (PSPE) certificate or equivalent
+                        fos_code: '011'
+                        fos_title: TEACHER TRAINING
+                        skills_passport_course_type: academic
+                    workflows:
+                    - uuid: 9f001c24-eef9-4b82-8399-d4eaa1add4c5
+                      name: OA Workflow (No Design)
+        '401':
+          $ref: '#/components/responses/401'
+        '403':
+          $ref: '#/components/responses/403'
+        '404':
+          $ref: '#/components/responses/404'
+        '422':
+          description: Unprocessable Entity
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  errors:
+                    type: object
+                required:
+                - message
+                - errors
+              examples:
+                Example 1 - Validation error:
+                  value:
+                    message: The selected ssec is invalid.
+                    errors:
+                      ssec:
+                      - The selected ssec is invalid.
+                Example 2 - Workflow republish failure:
+                  value:
+                    message: Failed to publish workflow version
+                    errors:
+                      workflow:
+                      - The workflow version could not be published because it is invalid.
+      operationId: partially-update-course
+    delete:
+      summary: Delete a course
+      description: Delete a course. If the course is attached to any published workflows, it is detached from each workflow and a new version of each affected workflow is published before the course is deleted.
+      tags:
+      - Courses
+      security:
+      - OAuth2:
+        - courses:write
+      responses:
+        '204':
+          description: Course deleted successfully
+        '401':
+          $ref: '#/components/responses/401'
+        '403':
+          $ref: '#/components/responses/403'
+        '404':
+          $ref: '#/components/responses/404'
+        '422':
+          description: Unprocessable Entity
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  errors:
+                    type: object
+                required:
+                - message
+                - errors
+              examples:
+                Example 1 - Workflow republish failure:
+                  value:
+                    message: Failed to publish workflow version
+                    errors:
+                      workflow:
+                      - The workflow version could not be published because it is invalid.
+      operationId: delete-course
+    servers:
+    - url: https://nexus.staging.accredify.io
+      description: Staging
+    - url: https://nexus.uat.accredify.io
+      description: UAT
+    - url: https://nexus.accredify.io
+      description: Production
+  /api/v1/courses/{course}/workflows:
+    parameters:
+    - schema:
+        type: string
+        format: uuid
+      name: course
+      in: path
+      required: true
+      description: Course UUID
+    post:
+      summary: Attach a course version to a workflow
+      description: Attach the specified course version to a workflow. The workflow is republished as a new version with the given course version attached; any other version of the same course is swapped out. The workflow must belong to the course's group.
+      tags:
+      - Courses
+      security:
+      - OAuth2:
+        - courses:write
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                workflow_uuid:
+                  type: string
+                  format: uuid
+                  description: UUID of the workflow to attach the course to. Must belong to the course's group.
+                course_version_uuid:
+                  type: string
+                  format: uuid
+                  description: UUID of the course version to attach. Must be a version of the course in the path.
+              required:
+              - workflow_uuid
+              - course_version_uuid
+            examples:
+              Example 1:
+                value:
+                  workflow_uuid: 9f001c24-eef9-4b82-8399-d4eaa1add4c5
+                  course_version_uuid: 9feb59d1-2906-4e18-8731-43551191a684
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Course'
+              examples:
+                Example 1:
+                  value:
+                    uuid: 9feb59d1-27fe-4607-9e1c-fe212f0d8691
+                    title: Introduction to Statistics
+                    code: IS10131
+                    group_uuid: 9fea6580-5f09-43d0-bee5-b28bb527cb17
+                    versions:
+                    - uuid: 9feb59d1-2906-4e18-8731-43551191a684
+                      title: Introduction to Statistics
+                      version: '1'
+                      course_type: skills_passport
+                      settings:
+                        ssec_version: '2020'
+                        eqa_code: '11'
+                        eqa_title: Primary School Leaving Examination (PSLE) / Primary School Proficiency Examination (PSPE) certificate or equivalent
+                        fos_code: '011'
+                        fos_title: TEACHER TRAINING
+                        skills_passport_course_type: academic
+                    latest_version:
+                      uuid: 9feb59d1-2906-4e18-8731-43551191a684
+                      title: Introduction to Statistics
+                      version: '1'
+                      course_type: skills_passport
+                      settings:
+                        ssec_version: '2020'
+                        eqa_code: '11'
+                        eqa_title: Primary School Leaving Examination (PSLE) / Primary School Proficiency Examination (PSPE) certificate or equivalent
+                        fos_code: '011'
+                        fos_title: TEACHER TRAINING
+                        skills_passport_course_type: academic
+                    workflows:
+                    - uuid: 9f001c24-eef9-4b82-8399-d4eaa1add4c5
+                      name: OA Workflow (No Design)
+        '401':
+          $ref: '#/components/responses/401'
+        '403':
+          $ref: '#/components/responses/403'
+        '404':
+          $ref: '#/components/responses/404'
+        '422':
+          description: Unprocessable Entity
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  errors:
+                    type: object
+                required:
+                - message
+                - errors
+              examples:
+                Example 1 - Validation error:
+                  value:
+                    message: The selected course version uuid is invalid.
+                    errors:
+                      course_version_uuid:
+                      - The selected course version uuid is invalid.
+                Example 2 - Workflow republish failure:
+                  value:
+                    message: Failed to publish workflow version
+                    errors:
+                      workflow:
+                      - The workflow version could not be published because it is invalid.
+      operationId: attach-course-workflow
+    servers:
+    - url: https://nexus.staging.accredify.io
+      description: Staging
+    - url: https://nexus.uat.accredify.io
+      description: UAT
+    - url: https://nexus.accredify.io
+      description: Production
+  /api/v1/courses/{course}/workflows/{workflow}:
+    parameters:
+    - schema:
+        type: string
+        format: uuid
+      name: course
+      in: path
+      required: true
+      description: Course UUID
+    - schema:
+        type: string
+        format: uuid
+      name: workflow
+      in: path
+      required: true
+      description: Workflow UUID
+    delete:
+      summary: Detach a course from a workflow
+      description: Detach the course from the workflow. The workflow is republished as a new version with the course detached. Returns 404 when the course is not attached to the workflow's latest published version.
+      tags:
+      - Courses
+      security:
+      - OAuth2:
+        - courses:write
+      responses:
+        '204':
+          description: Course detached from the workflow successfully
+        '401':
+          $ref: '#/components/responses/401'
+        '403':
+          $ref: '#/components/responses/403'
+        '404':
+          $ref: '#/components/responses/404'
+        '422':
+          description: Unprocessable Entity
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  errors:
+                    type: object
+                required:
+                - message
+                - errors
+              examples:
+                Example 1 - Workflow republish failure:
+                  value:
+                    message: Failed to publish workflow version
+                    errors:
+                      workflow:
+                      - The workflow version could not be published because it is invalid.
+      operationId: detach-course-workflow
+    servers:
+    - url: https://nexus.staging.accredify.io
+      description: Staging
+    - url: https://nexus.uat.accredify.io
+      description: UAT
+    - url: https://nexus.accredify.io
+      description: Production
+components:
+  responses:
+    NotFoundRequest:
+      description: The specified resource was not found
+      content:
+        application/json:
+          schema:
+            properties:
+              status:
+                type: integer
+                example: 404
+              message:
+                type: string
+                example: Please ensure you are making the request to the correct endpoint.
+            type: object
+    UnauthenticatedRequest:
+      description: Unauthenticated request
+      content:
+        application/json:
+          schema:
+            properties:
+              status:
+                type: integer
+                example: 401
+              message:
+                type: string
+                example: Unauthenticated. You might have provided an invalid access token or your token has already expired.
+            type: object
+    TooManyRequests:
+      description: Too many requests
+      content:
+        application/json:
+          schema:
+            properties:
+              status:
+                type: integer
+                example: 429
+              message:
+                type: string
+                example: You're submitting requests too quickly. Please retry again after 60 seconds.
+            type: object
+    InternalErrorRequest:
+      description: Internal server error
+      content:
+        application/json:
+          schema:
+            properties:
+              status:
+                type: integer
+                example: 500
+              message:
+                type: string
+                example: There was an unexpected error while performing your last action. Please contact us at support@accredify.io with the error code for internal reference
+              code:
+                type: string
+                example: E500
+            type: object
+    UnprocessableEntityRequest:
+      description: Unprocessable entity
+      content:
+        application/json:
+          schema:
+            properties:
+              status:
+                type: integer
+                example: 422
+              errors:
+                type: array
+                items:
+                  type: string
+              message:
+                type: string
+                example: Validation failed for the request.
+            type: object
+    BadRequest:
+      description: Bad request
+      content:
+        application/json:
+          schema:
+            properties:
+              status:
+                type: integer
+                example: 400
+              message:
+                type: string
+                example: We couldn't find you, please try again.
+            type: object
+    '404':
+      description: Not found
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+          examples:
+            Example 1:
+              value:
+                message: Not found or not accessible.
+    '422':
+      description: Unprocessable Entity (WebDAV)
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+              errors:
+                type: object
+            required:
+            - message
+            - errors
+          examples:
+            Example 1:
+              value:
+                message: The per page field must be an integer. (and 1 more error)
+                errors:
+                  per_page:
+                  - The per page field must be an integer.
+                  - The selected per page is invalid.
+    '403':
+      description: Forbidden
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+          examples:
+            Example 1:
+              value:
+                message: Invalid scope(s) provided.
+    '401':
+      description: Unauthenticated
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+            required:
+            - message
+          examples:
+            Example 1:
+              value:
+                message: Unauthenticated.
+  schemas:
+    PaginationMeta:
+      type: object
+      description: Pagination metadata containing information about the current page and total results
+      required:
+      - current_page
+      - from
+      - last_page
+      - links
+      - path
+      - per_page
+      - to
+      - total
+      properties:
+        current_page:
+          type: integer
+          description: Current page number
+        from:
+          type:
+          - integer
+          - 'null'
+          description: Starting record number for current page
+        last_page:
+          type: integer
+          description: Last page number
+        links:
+          type: array
+          description: Array of pagination link objects
+          items:
+            type: object
+            required:
+            - url
+            - label
+            - active
+            properties:
+              url:
+                type:
+                - 'null'
+                - string
+                description: URL for the pagination link (null for disabled links)
+              label:
+                type: string
+                description: Display label for the pagination link
+              active:
+                type: boolean
+                description: Whether this link represents the current page
+        path:
+          type: string
+          description: Base path for the API endpoint
+        per_page:
+          type: integer
+          description: Number of items per page
+        to:
+          type:
+          - integer
+          - 'null'
+          description: Ending record number for current page
+        total:
+          type: integer
+          description: Total number of records
+      examples:
+      - current_page: 1
+        from: 1
+        last_page: 1
+        links:
+        - url: null
+          label: '&laquo; Previous'
+          active: false
+        - url: http://nexus.localhost:8080/api/workflows?page=1
+          label: '1'
+          active: true
+        - url: null
+          label: Next &raquo;
+          active: false
+        path: http://nexus.localhost:8080/api/workflows
+        per_page: 10
+        to: 3
+        total: 3
+    CourseVersion:
+      title: CourseVersion
+      type: object
+      description: Course version information
+      examples:
+      - uuid: 9feb59d1-2906-4e18-8731-43551191a684
+        title: Introduction to Statistics
+        version: '1'
+        course_type: skills_passport
+        settings:
+          ssec_version: '2020'
+          eqa_code: '11'
+          eqa_title: Primary School Leaving Examination (PSLE) / Primary School Proficiency Examination (PSPE) certificate or equivalent
+          fos_code: '011'
+          fos_title: TEACHER TRAINING
+          skills_passport_course_type: academic
+      properties:
+        uuid:
+          type: string
+          format: uuid
+          description: Unique identifier for the course version
+        title:
+          type: string
+          description: Course version title
+        version:
+          type: string
+          description: Version number
+        course_type:
+          type: string
+          enum:
+          - skills_passport
+          description: Type of the course
+        settings:
+          $ref: '#/components/schemas/CourseSettings'
+          description: Course settings including SSEC framework data
+      required:
+      - uuid
+      - title
+      - version
+      - course_type
+      - settings
+    CourseWorkflow:
+      title: CourseWorkflow
+      type: object
+      description: Slim summary of a workflow the course is attached to
+      examples:
+      - uuid: 9f001c24-eef9-4b82-8399-d4eaa1add4c5
+        name: OA Workflow (No Design)
+      properties:
+        uuid:
+          type: string
+          format: uuid
+          description: Unique identifier for the workflow
+        name:
+          type: string
+          description: Name of the workflow
+      required:
+      - uuid
+      - name
+    CourseSettings:
+      title: CourseSettings
+      type: object
+      description: Course settings including SSEC framework information
+      properties:
+        ssec_version:
+          type: string
+          enum:
+          - '2020'
+          - '2015'
+          description: SSEC version used for this course
+        eqa_code:
+          type: string
+          description: Education and Qualification Authority code
+        eqa_title:
+          type: string
+          description: Human-readable EQA title
+        fos_code:
+          type: string
+          description: Field of Study code
+        fos_title:
+          type: string
+          description: Human-readable FOS title
+        skills_passport_course_type:
+          type: string
+          enum:
+          - academic
+          - professional
+          description: Skills passport course type
+      required:
+      - ssec_version
+      - eqa_code
+      - eqa_title
+      - fos_code
+      - fos_title
+      - skills_passport_course_type
+      examples:
+      - ssec_version: '2020'
+        eqa_code: '11'
+        eqa_title: Primary School Leaving Examination (PSLE) / Primary School Proficiency Examination (PSPE) certificate or equivalent
+        fos_code: '011'
+        fos_title: TEACHER TRAINING
+        skills_passport_course_type: academic
+    PaginationLinks:
+      type: object
+      description: Pagination links for navigating through paginated results
+      required:
+      - first
+      - last
+      - prev
+      - next
+      properties:
+        first:
+          type: string
+          description: URL for the first page
+        last:
+          type: string
+          description: URL for the last page
+        prev:
+          type:
+          - string
+          - 'null'
+          description: URL for the previous page (null if on first page)
+        next:
+          type:
+          - string
+          - 'null'
+          description: URL for the next page (null if on last page)
+      examples:
+      - first: http://nexus.localhost:8080/api/workflows?page=1
+        last: http://nexus.localhost:8080/api/workflows?page=1
+        prev: null
+        next: null
+    Course:
+      title: Course
+      type: object
+      description: Course information from CourseApiResource
+      examples:
+      - uuid: 9feb59d1-27fe-4607-9e1c-fe212f0d8691
+        title: Introduction to Statistics
+        code: IS10131
+        group_uuid: 9fea6580-5f09-43d0-bee5-b28bb527cb17
+        versions:
+        - uuid: 9feb59d1-2906-4e18-8731-43551191a684
+          title: Introduction to Statistics
+          version: '1'
+          course_type: skills_passport
+          settings:
+            ssec_version: '2020'
+            eqa_code: '11'
+            eqa_title: Primary School Leaving Examination (PSLE) / Primary School Proficiency Examination (PSPE) certificate or equivalent
+            fos_code: '011'
+            fos_title: TEACHER TRAINING
+            skills_passport_course_type: academic
+        latest_version:
+          uuid: 9feb59d1-2906-4e18-8731-43551191a684
+          title: Introduction to Statistics
+          version: '1'
+          course_type: skills_passport
+          settings:
+            ssec_version: '2020'
+            eqa_code: '11'
+            eqa_title: Primary School Leaving Examination (PSLE) / Primary School Proficiency Examination (PSPE) certificate or equivalent
+            fos_code: '011'
+            fos_title: TEACHER TRAINING
+            skills_passport_course_type: academic
+        workflows:
+        - uuid: 9f001c24-eef9-4b82-8399-d4eaa1add4c5
+          name: OA Workflow (No Design)
+      properties:
+        uuid:
+          type: string
+          format: uuid
+          description: Unique identifier (UUID) for the course
+        title:
+          type: string
+          description: Course title
+        code:
+          type: string
+          description: Course code
+        group_uuid:
+          type: string
+          format: uuid
+          description: UUID of the organization group the course belongs to
+        versions:
+          type: array
+          description: Array of all course versions (only present when versions are loaded)
+          items:
+            $ref: '#/components/schemas/CourseVersion'
+        latest_version:
+          $ref: '#/components/schemas/CourseVersion'
+          description: Latest version of the course (only present when latestVersion is loaded)
+        workflows:
+          type: array
+          description: Workflows whose latest published version has this course attached (empty array when none)
+          items:
+            $ref: '#/components/schemas/CourseWorkflow'
+      required:
+      - uuid
+      - title
+      - code
+      - group_uuid
+      - latest_version
+      - workflows
+  securitySchemes:
+    bearerAuth:
+      type: http
+      description: 'JWT Authorization header using the Bearer scheme. Example: ''Authorization: Bearer {token}'''
+      bearerFormat: JWT
+      scheme: bearer
+    OAuth2:
+      type: oauth2
+      description: OAuth2 client credentials flow
+      flows:
+        clientCredentials:
+          tokenUrl: /oauth/token
+          scopes:
+            run-workflow: Ability to run a specific workflow
+            webcomponent-verification: Ability to get the verification access from webcomponent
+            verification-suite: Ability to access the verification suite APIs
+            workflows:read: Ability to read workflows
+            workflows:write: Ability to write workflows
+            workflow-runs:read: Ability to read workflow runs
+            documents:read: Ability to read documents
+            documents:write: Ability to write documents
+            custom-views:read: Ability to read custom views
+            users:read: Ability to read users
+            design-templates:read: Ability to read design templates
+            document-templates:read: Ability to read document templates
+            groups:read: Ability to read groups
+            courses:read: Ability to read courses
+            courses:write: Ability to write courses
+x-refined-from:
+- accredify0604-dashboard-v2-openapi.yaml
+- accredify0604-nexus-workflow-openapi.yaml

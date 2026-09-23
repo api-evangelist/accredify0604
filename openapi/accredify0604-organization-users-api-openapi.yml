@@ -1,0 +1,577 @@
+openapi: 3.2.0
+info:
+  title: Auth Module Organization Users API
+  version: '1.0'
+  description: Auth module endpoints
+  contact:
+    name: Accredify
+    url: https://accredify.io
+    email: support@accredify.io
+  termsOfService: https://www.accredify.io/legal
+servers:
+- url: https://nexus.staging.accredify.io
+  description: Staging
+- url: https://nexus.uat.accredify.io
+  description: UAT
+- url: https://nexus.accredify.io
+  description: Production
+tags:
+- name: Organization Users
+paths:
+  /api/v1/organization/users:
+    get:
+      summary: Get list of organization users
+      description: Retrieve a paginated list of organization users with optional filtering by status, role, groups, and search terms
+      tags:
+      - Organization Users
+      security:
+      - OAuth2:
+        - users:read
+      parameters:
+      - name: page
+        in: query
+        description: Page number for pagination (starts from 1)
+        required: false
+        schema:
+          type: integer
+          minimum: 1
+          default: 1
+        example: 1
+      - name: per_page
+        in: query
+        description: Number of users per page (10-50)
+        required: false
+        schema:
+          type: integer
+          enum:
+          - 10
+          - 20
+          - 30
+          - 40
+          - 50
+          default: 10
+        example: 10
+      - name: status[]
+        in: query
+        description: Filter by user status(es). Repeat this parameter for multiple statuses.
+        required: false
+        schema:
+          type: array
+          items:
+            type: string
+            enum:
+            - active
+            - pending
+            - expired
+            - locked
+        style: form
+        explode: true
+        example:
+        - active
+        - pending
+      - name: search
+        in: query
+        description: Search users by name or email (case-insensitive partial match)
+        required: false
+        schema:
+          type: string
+        example: John Doe
+      - name: role[]
+        in: query
+        description: Filter by role. Repeat this parameter for multiple roles.
+        required: false
+        schema:
+          type: array
+          items:
+            type: string
+            enum:
+            - admin
+            - member
+        style: form
+        explode: true
+        example:
+        - admin
+      - name: group_uuids[]
+        in: query
+        description: Filter by organization group UUIDs. Repeat this parameter for multiple organization groups.
+        required: false
+        schema:
+          type: array
+          items:
+            type: string
+            format: uuid
+        style: form
+        explode: true
+        example:
+        - 9f854436-2e67-439e-bdda-e7ab6a4b5874
+        - 9fb13026-0719-4cf5-b559-8fd312eebdbd
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/User'
+                  links:
+                    $ref: '#/components/schemas/PaginationLinks'
+                  meta:
+                    $ref: '#/components/schemas/PaginationMeta'
+                required:
+                - data
+                - links
+                - meta
+              examples:
+                Example 1:
+                  value:
+                    data:
+                    - uuid: 9c80a7ea-f055-4695-9440-07a3fe4722e9
+                      name: John Doe
+                      role: admin
+                      email: john.doe@accredify.io
+                      status: active
+                      groups: []
+                    - uuid: 9fb13043-3833-4f0e-8aff-996a007e0aa5
+                      name: Jane Doe
+                      role: member
+                      email: jane.doe@accredify.io
+                      status: active
+                      groups:
+                      - uuid: 9f854436-2e67-439e-bdda-e7ab6a4b5874
+                        name: Default Access Group
+                        description: null
+                      - uuid: 9fb13026-0719-4cf5-b559-8fd312eebdbd
+                        name: Marketing Team
+                        description: null
+                    links:
+                      first: https://nexus.staging.accredify.io/api/v1/organization/users?page=1
+                      last: https://nexus.staging.accredify.io/api/v1/organization/users?page=1
+                      prev: null
+                      next: null
+                    meta:
+                      current_page: 1
+                      from: 1
+                      last_page: 1
+                      links:
+                      - url: null
+                        label: '&laquo; Previous'
+                        active: false
+                      - url: https://nexus.staging.accredify.io/api/v1/organization/users?page=1
+                        label: '1'
+                        active: true
+                      - url: null
+                        label: Next &raquo;
+                        active: false
+                      path: https://nexus.staging.accredify.io/api/v1/organization/users
+                      per_page: 10
+                      to: 2
+                      total: 2
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '422':
+          description: Validation Error
+      operationId: getApiV1OrganizationUsers
+      x-operation-id-source: derived
+    post:
+      summary: Create an organization user
+      description: Create or onboard a user into the current organization and assign roles/groups.
+      tags:
+      - Organization Users
+      security:
+      - OAuth2:
+        - users:write
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - name
+              - email
+              - role_uuids
+              properties:
+                name:
+                  type: string
+                  maxLength: 255
+                email:
+                  type: string
+                  format: email
+                  maxLength: 255
+                onboarding:
+                  type: boolean
+                  default: true
+                  description: When false, the user is created without sending an onboarding email and a newly created user is set to `active` instead of `pending`.
+                role_uuids:
+                  type: array
+                  minItems: 1
+                  items:
+                    type: string
+                    format: uuid
+                group_uuids:
+                  type: array
+                  items:
+                    type: string
+                    format: uuid
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+              examples:
+                Onboarding enabled:
+                  value:
+                    uuid: 9fb13043-3833-4f0e-8aff-996a007e0aa5
+                    name: Default Onboarding User
+                    role: member
+                    email: default-onboarding-user@accredify.test
+                    status: pending
+                    groups:
+                    - uuid: 9f854436-2e67-439e-bdda-e7ab6a4b5874
+                      name: Default Access Group
+                      description: null
+                Onboarding disabled:
+                  value:
+                    uuid: 9fb13043-3833-4f0e-8aff-996a007e0aa5
+                    name: No Onboarding User
+                    role: member
+                    email: no-onboarding-user@accredify.test
+                    status: active
+                    groups:
+                    - uuid: 9f854436-2e67-439e-bdda-e7ab6a4b5874
+                      name: Default Access Group
+                      description: null
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '422':
+          description: Validation Error
+      operationId: postApiV1OrganizationUsers
+      x-operation-id-source: derived
+  /api/v1/organization/users/{user_uuid}:
+    get:
+      summary: Get a specific organization user
+      description: Retrieve detailed information about a specific organization user including their role, status, and group memberships
+      tags:
+      - Organization Users
+      security:
+      - OAuth2:
+        - users:read
+      parameters:
+      - name: user_uuid
+        in: path
+        description: The ID of the user to retrieve
+        required: true
+        schema:
+          type: string
+          format: uuid
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+              examples:
+                Example 1:
+                  value:
+                    data:
+                      uuid: 497f6eca-6276-4993-bfeb-53cbbbba6f08
+                      name: John Doe
+                      email: john.doe@example.com
+                      role: admin
+                      status: active
+                      groups:
+                      - uuid: f47ac10b-58cc-4372-a567-0e02b2c3d479
+                        name: Administrators
+                        description: Admin group with full access
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '404':
+          description: User not found
+      operationId: getApiV1OrganizationUsersByUserUuid
+      x-operation-id-source: derived
+    patch:
+      summary: Update an organization user
+      description: Update organization user name, roles, and group assignments.
+      tags:
+      - Organization Users
+      security:
+      - OAuth2:
+        - users:write
+      parameters:
+      - name: user_uuid
+        in: path
+        description: The ID of the user to update
+        required: true
+        schema:
+          type: string
+          format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - name
+              - role_uuids
+              properties:
+                name:
+                  type: string
+                  maxLength: 255
+                role_uuids:
+                  type: array
+                  minItems: 1
+                  items:
+                    type: string
+                    format: uuid
+                group_uuids:
+                  type: array
+                  items:
+                    type: string
+                    format: uuid
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '404':
+          description: User not found
+        '422':
+          description: Validation Error
+      operationId: patchApiV1OrganizationUsersByUserUuid
+      x-operation-id-source: derived
+components:
+  schemas:
+    PaginationMeta:
+      type: object
+      description: Pagination metadata containing information about the current page and total results
+      required:
+      - current_page
+      - from
+      - last_page
+      - links
+      - path
+      - per_page
+      - to
+      - total
+      properties:
+        current_page:
+          type: integer
+          description: Current page number
+        from:
+          type:
+          - 'null'
+          - integer
+          description: Starting record number for current page (null if no results)
+        last_page:
+          type: integer
+          description: Last page number
+        links:
+          type: array
+          description: Array of pagination link objects
+          items:
+            type: object
+            required:
+            - url
+            - label
+            - active
+            properties:
+              url:
+                type:
+                - 'null'
+                - string
+                description: URL for the pagination link (null for disabled links)
+              label:
+                type: string
+                description: Display label for the pagination link
+              active:
+                type: boolean
+                description: Whether this link represents the current page
+        path:
+          type: string
+          description: Base path for the API endpoint
+        per_page:
+          type: integer
+          description: Number of items per page
+        to:
+          type:
+          - 'null'
+          - integer
+          description: Ending record number for current page (null if no results)
+        total:
+          type: integer
+          description: Total number of records
+      examples:
+      - current_page: 1
+        from: 1
+        last_page: 1
+        links:
+        - url: null
+          label: '&laquo; Previous'
+          active: false
+        - url: http://nexus.localhost:8080/api/v1/organization/users?page=1
+          label: '1'
+          active: true
+        - url: null
+          label: Next &raquo;
+          active: false
+        path: http://nexus.localhost:8080/api/v1/organization/users
+        per_page: 10
+        to: 3
+        total: 3
+    User:
+      type: object
+      description: Organization user object
+      required:
+      - uuid
+      - name
+      - email
+      - role
+      - status
+      - groups
+      properties:
+        uuid:
+          type: string
+          format: uuid
+          description: Unique identifier for the user
+        name:
+          type: string
+          description: Full name of the user
+        email:
+          type: string
+          format: email
+          description: Email address of the user
+        role:
+          type: string
+          enum:
+          - admin
+          - member
+          - '-'
+          description: Role of the user within the organization (or "-" if no role assigned)
+        status:
+          type: string
+          enum:
+          - active
+          - pending
+          - expired
+          - locked
+          description: Status of the user within the organization
+        groups:
+          type: array
+          description: List of organization groups the user belongs to
+          items:
+            $ref: '#/components/schemas/Group'
+      examples:
+      - uuid: 9fb13043-3833-4f0e-8aff-996a007e0aa5
+        name: John Doe
+        role: member
+        email: john.doe@accredify.io
+        status: active
+        groups:
+        - uuid: 9f854436-2e67-439e-bdda-e7ab6a4b5874
+          name: Default Access Group
+          description: null
+        - uuid: 9fb13026-0719-4cf5-b559-8fd312eebdbd
+          name: Marketing Team
+          description: null
+    Group:
+      type: object
+      description: Organization group object
+      required:
+      - uuid
+      - name
+      - description
+      properties:
+        uuid:
+          type: string
+          format: uuid
+          description: Unique identifier for the group
+        name:
+          type: string
+          description: Name of the group
+        description:
+          type:
+          - string
+          - 'null'
+          description: Description of the group (null if not provided)
+      examples:
+      - uuid: 9f854436-2e67-439e-bdda-e7ab6a4b5874
+        name: Default Access Group
+        description: null
+    PaginationLinks:
+      type: object
+      description: Pagination links for navigating through paginated results
+      required:
+      - first
+      - last
+      - prev
+      - next
+      properties:
+        first:
+          type: string
+          description: URL for the first page
+        last:
+          type: string
+          description: URL for the last page
+        prev:
+          type:
+          - string
+          - 'null'
+          description: URL for the previous page (null if on first page)
+        next:
+          type:
+          - string
+          - 'null'
+          description: URL for the next page (null if on last page)
+      examples:
+      - first: http://nexus.localhost:8080/api/workflows?page=1
+        last: http://nexus.localhost:8080/api/workflows?page=1
+        prev: null
+        next: null
+  securitySchemes:
+    OAuth2:
+      type: oauth2
+      description: OAuth2 client credentials flow
+      flows:
+        clientCredentials:
+          tokenUrl: /oauth/token
+          scopes:
+            run-workflow: Ability to run a specific workflow
+            webcomponent-verification: Ability to get the verification access from webcomponent
+            verification-suite: Ability to access the verification suite APIs
+            workflows:read: Ability to read workflows
+            workflows:write: Ability to write workflows
+            workflow-runs:read: Ability to read workflow runs
+            documents:read: Ability to read documents
+            documents:write: Ability to write documents
+            custom-views:read: Ability to read custom views
+            users:read: Ability to read users
+            users:write: Ability to write users
+            design-templates:read: Ability to read design templates
+            document-templates:read: Ability to read document templates
+            groups:read: Ability to read groups
+            groups:write: Ability to write groups
+            courses:read: Ability to read courses
+            courses:write: Ability to write courses
+            roles:read: Ability to read roles
+            user-tokens:read: Ability to read user tokens
+            user-tokens:write: Ability to write user tokens

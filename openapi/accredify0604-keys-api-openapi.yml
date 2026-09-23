@@ -1,0 +1,160 @@
+openapi: 3.2.0
+info:
+  title: Verification Module Keys API
+  version: '1.0'
+  description: Verification module endpoints
+  contact:
+    name: Accredify
+    url: https://accredify.io
+    email: support@accredify.io
+  termsOfService: https://www.accredify.io/legal
+servers:
+- url: https://nexus.staging.accredify.io
+  description: Staging
+- url: https://nexus.uat.accredify.io
+  description: UAT
+- url: https://nexus.accredify.io
+  description: Production
+tags:
+- name: Keys
+paths:
+  /verification/v1/extract-keys:
+    parameters: []
+    post:
+      summary: Extract Keys
+      tags:
+      - Keys
+      security:
+      - OAuth2:
+        - verification-suite
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+                    properties:
+                      keys:
+                        type: array
+                        items:
+                          type: string
+                x-examples:
+                  Example 1:
+                    data:
+                      keys:
+                      - user
+                      - user.name
+                      - user.hobbies.0
+                      - user.hobbies.1
+                      - user.address
+                      - user.address.street
+                      - user.address.city
+              examples:
+                Example 1:
+                  value:
+                    data:
+                      keys:
+                      - user
+                      - user.name
+                      - user.hobbies.0
+                      - user.hobbies.1
+                      - user.address
+                      - user.address.street
+                      - user.address.city
+        '422':
+          description: Unprocessable Entity
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    description: Present when the supplied credential format is invalid.
+                  message:
+                    type: string
+                    description: Present when the request fails input validation.
+                  errors:
+                    type: object
+                    additionalProperties:
+                      type: array
+                      items:
+                        type: string
+              examples:
+                Invalid credential:
+                  value:
+                    error: Invalid Verifiable Credential format
+                Missing input:
+                  value:
+                    message: The file field is required when json is not present.
+                    errors:
+                      file:
+                      - The file field is required when json is not present.
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+              examples:
+                Unexpected error:
+                  value:
+                    error: An unexpected error occurred
+      operationId: extract-keys
+      x-stoplight:
+        id: bnpq81wlo6myw
+      description: 'This endpoint allows you to pass in a Verifiable Credentials and have the keys that can be extracted returned.
+
+
+        This endpoint does **NOT** perform verification of the supplied credential.
+
+
+        This endpoint is to be used in conjunction with the verify endpoint so that the caller knows what can be passed for verified data extraction in the verify api.'
+      requestBody:
+        required: true
+        description: 'For JSON formatted documents, the request should just contain the document/credential.
+
+
+          For PDF documents, the request should contain the file.'
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                file:
+                  type: string
+                  x-stoplight:
+                    id: o8h8huhorznwa
+                  format: binary
+                json:
+                  type: string
+                  x-stoplight:
+                    id: 54soma3y2r228
+                drill_into_arrays:
+                  type: boolean
+                  x-stoplight:
+                    id: ivnsm8vcsx0zw
+                  description: "This parameter defines if JSON Arrays should be expanded into.\n\nFor example:\nInput array:\n\n ```json\n[\n     'user' => [\n         'name' => 'John',\n         'hobbies' => ['reading', 'gaming'],\n         'address' => [\n             'street' => '123 Main St',\n             'city' => 'Anytown'\n         ]\n     ]\n ]\n```\n\n With drill_into_arrays = false:\n `['user', 'user.name', 'user.hobbies', 'user.address', 'user.address.street', 'user.address.city']`\n\n With drill_into_arrays = true:\n `['user', 'user.name', 'user.hobbies', 'user.hobbies.0', 'user.hobbies.1', 'user.address', 'user.address.street', 'user.address.city']`\n"
+            examples:
+              JSON credential as form field:
+                value:
+                  json: '{"user":{"name":"John","hobbies":["reading","gaming"],"address":{"street":"123 Main St","city":"Anytown"}}}'
+                  drill_into_arrays: true
+      parameters: []
+components:
+  securitySchemes:
+    OAuth2:
+      type: oauth2
+      description: OAuth2 client credentials flow
+      flows:
+        clientCredentials:
+          tokenUrl: /oauth/token
+          scopes:
+            verification-suite: Ability to access the verification suite APIs

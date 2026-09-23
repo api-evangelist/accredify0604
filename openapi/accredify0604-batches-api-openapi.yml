@@ -1,0 +1,492 @@
+openapi: 3.2.0
+info:
+  title: Accredify Dashboard Batches API
+  description: This is the API documentation for the Accredify Dashboard, providing access to our services in a development and production environment.
+  version: 2.0.0
+servers:
+- url: http://dashboard.local.accredify.io/api/v2
+  description: Accredify Local (Local)
+- url: https://dashboard.uat.accredify.io/api/v2
+  description: Accredify Sandbox (UAT)
+- url: https://dashboard.accredify.io/api/v2
+  description: Accredify Main Server (Production)
+tags:
+- name: Batches
+  description: Batches
+paths:
+  /batches:
+    get:
+      tags:
+      - Batches
+      summary: Get batches
+      description: Returns a paginated list of batches scoped to the authenticated user's issuer or institution affiliation.
+      operationId: getBatches
+      parameters:
+      - name: page
+        in: query
+        description: The page number to retrieve.
+        required: false
+        schema:
+          type: integer
+          default: 1
+          minimum: 1
+      - name: per_page
+        in: query
+        description: The number of batches per page.
+        required: false
+        schema:
+          type: integer
+          default: 10
+          enum:
+          - 10
+          - 25
+          - 50
+          - 100
+      responses:
+        '200':
+          description: Batches retrieved successfully.
+          content:
+            application/json:
+              schema:
+                properties:
+                  data:
+                    type: array
+                    items:
+                      properties:
+                        id:
+                          description: Batch ID
+                          type: integer
+                        name:
+                          description: Batch name
+                          type: string
+                        alias:
+                          description: Batch alias
+                          type:
+                          - string
+                          - 'null'
+                        status:
+                          description: Current status of the batch
+                          type: string
+                        status_updated_at:
+                          description: Last update timestamp of the batch status
+                          type:
+                          - string
+                          - 'null'
+                          format: date-time
+                        subscribers:
+                          type: array
+                          items:
+                            type: string
+                            format: email
+                      type: object
+                  links:
+                    description: Pagination links
+                    type: object
+                  meta:
+                    description: Pagination metadata
+                    type: object
+                type: object
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/UnauthenticatedRequest'
+        '422':
+          $ref: '#/components/responses/UnprocessableEntityRequest'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalErrorRequest'
+      security:
+      - bearerAuth: []
+    post:
+      tags:
+      - Batches
+      summary: Create a new batch
+      description: Creates a new batch from provided JSON data, processes it, and optionally issues the batch.
+      operationId: createBatch
+      requestBody:
+        description: Batch creation data
+        required: true
+        content:
+          application/json:
+            schema:
+              required:
+              - course_id
+              - issue
+              - batch_alias
+              - data
+              properties:
+                course_id:
+                  description: ID of the course associated with the batch
+                  type: integer
+                issue:
+                  description: Whether to issue the batch immediately after creation
+                  type: boolean
+                distribute:
+                  description: Whether to distribute the batch, required if 'issue' is true
+                  type: boolean
+                encrypt:
+                  description: Whether to encrypt the batch, required if 'distribute' is true
+                  type: boolean
+                batch_alias:
+                  description: Alias for the batch
+                  type: string
+                chunking:
+                  description: Optional object for handling batch chunking
+                  properties:
+                    batch_size:
+                      description: The total number of message sequences you will be sending
+                      type: integer
+                    msg_seq:
+                      description: The sequence number of this request
+                      type: integer
+                    num_items:
+                      description: The number of items that are in this request
+                      type: integer
+                  type: object
+                data:
+                  description: Array of data objects for batch processing
+                  type: array
+                  items:
+                    description: Data for each batch item
+                    type: object
+                subscribers:
+                  description: An array of email addresses that should be subscribed to notifications
+                  type: array
+                  items:
+                    description: Email of each subscriber
+                    type: string
+              type: object
+      responses:
+        '201':
+          description: Batch created successfully
+          content:
+            application/json:
+              schema:
+                properties:
+                  data:
+                    properties:
+                      id:
+                        description: The newly created batch ID
+                        type: integer
+                      name:
+                        description: The name of the batch
+                        type: string
+                      alias:
+                        description: The alias of the batch
+                        type: string
+                      status:
+                        description: The status of the batch
+                        type: string
+                      status_updated_at:
+                        description: The timestamp when the status was last updated
+                        type: string
+                        format: date-time
+                    type: object
+                type: object
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/UnauthenticatedRequest'
+        '404':
+          $ref: '#/components/responses/NotFoundRequest'
+        '422':
+          $ref: '#/components/responses/UnprocessableEntityRequest'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalErrorRequest'
+      security:
+      - bearerAuth: []
+  /batches/{id}:
+    get:
+      tags:
+      - Batches
+      summary: Get a specific batch
+      description: Returns detailed information about a specific batch, including its items, documents, and files, for the authorized user.
+      operationId: getBatchById
+      parameters:
+      - name: id
+        in: path
+        description: The ID of the batch to retrieve
+        required: true
+        schema:
+          type: integer
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                properties:
+                  data:
+                    properties:
+                      id:
+                        description: Batch ID
+                        type: integer
+                      name:
+                        description: Batch name
+                        type: string
+                      alias:
+                        description: Batch alias
+                        type: string
+                      status:
+                        description: Current status of the batch
+                        type: string
+                      status_updated_at:
+                        description: Last update timestamp of the batch status
+                        type: string
+                        format: date-time
+                      batch_items:
+                        description: An array of batch items associated with the batch
+                        type: array
+                        items:
+                          properties:
+                            id:
+                              description: Batch item ID
+                              type: integer
+                            status:
+                              description: Status of the batch item
+                              type: string
+                            documents:
+                              description: Documents associated with the batch item
+                              type: array
+                              items:
+                                properties:
+                                  id:
+                                    description: Document ID
+                                    type: integer
+                                  hash:
+                                    description: Document hash
+                                    type: string
+                                  type:
+                                    description: Document type
+                                    type: string
+                                  status:
+                                    description: Document status
+                                    type: string
+                                  files:
+                                    description: Files associated with the document
+                                    properties:
+                                      pdf:
+                                        description: Base64 encoded content of the PDF file
+                                        type: string
+                                      unsigned:
+                                        description: Base64 encoded content of the unsigned file
+                                        type: string
+                                      signed:
+                                        description: Base64 encoded content of the signed file
+                                        type: string
+                                    type: object
+                                type: object
+                          type: object
+                    type: object
+                type: object
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/UnauthenticatedRequest'
+        '404':
+          $ref: '#/components/responses/NotFoundRequest'
+        '422':
+          $ref: '#/components/responses/UnprocessableEntityRequest'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalErrorRequest'
+      security:
+      - bearerAuth: []
+    delete:
+      tags:
+      - Batches
+      summary: Delete a specific batch
+      description: Deletes a specific batch if it's not in an issuing, revoking, issued, or revoked status. Only the owner of the batch can delete it.
+      operationId: deleteBatch
+      parameters:
+      - name: id
+        in: path
+        description: The ID of the batch to delete
+        required: true
+        schema:
+          type: integer
+      responses:
+        '204':
+          description: No Content - Successfully deleted the batch
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/UnauthenticatedRequest'
+        '404':
+          $ref: '#/components/responses/NotFoundRequest'
+        '422':
+          $ref: '#/components/responses/UnprocessableEntityRequest'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalErrorRequest'
+      security:
+      - bearerAuth: []
+  /batches/{id}/issue:
+    post:
+      tags:
+      - Batches
+      summary: Issue a batch
+      description: Issues the specified batch based on the provided options. The operation is queued and processed asynchronously.
+      operationId: issueBatch
+      parameters:
+      - name: id
+        in: path
+        description: The ID of the batch to issue
+        required: true
+        schema:
+          type: integer
+      requestBody:
+        description: Issue options for the batch
+        required: true
+        content:
+          application/json:
+            schema:
+              required:
+              - distribute
+              properties:
+                distribute:
+                  description: Whether to distribute the batch
+                  type: boolean
+                encrypt:
+                  description: Whether to encrypt the batch, required if 'distribute' is set to true
+                  type: boolean
+              type: object
+      responses:
+        '200':
+          description: Batch issued successfully
+          content:
+            application/json:
+              schema:
+                properties:
+                  data:
+                    properties:
+                      id:
+                        description: Batch ID
+                        type: integer
+                      name:
+                        description: Batch name
+                        type: string
+                      alias:
+                        description: Batch alias
+                        type: string
+                      status:
+                        description: Current status of the batch
+                        type: string
+                      status_updated_at:
+                        description: Last update timestamp of the batch status
+                        type: string
+                        format: date-time
+                    type: object
+                type: object
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/UnauthenticatedRequest'
+        '404':
+          $ref: '#/components/responses/NotFoundRequest'
+        '422':
+          $ref: '#/components/responses/UnprocessableEntityRequest'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        '500':
+          $ref: '#/components/responses/InternalErrorRequest'
+      security:
+      - bearerAuth: []
+components:
+  responses:
+    NotFoundRequest:
+      description: The specified resource was not found
+      content:
+        application/json:
+          schema:
+            properties:
+              status:
+                type: integer
+                example: 404
+              message:
+                type: string
+                example: Please ensure you are making the request to the correct endpoint.
+            type: object
+    UnauthenticatedRequest:
+      description: Unauthenticated request
+      content:
+        application/json:
+          schema:
+            properties:
+              status:
+                type: integer
+                example: 401
+              message:
+                type: string
+                example: Unauthenticated. You might have provided an invalid access token or your token has already expired.
+            type: object
+    TooManyRequests:
+      description: Too many requests
+      content:
+        application/json:
+          schema:
+            properties:
+              status:
+                type: integer
+                example: 429
+              message:
+                type: string
+                example: You're submitting requests too quickly. Please retry again after 60 seconds.
+            type: object
+    InternalErrorRequest:
+      description: Internal server error
+      content:
+        application/json:
+          schema:
+            properties:
+              status:
+                type: integer
+                example: 500
+              message:
+                type: string
+                example: There was an unexpected error while performing your last action. Please contact us at support@accredify.io with the error code for internal reference
+              code:
+                type: string
+                example: E500
+            type: object
+    UnprocessableEntityRequest:
+      description: Unprocessable entity
+      content:
+        application/json:
+          schema:
+            properties:
+              status:
+                type: integer
+                example: 422
+              errors:
+                type: array
+                items:
+                  type: string
+              message:
+                type: string
+                example: Validation failed for the request.
+            type: object
+    BadRequest:
+      description: Bad request
+      content:
+        application/json:
+          schema:
+            properties:
+              status:
+                type: integer
+                example: 400
+              message:
+                type: string
+                example: We couldn't find you, please try again.
+            type: object
+  securitySchemes:
+    bearerAuth:
+      type: http
+      description: 'JWT Authorization header using the Bearer scheme. Example: ''Authorization: Bearer {token}'''
+      bearerFormat: JWT
+      scheme: bearer
