@@ -257,6 +257,34 @@ paths:
       operationId: get-document-template-by-id
 components:
   responses:
+    '403':
+      description: Forbidden
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+          examples:
+            Example 1:
+              value:
+                message: Invalid scope(s) provided.
+    '401':
+      description: Unauthenticated
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+            required:
+            - message
+          examples:
+            Example 1:
+              value:
+                message: Unauthenticated.
     '404':
       description: Not found
       content:
@@ -292,112 +320,7 @@ components:
                   per_page:
                   - The per page field must be an integer.
                   - The selected per page is invalid.
-    '403':
-      description: Forbidden
-      content:
-        application/json:
-          schema:
-            type: object
-            properties:
-              message:
-                type: string
-          examples:
-            Example 1:
-              value:
-                message: Invalid scope(s) provided.
-    '401':
-      description: Unauthenticated
-      content:
-        application/json:
-          schema:
-            type: object
-            properties:
-              message:
-                type: string
-            required:
-            - message
-          examples:
-            Example 1:
-              value:
-                message: Unauthenticated.
   schemas:
-    PaginationMeta:
-      type: object
-      description: Pagination metadata containing information about the current page and total results
-      required:
-      - current_page
-      - from
-      - last_page
-      - links
-      - path
-      - per_page
-      - to
-      - total
-      properties:
-        current_page:
-          type: integer
-          description: Current page number
-        from:
-          type:
-          - integer
-          - 'null'
-          description: Starting record number for current page
-        last_page:
-          type: integer
-          description: Last page number
-        links:
-          type: array
-          description: Array of pagination link objects
-          items:
-            type: object
-            required:
-            - url
-            - label
-            - active
-            properties:
-              url:
-                type:
-                - 'null'
-                - string
-                description: URL for the pagination link (null for disabled links)
-              label:
-                type: string
-                description: Display label for the pagination link
-              active:
-                type: boolean
-                description: Whether this link represents the current page
-        path:
-          type: string
-          description: Base path for the API endpoint
-        per_page:
-          type: integer
-          description: Number of items per page
-        to:
-          type:
-          - integer
-          - 'null'
-          description: Ending record number for current page
-        total:
-          type: integer
-          description: Total number of records
-      examples:
-      - current_page: 1
-        from: 1
-        last_page: 1
-        links:
-        - url: null
-          label: '&laquo; Previous'
-          active: false
-        - url: http://nexus.localhost:8080/api/workflows?page=1
-          label: '1'
-          active: true
-        - url: null
-          label: Next &raquo;
-          active: false
-        path: http://nexus.localhost:8080/api/workflows
-        per_page: 10
-        to: 3
-        total: 3
     Group:
       title: Group
       type: object
@@ -452,6 +375,83 @@ components:
         last: http://nexus.localhost:8080/api/workflows?page=1
         prev: null
         next: null
+    TemplateAttribute:
+      title: TemplateAttribute
+      type: object
+      description: Attribute information for templates (used by both design and document templates)
+      examples:
+      - name: Recipient Name
+        key: recipient_name
+        type: string
+        description: Full name of the document recipient
+        example: John Doe
+        required: true
+      - name: Document ID
+        key: id
+        type: string
+        description: Document ID
+        example: '1234567890'
+        required: true
+      properties:
+        name:
+          type: string
+          description: Human-readable name of the attribute
+        key:
+          type: string
+          description: Unique key/identifier for the attribute
+        type:
+          type: string
+          enum:
+          - string
+          - number
+          - boolean
+          - email
+          - datetime
+          - date
+          - nric
+          - uen
+          - array
+          - uri
+          - single_enum
+          - multi_enum
+          description: Data type of the attribute
+        description:
+          type:
+          - string
+          - 'null'
+          description: Description of the attribute (can be null)
+        example:
+          type:
+          - string
+          - 'null'
+          description: Example value for the attribute (can be null)
+        required:
+          type: boolean
+          description: Whether this attribute is required
+        allowed_options:
+          type: array
+          description: Allowed options for enum type attributes
+          items:
+            type: object
+            properties:
+              value:
+                type: string
+                description: The option value
+              label:
+                type: string
+                description: The option label
+        items:
+          type: array
+          description: Nested attributes for array type attributes
+          items:
+            $ref: '#/components/schemas/TemplateAttribute'
+      required:
+      - name
+      - key
+      - type
+      - description
+      - example
+      - required
     DocumentTemplate:
       title: DocumentTemplate
       type: object
@@ -602,83 +602,83 @@ components:
       - role
       - email
       - status
-    TemplateAttribute:
-      title: TemplateAttribute
+    PaginationMeta:
       type: object
-      description: Attribute information for templates (used by both design and document templates)
-      examples:
-      - name: Recipient Name
-        key: recipient_name
-        type: string
-        description: Full name of the document recipient
-        example: John Doe
-        required: true
-      - name: Document ID
-        key: id
-        type: string
-        description: Document ID
-        example: '1234567890'
-        required: true
+      description: Pagination metadata containing information about the current page and total results
+      required:
+      - current_page
+      - from
+      - last_page
+      - links
+      - path
+      - per_page
+      - to
+      - total
       properties:
-        name:
-          type: string
-          description: Human-readable name of the attribute
-        key:
-          type: string
-          description: Unique key/identifier for the attribute
-        type:
-          type: string
-          enum:
-          - string
-          - number
-          - boolean
-          - email
-          - datetime
-          - date
-          - nric
-          - uen
-          - array
-          - uri
-          - single_enum
-          - multi_enum
-          description: Data type of the attribute
-        description:
+        current_page:
+          type: integer
+          description: Current page number
+        from:
           type:
-          - string
+          - integer
           - 'null'
-          description: Description of the attribute (can be null)
-        example:
-          type:
-          - string
-          - 'null'
-          description: Example value for the attribute (can be null)
-        required:
-          type: boolean
-          description: Whether this attribute is required
-        allowed_options:
+          description: Starting record number for current page
+        last_page:
+          type: integer
+          description: Last page number
+        links:
           type: array
-          description: Allowed options for enum type attributes
+          description: Array of pagination link objects
           items:
             type: object
+            required:
+            - url
+            - label
+            - active
             properties:
-              value:
-                type: string
-                description: The option value
+              url:
+                type:
+                - 'null'
+                - string
+                description: URL for the pagination link (null for disabled links)
               label:
                 type: string
-                description: The option label
-        items:
-          type: array
-          description: Nested attributes for array type attributes
-          items:
-            $ref: '#/components/schemas/TemplateAttribute'
-      required:
-      - name
-      - key
-      - type
-      - description
-      - example
-      - required
+                description: Display label for the pagination link
+              active:
+                type: boolean
+                description: Whether this link represents the current page
+        path:
+          type: string
+          description: Base path for the API endpoint
+        per_page:
+          type: integer
+          description: Number of items per page
+        to:
+          type:
+          - integer
+          - 'null'
+          description: Ending record number for current page
+        total:
+          type: integer
+          description: Total number of records
+      examples:
+      - current_page: 1
+        from: 1
+        last_page: 1
+        links:
+        - url: null
+          label: '&laquo; Previous'
+          active: false
+        - url: http://nexus.localhost:8080/api/workflows?page=1
+          label: '1'
+          active: true
+        - url: null
+          label: Next &raquo;
+          active: false
+        path: http://nexus.localhost:8080/api/workflows
+        per_page: 10
+        to: 3
+        total: 3
   securitySchemes:
     OAuth2:
       type: oauth2

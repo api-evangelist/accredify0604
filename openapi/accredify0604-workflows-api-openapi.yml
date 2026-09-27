@@ -1252,6 +1252,340 @@ paths:
         - failed
 components:
   schemas:
+    WorkflowApiSchema:
+      type: object
+      description: API schema for a workflow version
+      properties:
+        schema:
+          type: object
+          description: JSON schema for the workflow
+        flattened_schema:
+          type: array
+          description: Flattened schema for easier processing
+          items:
+            type: object
+      required:
+      - schema
+      - flattened_schema
+      examples:
+      - schema:
+          type: object
+          title: OA Document (No Design)
+          $schema: http://json-schema.org/draft-07/schema#
+          required:
+          - documents
+          properties:
+            documents:
+              type: array
+              items:
+                type: object
+                required:
+                - unique_id
+                properties:
+                  id:
+                    type: string
+                    examples:
+                    - '1234567890'
+                    description: Internal reference, usually serial number, of this document
+                  recipient:
+                    type: object
+                    required: []
+                    properties:
+                      name:
+                        type: string
+                        examples:
+                        - John Doe
+                        description: Recipient's name
+                    additionalProperties: false
+                  unique_id:
+                    type: string
+                    examples:
+                    - '123'
+                    description: ''
+                additionalProperties: false
+          description: ''
+          additionalProperties: false
+        flattened_schema:
+        - key: id
+          name: ID
+          example: '1234567890'
+          required: false
+          description: Internal reference, usually serial number, of this document
+          document_attribute_type: string
+        - key: recipient.name
+          name: Recipient Name
+          example: John Doe
+          required: false
+          description: Recipient's name
+          document_attribute_type: string
+        - key: unique_id
+          name: UniqueId
+          example: '123'
+          required: true
+          description: null
+          document_attribute_type: string
+    DesignTemplate:
+      title: DesignTemplate
+      type: object
+      description: Design template information
+      examples:
+      - id: 25
+        name: Default Education
+        description: This is for default education document
+        document_standard: OCv2
+        document_templates_count: 1
+        is_custom_design: true
+        type: certificate
+        group:
+          uuid: 9fea6580-5f09-43d0-bee5-b28bb527cb17
+          name: Default Access Group
+        tags: []
+        thumbnails:
+        - url: http://localhost:9000/local/var/www/html/storage/framework/testing/disks/s3/custom_designs/DEFAULT-EDUCATION/thumbnail.png?X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=sail%2F20250919%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20250919T064126Z&X-Amz-SignedHeaders=host&X-Amz-Expires=1800&X-Amz-Signature=88517fb2e4dfde5f2d24051c95884de55e25de2ee289befed9d3a4877c0e6b8c
+          label: Custom Certificate
+        attributes:
+        - name: ID
+          key: id
+          type: string
+          description: Document ID
+          example: '1234567890'
+          required: true
+        - name: Recipient Name
+          key: recipient.name
+          type: string
+          description: Name of the recipient
+          example: John Doe
+          required: true
+        - name: Certificate Name
+          key: name
+          type: string
+          description: Diploma in Classical Music
+          example: Diploma in Classical Music
+          required: true
+        - name: Issued Date
+          key: issuedOn
+          type: date
+          description: The date a document is issued on
+          example: '2024-01-01'
+          required: true
+        - name: Logo
+          key: additionalData.extra.logo
+          type: single_enum
+          description: The logo to be used on the document
+          example: utopia
+          required: false
+          allowed_options:
+          - value: utopia
+            label: Utopia
+          - value: accredify1
+            label: Accredify1
+          - value: accredify2
+            label: Accredify2
+        - name: Signatures
+          key: additionalData.extra.signatures
+          type: multi_enum
+          description: Signatures to be included on the document
+          example:
+          - accredify
+          - president
+          required: false
+          allowed_options:
+          - value: accredify
+            label: Accredify
+          - value: president
+            label: President
+          - value: registra
+            label: Registra
+        - name: Transcript
+          key: transcript
+          type: array
+          description: About the transcript
+          example: Transcript
+          required: false
+        - name: Name
+          key: transcript.$.name
+          type: string
+          description: About the transcript name
+          example: Transcript Name
+          required: false
+        - name: CourseCode
+          key: transcript.$.courseCode
+          type: string
+          description: About the transcript course code
+          example: Transcript courseCode
+          required: false
+        - name: Score
+          key: transcript.$.score
+          type: string
+          description: About the transcript score
+          example: Transcript score
+          required: false
+        - name: Description
+          key: transcript.$.description
+          type: string
+          description: About the transcript description
+          example: Transcript description
+          required: false
+      properties:
+        id:
+          type: integer
+          description: Unique identifier for the design template
+        name:
+          type: string
+          description: Name of the design template
+        description:
+          type:
+          - string
+          - 'null'
+          description: Description of the design template (can be null)
+        document_standard:
+          type: string
+          description: Document standard used by this design template (can be null)
+        document_templates_count:
+          type: integer
+          description: Number of document templates using this design template
+        is_custom_design:
+          type: boolean
+          description: Whether this is a custom design template
+        type:
+          type: string
+          enum:
+          - certificate
+          - badge
+          - digital_pass
+          description: Type of the design template
+        group:
+          $ref: '#/components/schemas/Group'
+          description: Organization group this design template belongs to (only present when loaded directly)
+        tags:
+          type: array
+          description: Array of tag names associated with the design template
+          items:
+            type: string
+        thumbnails:
+          type: array
+          description: Array of thumbnail images for the design template
+          items:
+            $ref: '#/components/schemas/Thumbnail'
+        attributes:
+          type: array
+          description: Array of attributes associated with this design template
+          items:
+            $ref: '#/components/schemas/TemplateAttribute'
+      required:
+      - id
+      - name
+      - description
+      - document_standard
+      - document_templates_count
+      - is_custom_design
+      - type
+      - group
+      - tags
+    DocumentTemplate:
+      title: DocumentTemplate
+      type: object
+      description: Document template information
+      examples:
+      - id: 1
+        name: Certificate Template
+        description: Template for creating certificates
+        document_standard: OA v2
+        type: certificate
+        group:
+          uuid: 9fea6580-5f09-43d0-bee5-b28bb527cb17
+          name: Default Access Group
+        is_draft: false
+        created_at: '2025-01-01T00:00:00.000000Z'
+        updated_at: '2025-01-01T00:00:00.000000Z'
+        created_by:
+          id: 9f8ed2e8-efa2-400b-ad6e-1caed0767f6d
+          name: John Doe
+          email: john.doe@example.com
+        updated_by:
+          id: 9f8ed2e8-efa2-400b-ad6e-1caed0767f6d
+          name: John Doe
+          email: john.doe@example.com
+        tags:
+        - education
+        attributes:
+        - name: Recipient Name
+          key: recipient_name
+          type: string
+          description: Full name of the document recipient
+          example: John Doe
+          required: true
+        - name: Document ID
+          key: id
+          type: string
+          description: Document ID
+          example: '1234567890'
+          required: true
+      properties:
+        id:
+          type: integer
+          description: Unique identifier for the document template
+        name:
+          type: string
+          description: Name of the document template
+        description:
+          type:
+          - string
+          - 'null'
+          description: Description of the document template (can be null)
+        document_standard:
+          type: string
+          description: Document standard used by this document template (can be null)
+        type:
+          type: string
+          enum:
+          - certificate
+          - badge
+          - digital_pass
+          description: Type of the document template
+        group:
+          $ref: '#/components/schemas/Group'
+          description: Organization group this document template belongs to (only present when loaded directly)
+        is_draft:
+          type: boolean
+          description: Whether this document template is a draft
+        created_at:
+          type: string
+          format: date-time
+          description: When the document template was created
+        updated_at:
+          type: string
+          format: date-time
+          description: When the document template was last updated
+        created_by:
+          $ref: '#/components/schemas/User'
+          description: User who created this document template
+        updated_by:
+          $ref: '#/components/schemas/User'
+          description: User who last updated this document template
+        tags:
+          type: array
+          description: Array of tag names associated with the document template
+          items:
+            type: string
+        attributes:
+          type: array
+          description: Array of attributes associated with this document template (excluding design attributes)
+          items:
+            $ref: '#/components/schemas/TemplateAttribute'
+      required:
+      - id
+      - name
+      - description
+      - document_standard
+      - type
+      - group
+      - is_draft
+      - created_at
+      - updated_at
+      - created_by
+      - updated_by
+      - tags
     PaginationMeta:
       type: object
       description: Pagination metadata containing information about the current page and total results
@@ -1329,6 +1663,47 @@ components:
         per_page: 10
         to: 3
         total: 3
+    CourseVersion:
+      title: CourseVersion
+      type: object
+      description: Course version information
+      examples:
+      - uuid: 9feb59d1-2906-4e18-8731-43551191a684
+        title: Introduction to Statistics
+        version: '1'
+        course_type: skills_passport
+        settings:
+          ssec_version: '2020'
+          eqa_code: '11'
+          eqa_title: Primary School Leaving Examination (PSLE) / Primary School Proficiency Examination (PSPE) certificate or equivalent
+          fos_code: '011'
+          fos_title: TEACHER TRAINING
+          skills_passport_course_type: academic
+      properties:
+        uuid:
+          type: string
+          format: uuid
+          description: Unique identifier for the course version
+        title:
+          type: string
+          description: Course version title
+        version:
+          type: string
+          description: Version number
+        course_type:
+          type: string
+          enum:
+          - skills_passport
+          description: Type of the course
+        settings:
+          $ref: '#/components/schemas/CourseSettings'
+          description: Course settings including SSEC framework data
+      required:
+      - uuid
+      - title
+      - version
+      - course_type
+      - settings
     Group:
       title: Group
       type: object
@@ -1353,6 +1728,557 @@ components:
       required:
       - uuid
       - name
+    Course:
+      title: Course
+      type: object
+      description: Course information from CourseApiResource
+      examples:
+      - uuid: 9feb59d1-27fe-4607-9e1c-fe212f0d8691
+        title: Introduction to Statistics
+        code: IS10131
+        group_uuid: 9fea6580-5f09-43d0-bee5-b28bb527cb17
+        versions:
+        - uuid: 9feb59d1-2906-4e18-8731-43551191a684
+          title: Introduction to Statistics
+          version: '1'
+          course_type: skills_passport
+          settings:
+            ssec_version: '2020'
+            eqa_code: '11'
+            eqa_title: Primary School Leaving Examination (PSLE) / Primary School Proficiency Examination (PSPE) certificate or equivalent
+            fos_code: '011'
+            fos_title: TEACHER TRAINING
+            skills_passport_course_type: academic
+        latest_version:
+          uuid: 9feb59d1-2906-4e18-8731-43551191a684
+          title: Introduction to Statistics
+          version: '1'
+          course_type: skills_passport
+          settings:
+            ssec_version: '2020'
+            eqa_code: '11'
+            eqa_title: Primary School Leaving Examination (PSLE) / Primary School Proficiency Examination (PSPE) certificate or equivalent
+            fos_code: '011'
+            fos_title: TEACHER TRAINING
+            skills_passport_course_type: academic
+        workflows:
+        - uuid: 9f001c24-eef9-4b82-8399-d4eaa1add4c5
+          name: OA Workflow (No Design)
+      properties:
+        uuid:
+          type: string
+          format: uuid
+          description: Unique identifier (UUID) for the course
+        title:
+          type: string
+          description: Course title
+        code:
+          type: string
+          description: Course code
+        group_uuid:
+          type: string
+          format: uuid
+          description: UUID of the organization group the course belongs to
+        versions:
+          type: array
+          description: Array of all course versions (only present when versions are loaded)
+          items:
+            $ref: '#/components/schemas/CourseVersion'
+        latest_version:
+          $ref: '#/components/schemas/CourseVersion'
+          description: Latest version of the course (only present when latestVersion is loaded)
+        workflows:
+          type: array
+          description: Workflows whose latest published version has this course attached (empty array when none)
+          items:
+            $ref: '#/components/schemas/CourseWorkflow'
+      required:
+      - uuid
+      - title
+      - code
+      - group_uuid
+      - latest_version
+      - workflows
+    CourseSettings:
+      title: CourseSettings
+      type: object
+      description: Course settings including SSEC framework information
+      properties:
+        ssec_version:
+          type: string
+          enum:
+          - '2020'
+          - '2015'
+          description: SSEC version used for this course
+        eqa_code:
+          type: string
+          description: Education and Qualification Authority code
+        eqa_title:
+          type: string
+          description: Human-readable EQA title
+        fos_code:
+          type: string
+          description: Field of Study code
+        fos_title:
+          type: string
+          description: Human-readable FOS title
+        skills_passport_course_type:
+          type: string
+          enum:
+          - academic
+          - professional
+          description: Skills passport course type
+      required:
+      - ssec_version
+      - eqa_code
+      - eqa_title
+      - fos_code
+      - fos_title
+      - skills_passport_course_type
+      examples:
+      - ssec_version: '2020'
+        eqa_code: '11'
+        eqa_title: Primary School Leaving Examination (PSLE) / Primary School Proficiency Examination (PSPE) certificate or equivalent
+        fos_code: '011'
+        fos_title: TEACHER TRAINING
+        skills_passport_course_type: academic
+    User:
+      title: User
+      type: object
+      description: User information from UserApiResource
+      examples:
+      - uuid: 9fb13043-3833-4f0e-8aff-996a007e0aa5
+        name: John Doe
+        role: member
+        email: john.doe@accredify.io
+        status: active
+        groups:
+        - uuid: 9f854436-2e67-439e-bdda-e7ab6a4b5874
+          name: Default Access Group
+          description: null
+        - uuid: 9fb13026-0719-4cf5-b559-8fd312eebdbd
+          name: Marketing Team
+          description: null
+      properties:
+        uuid:
+          type: string
+          format: uuid
+          description: Unique identifier for the user
+        name:
+          type: string
+          description: Full name of the user
+        role:
+          type: string
+          description: User's role name (or '-' if no role assigned)
+        email:
+          type: string
+          format: email
+          description: Email address of the user
+        status:
+          type: string
+          description: Current status of the user
+        groups:
+          type: array
+          description: Array of organization groups the user belongs to (only present when groups are loaded)
+          items:
+            $ref: '#/components/schemas/Group'
+      required:
+      - uuid
+      - name
+      - role
+      - email
+      - status
+    Workflow:
+      type: object
+      description: Basic workflow information for list endpoints
+      examples:
+      - uuid: 9fe9a22c-eabd-46f5-9562-1add7ffb61d2
+        name: '[Seed] Test Issuance by API Call (OAv2)'
+        description: Nihil nostrum magni ratione consectetur omnis molestiae. Non et facere blanditiis est ut quaerat minima. Itaque quis est vitae voluptate non.
+        created_at: '2025-09-19T04:59:30.000000Z'
+        updated_at: '2025-09-19T04:59:30.000000Z'
+        created_by:
+          uuid: 9fe9a228-d1ce-465d-a88f-02d7ea10810a
+          name: '[Seed] Brittany AD'
+          role: admin
+          email: admin@accredify.io
+          status: active
+        updated_by:
+          uuid: 9fe9a228-d1ce-465d-a88f-02d7ea10810a
+          current_organization_id: 9fe9a227-4d29-4b5d-8e4d-a0a7428e91f1
+          name: '[Seed] Brittany AD'
+          email: admin@accredify.io
+          email_verified_at: '2025-09-19T04:59:27.000000Z'
+        active: true
+        group:
+          uuid: 9fea6580-5f09-43d0-bee5-b28bb527cb17
+          name: Default Access Group
+        has_active_runs: false
+        runs_count: 0
+      properties:
+        uuid:
+          type: string
+          format: uuid
+        name:
+          type: string
+        description:
+          type:
+          - string
+          - 'null'
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+        updated_by:
+          $ref: '#/components/schemas/User'
+        created_by:
+          $ref: '#/components/schemas/User'
+        active:
+          type: boolean
+        group:
+          $ref: '#/components/schemas/Group'
+          description: Organization group this workflow belongs to
+        has_active_runs:
+          type: boolean
+        runs_count:
+          type: integer
+          description: Total number of runs for this workflow
+      required:
+      - uuid
+      - name
+      - created_at
+      - updated_at
+      - updated_by
+      - created_by
+      - active
+      - group
+      - has_active_runs
+      - runs_count
+    WorkflowRun:
+      type: object
+      properties:
+        uuid:
+          type: string
+          format: uuid
+        status:
+          type: string
+          enum:
+          - running
+          - creating_documents
+          - issuing
+          - pending_confirmation
+          - distributing
+          - creating_public_profile_page
+          - uploading_to_skills_passport
+          - calling_workflow_http_request
+          - in_review
+          - paused
+          - pending_claim
+          - completed
+          - completed_with_failures
+          - cancelled
+          - rejected
+          - failed
+        status_label:
+          type: string
+        batch_name:
+          type: string
+          description: Provided batch_name or generated default
+        created_by:
+          $ref: '#/components/schemas/User'
+          description: User who created this workflow run
+        started_at:
+          type: string
+          format: date-time
+        ended_at:
+          type:
+          - string
+          - 'null'
+          format: date-time
+          description: When the workflow run ended (null if still running)
+        updated_at:
+          type: string
+          format: date-time
+        current_action_sequence_number:
+          type:
+          - integer
+          - 'null'
+          description: Sequence number of the latest workflow action run (null when no action run has started yet)
+        workflow_actions_list:
+          type: array
+          items:
+            type: object
+            properties:
+              sequence:
+                type: integer
+              type:
+                type: string
+              status:
+                type: string
+      examples:
+      - uuid: 9fad4412-3fa7-4f49-8cd1-65b0e073fdcf
+        status: completed
+        status_label: Completed
+        batch_name: Provided batch name
+        created_by:
+          uuid: 9f8ed2e8-efa2-400b-ad6e-1caed0767f6d
+          name: John Doe
+          role: api_user
+          email: api9f001aff-57b4-4bd6-b069-6b07609798a8@accredify.io
+          status: active
+        started_at: '2025-08-20T04:46:42.000000Z'
+        ended_at: '2025-08-20T04:46:59.000000Z'
+        updated_at: '2025-08-20T04:46:59.000000Z'
+        current_action_sequence_number: 2
+        workflow_actions_list:
+        - sequence: 1
+          type: create_documents
+          status: completed
+        - sequence: 2
+          type: issue_documents
+          status: running
+    PaginationLinks:
+      type: object
+      description: Pagination links for navigating through paginated results
+      required:
+      - first
+      - last
+      - prev
+      - next
+      properties:
+        first:
+          type: string
+          description: URL for the first page
+        last:
+          type: string
+          description: URL for the last page
+        prev:
+          type:
+          - string
+          - 'null'
+          description: URL for the previous page (null if on first page)
+        next:
+          type:
+          - string
+          - 'null'
+          description: URL for the next page (null if on last page)
+      examples:
+      - first: http://nexus.localhost:8080/api/workflows?page=1
+        last: http://nexus.localhost:8080/api/workflows?page=1
+        prev: null
+        next: null
+    Thumbnail:
+      title: Thumbnail
+      type: object
+      description: Thumbnail image information for design templates
+      properties:
+        url:
+          type: string
+          description: URL of the thumbnail image
+        label:
+          type: string
+          description: Label for the thumbnail (e.g., 'Front View', 'Back View')
+      required:
+      - url
+      - label
+      examples:
+      - url: https://example.com/thumbnail.png
+        label: Front View
+      - url: https://example.com/thumbnail-back.png
+        label: Back View
+    WorkflowVersion:
+      type: object
+      description: A version of a workflow containing trigger configuration and actions
+      examples:
+      - version: 10
+        published_at: null
+        created_at: '2025-09-10T05:20:56.000000Z'
+        updated_at: '2025-09-10T05:20:56.000000Z'
+      - version: 10
+        published_at: null
+        created_at: '2025-09-10T05:20:56.000000Z'
+        updated_at: '2025-09-10T05:20:56.000000Z'
+        api_schema:
+          schema:
+            type: object
+            title: OA Document (No Design)
+            $schema: http://json-schema.org/draft-07/schema#
+            required:
+            - documents
+            properties:
+              documents:
+                type: array
+                items:
+                  type: object
+                  required:
+                  - unique_id
+                  properties:
+                    id:
+                      type: string
+                      examples:
+                      - '1234567890'
+                      description: Internal reference, usually serial number, of this document
+                    recipient:
+                      type: object
+                      required: []
+                      properties:
+                        name:
+                          type: string
+                          examples:
+                          - John Doe
+                          description: Recipient's name
+                      additionalProperties: false
+                    unique_id:
+                      type: string
+                      examples:
+                      - '123'
+                      description: ''
+                  additionalProperties: false
+            description: ''
+            additionalProperties: false
+          flattened_schema:
+          - key: id
+            name: ID
+            example: '1234567890'
+            required: false
+            description: Internal reference, usually serial number, of this document
+            document_attribute_type: string
+          - key: recipient.name
+            name: Recipient Name
+            example: John Doe
+            required: false
+            description: Recipient's name
+            document_attribute_type: string
+          - key: unique_id
+            name: UniqueId
+            example: '123'
+            required: true
+            description: null
+            document_attribute_type: string
+      properties:
+        version:
+          type: integer
+          description: Version number
+        published_at:
+          type:
+          - string
+          - 'null'
+          format: date-time
+          description: When this version was published (null if unpublished)
+        created_at:
+          type: string
+          format: date-time
+          description: When this version was created
+        updated_at:
+          type: string
+          format: date-time
+          description: When this version was last updated
+        api_schema:
+          anyOf:
+          - $ref: '#/components/schemas/WorkflowApiSchema'
+          - type: 'null'
+          description: API schema for this workflow version (only available on latest published version)
+      required:
+      - version
+      - created_at
+      - updated_at
+    CourseWorkflow:
+      title: CourseWorkflow
+      type: object
+      description: Slim summary of a workflow the course is attached to
+      examples:
+      - uuid: 9f001c24-eef9-4b82-8399-d4eaa1add4c5
+        name: OA Workflow (No Design)
+      properties:
+        uuid:
+          type: string
+          format: uuid
+          description: Unique identifier for the workflow
+        name:
+          type: string
+          description: Name of the workflow
+      required:
+      - uuid
+      - name
+    TemplateAttribute:
+      title: TemplateAttribute
+      type: object
+      description: Attribute information for templates (used by both design and document templates)
+      examples:
+      - name: Recipient Name
+        key: recipient_name
+        type: string
+        description: Full name of the document recipient
+        example: John Doe
+        required: true
+      - name: Document ID
+        key: id
+        type: string
+        description: Document ID
+        example: '1234567890'
+        required: true
+      properties:
+        name:
+          type: string
+          description: Human-readable name of the attribute
+        key:
+          type: string
+          description: Unique key/identifier for the attribute
+        type:
+          type: string
+          enum:
+          - string
+          - number
+          - boolean
+          - email
+          - datetime
+          - date
+          - nric
+          - uen
+          - array
+          - uri
+          - single_enum
+          - multi_enum
+          description: Data type of the attribute
+        description:
+          type:
+          - string
+          - 'null'
+          description: Description of the attribute (can be null)
+        example:
+          type:
+          - string
+          - 'null'
+          description: Example value for the attribute (can be null)
+        required:
+          type: boolean
+          description: Whether this attribute is required
+        allowed_options:
+          type: array
+          description: Allowed options for enum type attributes
+          items:
+            type: object
+            properties:
+              value:
+                type: string
+                description: The option value
+              label:
+                type: string
+                description: The option label
+        items:
+          type: array
+          description: Nested attributes for array type attributes
+          items:
+            $ref: '#/components/schemas/TemplateAttribute'
+      required:
+      - name
+      - key
+      - type
+      - description
+      - example
+      - required
     WorkflowDetails:
       type: object
       description: Detailed workflow information including versions and latest version details
@@ -1596,974 +2522,7 @@ components:
       - group
       - has_active_runs
       - runs_count
-    WorkflowApiSchema:
-      type: object
-      description: API schema for a workflow version
-      properties:
-        schema:
-          type: object
-          description: JSON schema for the workflow
-        flattened_schema:
-          type: array
-          description: Flattened schema for easier processing
-          items:
-            type: object
-      required:
-      - schema
-      - flattened_schema
-      examples:
-      - schema:
-          type: object
-          title: OA Document (No Design)
-          $schema: http://json-schema.org/draft-07/schema#
-          required:
-          - documents
-          properties:
-            documents:
-              type: array
-              items:
-                type: object
-                required:
-                - unique_id
-                properties:
-                  id:
-                    type: string
-                    examples:
-                    - '1234567890'
-                    description: Internal reference, usually serial number, of this document
-                  recipient:
-                    type: object
-                    required: []
-                    properties:
-                      name:
-                        type: string
-                        examples:
-                        - John Doe
-                        description: Recipient's name
-                    additionalProperties: false
-                  unique_id:
-                    type: string
-                    examples:
-                    - '123'
-                    description: ''
-                additionalProperties: false
-          description: ''
-          additionalProperties: false
-        flattened_schema:
-        - key: id
-          name: ID
-          example: '1234567890'
-          required: false
-          description: Internal reference, usually serial number, of this document
-          document_attribute_type: string
-        - key: recipient.name
-          name: Recipient Name
-          example: John Doe
-          required: false
-          description: Recipient's name
-          document_attribute_type: string
-        - key: unique_id
-          name: UniqueId
-          example: '123'
-          required: true
-          description: null
-          document_attribute_type: string
-    User:
-      title: User
-      type: object
-      description: User information from UserApiResource
-      examples:
-      - uuid: 9fb13043-3833-4f0e-8aff-996a007e0aa5
-        name: John Doe
-        role: member
-        email: john.doe@accredify.io
-        status: active
-        groups:
-        - uuid: 9f854436-2e67-439e-bdda-e7ab6a4b5874
-          name: Default Access Group
-          description: null
-        - uuid: 9fb13026-0719-4cf5-b559-8fd312eebdbd
-          name: Marketing Team
-          description: null
-      properties:
-        uuid:
-          type: string
-          format: uuid
-          description: Unique identifier for the user
-        name:
-          type: string
-          description: Full name of the user
-        role:
-          type: string
-          description: User's role name (or '-' if no role assigned)
-        email:
-          type: string
-          format: email
-          description: Email address of the user
-        status:
-          type: string
-          description: Current status of the user
-        groups:
-          type: array
-          description: Array of organization groups the user belongs to (only present when groups are loaded)
-          items:
-            $ref: '#/components/schemas/Group'
-      required:
-      - uuid
-      - name
-      - role
-      - email
-      - status
-    Thumbnail:
-      title: Thumbnail
-      type: object
-      description: Thumbnail image information for design templates
-      properties:
-        url:
-          type: string
-          description: URL of the thumbnail image
-        label:
-          type: string
-          description: Label for the thumbnail (e.g., 'Front View', 'Back View')
-      required:
-      - url
-      - label
-      examples:
-      - url: https://example.com/thumbnail.png
-        label: Front View
-      - url: https://example.com/thumbnail-back.png
-        label: Back View
-    PaginationLinks:
-      type: object
-      description: Pagination links for navigating through paginated results
-      required:
-      - first
-      - last
-      - prev
-      - next
-      properties:
-        first:
-          type: string
-          description: URL for the first page
-        last:
-          type: string
-          description: URL for the last page
-        prev:
-          type:
-          - string
-          - 'null'
-          description: URL for the previous page (null if on first page)
-        next:
-          type:
-          - string
-          - 'null'
-          description: URL for the next page (null if on last page)
-      examples:
-      - first: http://nexus.localhost:8080/api/workflows?page=1
-        last: http://nexus.localhost:8080/api/workflows?page=1
-        prev: null
-        next: null
-    Course:
-      title: Course
-      type: object
-      description: Course information from CourseApiResource
-      examples:
-      - uuid: 9feb59d1-27fe-4607-9e1c-fe212f0d8691
-        title: Introduction to Statistics
-        code: IS10131
-        group_uuid: 9fea6580-5f09-43d0-bee5-b28bb527cb17
-        versions:
-        - uuid: 9feb59d1-2906-4e18-8731-43551191a684
-          title: Introduction to Statistics
-          version: '1'
-          course_type: skills_passport
-          settings:
-            ssec_version: '2020'
-            eqa_code: '11'
-            eqa_title: Primary School Leaving Examination (PSLE) / Primary School Proficiency Examination (PSPE) certificate or equivalent
-            fos_code: '011'
-            fos_title: TEACHER TRAINING
-            skills_passport_course_type: academic
-        latest_version:
-          uuid: 9feb59d1-2906-4e18-8731-43551191a684
-          title: Introduction to Statistics
-          version: '1'
-          course_type: skills_passport
-          settings:
-            ssec_version: '2020'
-            eqa_code: '11'
-            eqa_title: Primary School Leaving Examination (PSLE) / Primary School Proficiency Examination (PSPE) certificate or equivalent
-            fos_code: '011'
-            fos_title: TEACHER TRAINING
-            skills_passport_course_type: academic
-        workflows:
-        - uuid: 9f001c24-eef9-4b82-8399-d4eaa1add4c5
-          name: OA Workflow (No Design)
-      properties:
-        uuid:
-          type: string
-          format: uuid
-          description: Unique identifier (UUID) for the course
-        title:
-          type: string
-          description: Course title
-        code:
-          type: string
-          description: Course code
-        group_uuid:
-          type: string
-          format: uuid
-          description: UUID of the organization group the course belongs to
-        versions:
-          type: array
-          description: Array of all course versions (only present when versions are loaded)
-          items:
-            $ref: '#/components/schemas/CourseVersion'
-        latest_version:
-          $ref: '#/components/schemas/CourseVersion'
-          description: Latest version of the course (only present when latestVersion is loaded)
-        workflows:
-          type: array
-          description: Workflows whose latest published version has this course attached (empty array when none)
-          items:
-            $ref: '#/components/schemas/CourseWorkflow'
-      required:
-      - uuid
-      - title
-      - code
-      - group_uuid
-      - latest_version
-      - workflows
-    DocumentTemplate:
-      title: DocumentTemplate
-      type: object
-      description: Document template information
-      examples:
-      - id: 1
-        name: Certificate Template
-        description: Template for creating certificates
-        document_standard: OA v2
-        type: certificate
-        group:
-          uuid: 9fea6580-5f09-43d0-bee5-b28bb527cb17
-          name: Default Access Group
-        is_draft: false
-        created_at: '2025-01-01T00:00:00.000000Z'
-        updated_at: '2025-01-01T00:00:00.000000Z'
-        created_by:
-          id: 9f8ed2e8-efa2-400b-ad6e-1caed0767f6d
-          name: John Doe
-          email: john.doe@example.com
-        updated_by:
-          id: 9f8ed2e8-efa2-400b-ad6e-1caed0767f6d
-          name: John Doe
-          email: john.doe@example.com
-        tags:
-        - education
-        attributes:
-        - name: Recipient Name
-          key: recipient_name
-          type: string
-          description: Full name of the document recipient
-          example: John Doe
-          required: true
-        - name: Document ID
-          key: id
-          type: string
-          description: Document ID
-          example: '1234567890'
-          required: true
-      properties:
-        id:
-          type: integer
-          description: Unique identifier for the document template
-        name:
-          type: string
-          description: Name of the document template
-        description:
-          type:
-          - string
-          - 'null'
-          description: Description of the document template (can be null)
-        document_standard:
-          type: string
-          description: Document standard used by this document template (can be null)
-        type:
-          type: string
-          enum:
-          - certificate
-          - badge
-          - digital_pass
-          description: Type of the document template
-        group:
-          $ref: '#/components/schemas/Group'
-          description: Organization group this document template belongs to (only present when loaded directly)
-        is_draft:
-          type: boolean
-          description: Whether this document template is a draft
-        created_at:
-          type: string
-          format: date-time
-          description: When the document template was created
-        updated_at:
-          type: string
-          format: date-time
-          description: When the document template was last updated
-        created_by:
-          $ref: '#/components/schemas/User'
-          description: User who created this document template
-        updated_by:
-          $ref: '#/components/schemas/User'
-          description: User who last updated this document template
-        tags:
-          type: array
-          description: Array of tag names associated with the document template
-          items:
-            type: string
-        attributes:
-          type: array
-          description: Array of attributes associated with this document template (excluding design attributes)
-          items:
-            $ref: '#/components/schemas/TemplateAttribute'
-      required:
-      - id
-      - name
-      - description
-      - document_standard
-      - type
-      - group
-      - is_draft
-      - created_at
-      - updated_at
-      - created_by
-      - updated_by
-      - tags
-    Workflow:
-      type: object
-      description: Basic workflow information for list endpoints
-      examples:
-      - uuid: 9fe9a22c-eabd-46f5-9562-1add7ffb61d2
-        name: '[Seed] Test Issuance by API Call (OAv2)'
-        description: Nihil nostrum magni ratione consectetur omnis molestiae. Non et facere blanditiis est ut quaerat minima. Itaque quis est vitae voluptate non.
-        created_at: '2025-09-19T04:59:30.000000Z'
-        updated_at: '2025-09-19T04:59:30.000000Z'
-        created_by:
-          uuid: 9fe9a228-d1ce-465d-a88f-02d7ea10810a
-          name: '[Seed] Brittany AD'
-          role: admin
-          email: admin@accredify.io
-          status: active
-        updated_by:
-          uuid: 9fe9a228-d1ce-465d-a88f-02d7ea10810a
-          current_organization_id: 9fe9a227-4d29-4b5d-8e4d-a0a7428e91f1
-          name: '[Seed] Brittany AD'
-          email: admin@accredify.io
-          email_verified_at: '2025-09-19T04:59:27.000000Z'
-        active: true
-        group:
-          uuid: 9fea6580-5f09-43d0-bee5-b28bb527cb17
-          name: Default Access Group
-        has_active_runs: false
-        runs_count: 0
-      properties:
-        uuid:
-          type: string
-          format: uuid
-        name:
-          type: string
-        description:
-          type:
-          - string
-          - 'null'
-        created_at:
-          type: string
-          format: date-time
-        updated_at:
-          type: string
-          format: date-time
-        updated_by:
-          $ref: '#/components/schemas/User'
-        created_by:
-          $ref: '#/components/schemas/User'
-        active:
-          type: boolean
-        group:
-          $ref: '#/components/schemas/Group'
-          description: Organization group this workflow belongs to
-        has_active_runs:
-          type: boolean
-        runs_count:
-          type: integer
-          description: Total number of runs for this workflow
-      required:
-      - uuid
-      - name
-      - created_at
-      - updated_at
-      - updated_by
-      - created_by
-      - active
-      - group
-      - has_active_runs
-      - runs_count
-    DesignTemplate:
-      title: DesignTemplate
-      type: object
-      description: Design template information
-      examples:
-      - id: 25
-        name: Default Education
-        description: This is for default education document
-        document_standard: OCv2
-        document_templates_count: 1
-        is_custom_design: true
-        type: certificate
-        group:
-          uuid: 9fea6580-5f09-43d0-bee5-b28bb527cb17
-          name: Default Access Group
-        tags: []
-        thumbnails:
-        - url: http://localhost:9000/local/var/www/html/storage/framework/testing/disks/s3/custom_designs/DEFAULT-EDUCATION/thumbnail.png?X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=sail%2F20250919%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20250919T064126Z&X-Amz-SignedHeaders=host&X-Amz-Expires=1800&X-Amz-Signature=88517fb2e4dfde5f2d24051c95884de55e25de2ee289befed9d3a4877c0e6b8c
-          label: Custom Certificate
-        attributes:
-        - name: ID
-          key: id
-          type: string
-          description: Document ID
-          example: '1234567890'
-          required: true
-        - name: Recipient Name
-          key: recipient.name
-          type: string
-          description: Name of the recipient
-          example: John Doe
-          required: true
-        - name: Certificate Name
-          key: name
-          type: string
-          description: Diploma in Classical Music
-          example: Diploma in Classical Music
-          required: true
-        - name: Issued Date
-          key: issuedOn
-          type: date
-          description: The date a document is issued on
-          example: '2024-01-01'
-          required: true
-        - name: Logo
-          key: additionalData.extra.logo
-          type: single_enum
-          description: The logo to be used on the document
-          example: utopia
-          required: false
-          allowed_options:
-          - value: utopia
-            label: Utopia
-          - value: accredify1
-            label: Accredify1
-          - value: accredify2
-            label: Accredify2
-        - name: Signatures
-          key: additionalData.extra.signatures
-          type: multi_enum
-          description: Signatures to be included on the document
-          example:
-          - accredify
-          - president
-          required: false
-          allowed_options:
-          - value: accredify
-            label: Accredify
-          - value: president
-            label: President
-          - value: registra
-            label: Registra
-        - name: Transcript
-          key: transcript
-          type: array
-          description: About the transcript
-          example: Transcript
-          required: false
-        - name: Name
-          key: transcript.$.name
-          type: string
-          description: About the transcript name
-          example: Transcript Name
-          required: false
-        - name: CourseCode
-          key: transcript.$.courseCode
-          type: string
-          description: About the transcript course code
-          example: Transcript courseCode
-          required: false
-        - name: Score
-          key: transcript.$.score
-          type: string
-          description: About the transcript score
-          example: Transcript score
-          required: false
-        - name: Description
-          key: transcript.$.description
-          type: string
-          description: About the transcript description
-          example: Transcript description
-          required: false
-      properties:
-        id:
-          type: integer
-          description: Unique identifier for the design template
-        name:
-          type: string
-          description: Name of the design template
-        description:
-          type:
-          - string
-          - 'null'
-          description: Description of the design template (can be null)
-        document_standard:
-          type: string
-          description: Document standard used by this design template (can be null)
-        document_templates_count:
-          type: integer
-          description: Number of document templates using this design template
-        is_custom_design:
-          type: boolean
-          description: Whether this is a custom design template
-        type:
-          type: string
-          enum:
-          - certificate
-          - badge
-          - digital_pass
-          description: Type of the design template
-        group:
-          $ref: '#/components/schemas/Group'
-          description: Organization group this design template belongs to (only present when loaded directly)
-        tags:
-          type: array
-          description: Array of tag names associated with the design template
-          items:
-            type: string
-        thumbnails:
-          type: array
-          description: Array of thumbnail images for the design template
-          items:
-            $ref: '#/components/schemas/Thumbnail'
-        attributes:
-          type: array
-          description: Array of attributes associated with this design template
-          items:
-            $ref: '#/components/schemas/TemplateAttribute'
-      required:
-      - id
-      - name
-      - description
-      - document_standard
-      - document_templates_count
-      - is_custom_design
-      - type
-      - group
-      - tags
-    WorkflowVersion:
-      type: object
-      description: A version of a workflow containing trigger configuration and actions
-      examples:
-      - version: 10
-        published_at: null
-        created_at: '2025-09-10T05:20:56.000000Z'
-        updated_at: '2025-09-10T05:20:56.000000Z'
-      - version: 10
-        published_at: null
-        created_at: '2025-09-10T05:20:56.000000Z'
-        updated_at: '2025-09-10T05:20:56.000000Z'
-        api_schema:
-          schema:
-            type: object
-            title: OA Document (No Design)
-            $schema: http://json-schema.org/draft-07/schema#
-            required:
-            - documents
-            properties:
-              documents:
-                type: array
-                items:
-                  type: object
-                  required:
-                  - unique_id
-                  properties:
-                    id:
-                      type: string
-                      examples:
-                      - '1234567890'
-                      description: Internal reference, usually serial number, of this document
-                    recipient:
-                      type: object
-                      required: []
-                      properties:
-                        name:
-                          type: string
-                          examples:
-                          - John Doe
-                          description: Recipient's name
-                      additionalProperties: false
-                    unique_id:
-                      type: string
-                      examples:
-                      - '123'
-                      description: ''
-                  additionalProperties: false
-            description: ''
-            additionalProperties: false
-          flattened_schema:
-          - key: id
-            name: ID
-            example: '1234567890'
-            required: false
-            description: Internal reference, usually serial number, of this document
-            document_attribute_type: string
-          - key: recipient.name
-            name: Recipient Name
-            example: John Doe
-            required: false
-            description: Recipient's name
-            document_attribute_type: string
-          - key: unique_id
-            name: UniqueId
-            example: '123'
-            required: true
-            description: null
-            document_attribute_type: string
-      properties:
-        version:
-          type: integer
-          description: Version number
-        published_at:
-          type:
-          - string
-          - 'null'
-          format: date-time
-          description: When this version was published (null if unpublished)
-        created_at:
-          type: string
-          format: date-time
-          description: When this version was created
-        updated_at:
-          type: string
-          format: date-time
-          description: When this version was last updated
-        api_schema:
-          anyOf:
-          - $ref: '#/components/schemas/WorkflowApiSchema'
-          - type: 'null'
-          description: API schema for this workflow version (only available on latest published version)
-      required:
-      - version
-      - created_at
-      - updated_at
-    CourseVersion:
-      title: CourseVersion
-      type: object
-      description: Course version information
-      examples:
-      - uuid: 9feb59d1-2906-4e18-8731-43551191a684
-        title: Introduction to Statistics
-        version: '1'
-        course_type: skills_passport
-        settings:
-          ssec_version: '2020'
-          eqa_code: '11'
-          eqa_title: Primary School Leaving Examination (PSLE) / Primary School Proficiency Examination (PSPE) certificate or equivalent
-          fos_code: '011'
-          fos_title: TEACHER TRAINING
-          skills_passport_course_type: academic
-      properties:
-        uuid:
-          type: string
-          format: uuid
-          description: Unique identifier for the course version
-        title:
-          type: string
-          description: Course version title
-        version:
-          type: string
-          description: Version number
-        course_type:
-          type: string
-          enum:
-          - skills_passport
-          description: Type of the course
-        settings:
-          $ref: '#/components/schemas/CourseSettings'
-          description: Course settings including SSEC framework data
-      required:
-      - uuid
-      - title
-      - version
-      - course_type
-      - settings
-    CourseWorkflow:
-      title: CourseWorkflow
-      type: object
-      description: Slim summary of a workflow the course is attached to
-      examples:
-      - uuid: 9f001c24-eef9-4b82-8399-d4eaa1add4c5
-        name: OA Workflow (No Design)
-      properties:
-        uuid:
-          type: string
-          format: uuid
-          description: Unique identifier for the workflow
-        name:
-          type: string
-          description: Name of the workflow
-      required:
-      - uuid
-      - name
-    CourseSettings:
-      title: CourseSettings
-      type: object
-      description: Course settings including SSEC framework information
-      properties:
-        ssec_version:
-          type: string
-          enum:
-          - '2020'
-          - '2015'
-          description: SSEC version used for this course
-        eqa_code:
-          type: string
-          description: Education and Qualification Authority code
-        eqa_title:
-          type: string
-          description: Human-readable EQA title
-        fos_code:
-          type: string
-          description: Field of Study code
-        fos_title:
-          type: string
-          description: Human-readable FOS title
-        skills_passport_course_type:
-          type: string
-          enum:
-          - academic
-          - professional
-          description: Skills passport course type
-      required:
-      - ssec_version
-      - eqa_code
-      - eqa_title
-      - fos_code
-      - fos_title
-      - skills_passport_course_type
-      examples:
-      - ssec_version: '2020'
-        eqa_code: '11'
-        eqa_title: Primary School Leaving Examination (PSLE) / Primary School Proficiency Examination (PSPE) certificate or equivalent
-        fos_code: '011'
-        fos_title: TEACHER TRAINING
-        skills_passport_course_type: academic
-    WorkflowRun:
-      type: object
-      properties:
-        uuid:
-          type: string
-          format: uuid
-        status:
-          type: string
-          enum:
-          - running
-          - creating_documents
-          - issuing
-          - pending_confirmation
-          - distributing
-          - creating_public_profile_page
-          - uploading_to_skills_passport
-          - calling_workflow_http_request
-          - in_review
-          - paused
-          - pending_claim
-          - completed
-          - completed_with_failures
-          - cancelled
-          - rejected
-          - failed
-        status_label:
-          type: string
-        batch_name:
-          type: string
-          description: Provided batch_name or generated default
-        created_by:
-          $ref: '#/components/schemas/User'
-          description: User who created this workflow run
-        started_at:
-          type: string
-          format: date-time
-        ended_at:
-          type:
-          - string
-          - 'null'
-          format: date-time
-          description: When the workflow run ended (null if still running)
-        updated_at:
-          type: string
-          format: date-time
-        current_action_sequence_number:
-          type:
-          - integer
-          - 'null'
-          description: Sequence number of the latest workflow action run (null when no action run has started yet)
-        workflow_actions_list:
-          type: array
-          items:
-            type: object
-            properties:
-              sequence:
-                type: integer
-              type:
-                type: string
-              status:
-                type: string
-      examples:
-      - uuid: 9fad4412-3fa7-4f49-8cd1-65b0e073fdcf
-        status: completed
-        status_label: Completed
-        batch_name: Provided batch name
-        created_by:
-          uuid: 9f8ed2e8-efa2-400b-ad6e-1caed0767f6d
-          name: John Doe
-          role: api_user
-          email: api9f001aff-57b4-4bd6-b069-6b07609798a8@accredify.io
-          status: active
-        started_at: '2025-08-20T04:46:42.000000Z'
-        ended_at: '2025-08-20T04:46:59.000000Z'
-        updated_at: '2025-08-20T04:46:59.000000Z'
-        current_action_sequence_number: 2
-        workflow_actions_list:
-        - sequence: 1
-          type: create_documents
-          status: completed
-        - sequence: 2
-          type: issue_documents
-          status: running
-    TemplateAttribute:
-      title: TemplateAttribute
-      type: object
-      description: Attribute information for templates (used by both design and document templates)
-      examples:
-      - name: Recipient Name
-        key: recipient_name
-        type: string
-        description: Full name of the document recipient
-        example: John Doe
-        required: true
-      - name: Document ID
-        key: id
-        type: string
-        description: Document ID
-        example: '1234567890'
-        required: true
-      properties:
-        name:
-          type: string
-          description: Human-readable name of the attribute
-        key:
-          type: string
-          description: Unique key/identifier for the attribute
-        type:
-          type: string
-          enum:
-          - string
-          - number
-          - boolean
-          - email
-          - datetime
-          - date
-          - nric
-          - uen
-          - array
-          - uri
-          - single_enum
-          - multi_enum
-          description: Data type of the attribute
-        description:
-          type:
-          - string
-          - 'null'
-          description: Description of the attribute (can be null)
-        example:
-          type:
-          - string
-          - 'null'
-          description: Example value for the attribute (can be null)
-        required:
-          type: boolean
-          description: Whether this attribute is required
-        allowed_options:
-          type: array
-          description: Allowed options for enum type attributes
-          items:
-            type: object
-            properties:
-              value:
-                type: string
-                description: The option value
-              label:
-                type: string
-                description: The option label
-        items:
-          type: array
-          description: Nested attributes for array type attributes
-          items:
-            $ref: '#/components/schemas/TemplateAttribute'
-      required:
-      - name
-      - key
-      - type
-      - description
-      - example
-      - required
   responses:
-    '403':
-      description: Forbidden
-      content:
-        application/json:
-          schema:
-            type: object
-            properties:
-              message:
-                type: string
-          examples:
-            Example 1:
-              value:
-                message: Invalid scope(s) provided.
-    '400':
-      description: Bad request
-      content:
-        application/json:
-          schema:
-            type: object
-            properties:
-              message:
-                type: string
-            required:
-            - message
-          examples:
-            Example 1:
-              value:
-                message: Bad request.
-    '404':
-      description: Not found
-      content:
-        application/json:
-          schema:
-            type: object
-            properties:
-              message:
-                type: string
-          examples:
-            Example 1:
-              value:
-                message: Not found or not accessible.
     '422':
       description: Unprocessable Entity (WebDAV)
       content:
@@ -2586,6 +2545,19 @@ components:
                   per_page:
                   - The per page field must be an integer.
                   - The selected per page is invalid.
+    '403':
+      description: Forbidden
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+          examples:
+            Example 1:
+              value:
+                message: Invalid scope(s) provided.
     '401':
       description: Unauthenticated
       content:
@@ -2601,6 +2573,34 @@ components:
             Example 1:
               value:
                 message: Unauthenticated.
+    '404':
+      description: Not found
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+          examples:
+            Example 1:
+              value:
+                message: Not found or not accessible.
+    '400':
+      description: Bad request
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+            required:
+            - message
+          examples:
+            Example 1:
+              value:
+                message: Bad request.
   securitySchemes:
     OAuth2:
       type: oauth2
