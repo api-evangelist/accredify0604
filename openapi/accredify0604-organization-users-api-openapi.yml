@@ -361,6 +361,61 @@ paths:
       x-operation-id-source: derived
 components:
   schemas:
+    User:
+      type: object
+      description: Organization user object
+      required:
+      - uuid
+      - name
+      - email
+      - role
+      - status
+      - groups
+      properties:
+        uuid:
+          type: string
+          format: uuid
+          description: Unique identifier for the user
+        name:
+          type: string
+          description: Full name of the user
+        email:
+          type: string
+          format: email
+          description: Email address of the user
+        role:
+          type: string
+          enum:
+          - admin
+          - member
+          - '-'
+          description: Role of the user within the organization (or "-" if no role assigned)
+        status:
+          type: string
+          enum:
+          - active
+          - pending
+          - expired
+          - locked
+          description: Status of the user within the organization
+        groups:
+          type: array
+          description: List of organization groups the user belongs to
+          items:
+            $ref: '#/components/schemas/Group'
+      examples:
+      - uuid: 9fb13043-3833-4f0e-8aff-996a007e0aa5
+        name: John Doe
+        role: member
+        email: john.doe@accredify.io
+        status: active
+        groups:
+        - uuid: 9f854436-2e67-439e-bdda-e7ab6a4b5874
+          name: Default Access Group
+          description: null
+        - uuid: 9fb13026-0719-4cf5-b559-8fd312eebdbd
+          name: Marketing Team
+          description: null
     PaginationLinks:
       type: object
       description: Pagination links for navigating through paginated results
@@ -391,30 +446,6 @@ components:
         last: http://nexus.localhost:8080/api/workflows?page=1
         prev: null
         next: null
-    Group:
-      type: object
-      description: Organization group object
-      required:
-      - uuid
-      - name
-      - description
-      properties:
-        uuid:
-          type: string
-          format: uuid
-          description: Unique identifier for the group
-        name:
-          type: string
-          description: Name of the group
-        description:
-          type:
-          - string
-          - 'null'
-          description: Description of the group (null if not provided)
-      examples:
-      - uuid: 9f854436-2e67-439e-bdda-e7ab6a4b5874
-        name: Default Access Group
-        description: null
     PaginationMeta:
       type: object
       description: Pagination metadata containing information about the current page and total results
@@ -492,61 +523,30 @@ components:
         per_page: 10
         to: 3
         total: 3
-    User:
+    Group:
       type: object
-      description: Organization user object
+      description: Organization group object
       required:
       - uuid
       - name
-      - email
-      - role
-      - status
-      - groups
+      - description
       properties:
         uuid:
           type: string
           format: uuid
-          description: Unique identifier for the user
+          description: Unique identifier for the group
         name:
           type: string
-          description: Full name of the user
-        email:
-          type: string
-          format: email
-          description: Email address of the user
-        role:
-          type: string
-          enum:
-          - admin
-          - member
-          - '-'
-          description: Role of the user within the organization (or "-" if no role assigned)
-        status:
-          type: string
-          enum:
-          - active
-          - pending
-          - expired
-          - locked
-          description: Status of the user within the organization
-        groups:
-          type: array
-          description: List of organization groups the user belongs to
-          items:
-            $ref: '#/components/schemas/Group'
+          description: Name of the group
+        description:
+          type:
+          - string
+          - 'null'
+          description: Description of the group (null if not provided)
       examples:
-      - uuid: 9fb13043-3833-4f0e-8aff-996a007e0aa5
-        name: John Doe
-        role: member
-        email: john.doe@accredify.io
-        status: active
-        groups:
-        - uuid: 9f854436-2e67-439e-bdda-e7ab6a4b5874
-          name: Default Access Group
-          description: null
-        - uuid: 9fb13026-0719-4cf5-b559-8fd312eebdbd
-          name: Marketing Team
-          description: null
+      - uuid: 9f854436-2e67-439e-bdda-e7ab6a4b5874
+        name: Default Access Group
+        description: null
   securitySchemes:
     OAuth2:
       type: oauth2

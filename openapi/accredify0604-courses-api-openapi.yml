@@ -1622,34 +1622,18 @@ paths:
       description: Production
 components:
   responses:
-    InternalErrorRequest:
-      description: Internal server error
+    UnauthenticatedRequest:
+      description: Unauthenticated request
       content:
         application/json:
           schema:
             properties:
               status:
                 type: integer
-                example: 500
+                example: 401
               message:
                 type: string
-                example: There was an unexpected error while performing your last action. Please contact us at support@accredify.io with the error code for internal reference
-              code:
-                type: string
-                example: E500
-            type: object
-    NotFoundRequest:
-      description: The specified resource was not found
-      content:
-        application/json:
-          schema:
-            properties:
-              status:
-                type: integer
-                example: 404
-              message:
-                type: string
-                example: Please ensure you are making the request to the correct endpoint.
+                example: Unauthenticated. You might have provided an invalid access token or your token has already expired.
             type: object
     TooManyRequests:
       description: Too many requests
@@ -1663,32 +1647,6 @@ components:
               message:
                 type: string
                 example: You're submitting requests too quickly. Please retry again after 60 seconds.
-            type: object
-    BadRequest:
-      description: Bad request
-      content:
-        application/json:
-          schema:
-            properties:
-              status:
-                type: integer
-                example: 400
-              message:
-                type: string
-                example: We couldn't find you, please try again.
-            type: object
-    UnauthenticatedRequest:
-      description: Unauthenticated request
-      content:
-        application/json:
-          schema:
-            properties:
-              status:
-                type: integer
-                example: 401
-              message:
-                type: string
-                example: Unauthenticated. You might have provided an invalid access token or your token has already expired.
             type: object
     UnprocessableEntityRequest:
       description: Unprocessable entity
@@ -1707,19 +1665,48 @@ components:
                 type: string
                 example: Validation failed for the request.
             type: object
-    '403':
-      description: Forbidden
+    BadRequest:
+      description: Bad request
       content:
         application/json:
           schema:
-            type: object
             properties:
+              status:
+                type: integer
+                example: 400
               message:
                 type: string
-          examples:
-            Example 1:
-              value:
-                message: Invalid scope(s) provided.
+                example: We couldn't find you, please try again.
+            type: object
+    NotFoundRequest:
+      description: The specified resource was not found
+      content:
+        application/json:
+          schema:
+            properties:
+              status:
+                type: integer
+                example: 404
+              message:
+                type: string
+                example: Please ensure you are making the request to the correct endpoint.
+            type: object
+    InternalErrorRequest:
+      description: Internal server error
+      content:
+        application/json:
+          schema:
+            properties:
+              status:
+                type: integer
+                example: 500
+              message:
+                type: string
+                example: There was an unexpected error while performing your last action. Please contact us at support@accredify.io with the error code for internal reference
+              code:
+                type: string
+                example: E500
+            type: object
     '401':
       description: Unauthenticated
       content:
@@ -1735,6 +1722,19 @@ components:
             Example 1:
               value:
                 message: Unauthenticated.
+    '403':
+      description: Forbidden
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+          examples:
+            Example 1:
+              value:
+                message: Invalid scope(s) provided.
     '404':
       description: Not found
       content:
@@ -1771,95 +1771,6 @@ components:
                   - The per page field must be an integer.
                   - The selected per page is invalid.
   schemas:
-    CourseVersion:
-      title: CourseVersion
-      type: object
-      description: Course version information
-      examples:
-      - uuid: 9feb59d1-2906-4e18-8731-43551191a684
-        title: Introduction to Statistics
-        version: '1'
-        course_type: skills_passport
-        settings:
-          ssec_version: '2020'
-          eqa_code: '11'
-          eqa_title: Primary School Leaving Examination (PSLE) / Primary School Proficiency Examination (PSPE) certificate or equivalent
-          fos_code: '011'
-          fos_title: TEACHER TRAINING
-          skills_passport_course_type: academic
-      properties:
-        uuid:
-          type: string
-          format: uuid
-          description: Unique identifier for the course version
-        title:
-          type: string
-          description: Course version title
-        version:
-          type: string
-          description: Version number
-        course_type:
-          type: string
-          enum:
-          - skills_passport
-          description: Type of the course
-        settings:
-          $ref: '#/components/schemas/CourseSettings'
-          description: Course settings including SSEC framework data
-      required:
-      - uuid
-      - title
-      - version
-      - course_type
-      - settings
-    PaginationLinks:
-      type: object
-      description: Pagination links for navigating through paginated results
-      required:
-      - first
-      - last
-      - prev
-      - next
-      properties:
-        first:
-          type: string
-          description: URL for the first page
-        last:
-          type: string
-          description: URL for the last page
-        prev:
-          type:
-          - string
-          - 'null'
-          description: URL for the previous page (null if on first page)
-        next:
-          type:
-          - string
-          - 'null'
-          description: URL for the next page (null if on last page)
-      examples:
-      - first: http://nexus.localhost:8080/api/workflows?page=1
-        last: http://nexus.localhost:8080/api/workflows?page=1
-        prev: null
-        next: null
-    CourseWorkflow:
-      title: CourseWorkflow
-      type: object
-      description: Slim summary of a workflow the course is attached to
-      examples:
-      - uuid: 9f001c24-eef9-4b82-8399-d4eaa1add4c5
-        name: OA Workflow (No Design)
-      properties:
-        uuid:
-          type: string
-          format: uuid
-          description: Unique identifier for the workflow
-        name:
-          type: string
-          description: Name of the workflow
-      required:
-      - uuid
-      - name
     Course:
       title: Course
       type: object
@@ -1931,49 +1842,36 @@ components:
       - group_uuid
       - latest_version
       - workflows
-    CourseSettings:
-      title: CourseSettings
+    PaginationLinks:
       type: object
-      description: Course settings including SSEC framework information
-      properties:
-        ssec_version:
-          type: string
-          enum:
-          - '2020'
-          - '2015'
-          description: SSEC version used for this course
-        eqa_code:
-          type: string
-          description: Education and Qualification Authority code
-        eqa_title:
-          type: string
-          description: Human-readable EQA title
-        fos_code:
-          type: string
-          description: Field of Study code
-        fos_title:
-          type: string
-          description: Human-readable FOS title
-        skills_passport_course_type:
-          type: string
-          enum:
-          - academic
-          - professional
-          description: Skills passport course type
+      description: Pagination links for navigating through paginated results
       required:
-      - ssec_version
-      - eqa_code
-      - eqa_title
-      - fos_code
-      - fos_title
-      - skills_passport_course_type
+      - first
+      - last
+      - prev
+      - next
+      properties:
+        first:
+          type: string
+          description: URL for the first page
+        last:
+          type: string
+          description: URL for the last page
+        prev:
+          type:
+          - string
+          - 'null'
+          description: URL for the previous page (null if on first page)
+        next:
+          type:
+          - string
+          - 'null'
+          description: URL for the next page (null if on last page)
       examples:
-      - ssec_version: '2020'
-        eqa_code: '11'
-        eqa_title: Primary School Leaving Examination (PSLE) / Primary School Proficiency Examination (PSPE) certificate or equivalent
-        fos_code: '011'
-        fos_title: TEACHER TRAINING
-        skills_passport_course_type: academic
+      - first: http://nexus.localhost:8080/api/workflows?page=1
+        last: http://nexus.localhost:8080/api/workflows?page=1
+        prev: null
+        next: null
     PaginationMeta:
       type: object
       description: Pagination metadata containing information about the current page and total results
@@ -2051,6 +1949,108 @@ components:
         per_page: 10
         to: 3
         total: 3
+    CourseWorkflow:
+      title: CourseWorkflow
+      type: object
+      description: Slim summary of a workflow the course is attached to
+      examples:
+      - uuid: 9f001c24-eef9-4b82-8399-d4eaa1add4c5
+        name: OA Workflow (No Design)
+      properties:
+        uuid:
+          type: string
+          format: uuid
+          description: Unique identifier for the workflow
+        name:
+          type: string
+          description: Name of the workflow
+      required:
+      - uuid
+      - name
+    CourseVersion:
+      title: CourseVersion
+      type: object
+      description: Course version information
+      examples:
+      - uuid: 9feb59d1-2906-4e18-8731-43551191a684
+        title: Introduction to Statistics
+        version: '1'
+        course_type: skills_passport
+        settings:
+          ssec_version: '2020'
+          eqa_code: '11'
+          eqa_title: Primary School Leaving Examination (PSLE) / Primary School Proficiency Examination (PSPE) certificate or equivalent
+          fos_code: '011'
+          fos_title: TEACHER TRAINING
+          skills_passport_course_type: academic
+      properties:
+        uuid:
+          type: string
+          format: uuid
+          description: Unique identifier for the course version
+        title:
+          type: string
+          description: Course version title
+        version:
+          type: string
+          description: Version number
+        course_type:
+          type: string
+          enum:
+          - skills_passport
+          description: Type of the course
+        settings:
+          $ref: '#/components/schemas/CourseSettings'
+          description: Course settings including SSEC framework data
+      required:
+      - uuid
+      - title
+      - version
+      - course_type
+      - settings
+    CourseSettings:
+      title: CourseSettings
+      type: object
+      description: Course settings including SSEC framework information
+      properties:
+        ssec_version:
+          type: string
+          enum:
+          - '2020'
+          - '2015'
+          description: SSEC version used for this course
+        eqa_code:
+          type: string
+          description: Education and Qualification Authority code
+        eqa_title:
+          type: string
+          description: Human-readable EQA title
+        fos_code:
+          type: string
+          description: Field of Study code
+        fos_title:
+          type: string
+          description: Human-readable FOS title
+        skills_passport_course_type:
+          type: string
+          enum:
+          - academic
+          - professional
+          description: Skills passport course type
+      required:
+      - ssec_version
+      - eqa_code
+      - eqa_title
+      - fos_code
+      - fos_title
+      - skills_passport_course_type
+      examples:
+      - ssec_version: '2020'
+        eqa_code: '11'
+        eqa_title: Primary School Leaving Examination (PSLE) / Primary School Proficiency Examination (PSPE) certificate or equivalent
+        fos_code: '011'
+        fos_title: TEACHER TRAINING
+        skills_passport_course_type: academic
   securitySchemes:
     bearerAuth:
       type: http

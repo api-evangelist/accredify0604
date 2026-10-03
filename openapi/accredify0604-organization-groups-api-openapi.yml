@@ -242,30 +242,6 @@ components:
         last: http://nexus.localhost:8080/api/workflows?page=1
         prev: null
         next: null
-    Group:
-      type: object
-      description: Organization group object
-      required:
-      - uuid
-      - name
-      - description
-      properties:
-        uuid:
-          type: string
-          format: uuid
-          description: Unique identifier for the group
-        name:
-          type: string
-          description: Name of the group
-        description:
-          type:
-          - string
-          - 'null'
-          description: Description of the group (null if not provided)
-      examples:
-      - uuid: 9f854436-2e67-439e-bdda-e7ab6a4b5874
-        name: Default Access Group
-        description: null
     PaginationMeta:
       type: object
       description: Pagination metadata containing information about the current page and total results
@@ -343,6 +319,30 @@ components:
         per_page: 10
         to: 3
         total: 3
+    Group:
+      type: object
+      description: Organization group object
+      required:
+      - uuid
+      - name
+      - description
+      properties:
+        uuid:
+          type: string
+          format: uuid
+          description: Unique identifier for the group
+        name:
+          type: string
+          description: Name of the group
+        description:
+          type:
+          - string
+          - 'null'
+          description: Description of the group (null if not provided)
+      examples:
+      - uuid: 9f854436-2e67-439e-bdda-e7ab6a4b5874
+        name: Default Access Group
+        description: null
   securitySchemes:
     OAuth2:
       type: oauth2

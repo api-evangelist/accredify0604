@@ -259,61 +259,6 @@ components:
         last: http://nexus.localhost:8080/api/workflows?page=1
         prev: null
         next: null
-    CreatedUserToken:
-      allOf:
-      - $ref: '#/components/schemas/UserToken'
-      - $ref: '#/components/schemas/CreatedUserTokenSecret'
-    CreatedUserTokenSecret:
-      type: object
-      required:
-      - token
-      properties:
-        token:
-          type: string
-          description: Plaintext bearer token shown only once at creation
-    UserToken:
-      type: object
-      description: User token metadata object
-      required:
-      - uuid
-      - name
-      - scopes
-      - created_at
-      - expires_at
-      - last_used_at
-      - is_revoked
-      properties:
-        uuid:
-          type: string
-          format: uuid
-          description: User-token context UUID
-        name:
-          type: string
-          description: Human-readable token name
-        scopes:
-          type: array
-          items:
-            type: string
-          description: OAuth scopes granted to the token
-        created_at:
-          type: string
-          format: date-time
-          description: Token creation timestamp
-        expires_at:
-          type:
-          - string
-          - 'null'
-          format: date-time
-          description: Token expiry timestamp
-        last_used_at:
-          type:
-          - string
-          - 'null'
-          format: date-time
-          description: Last usage timestamp
-        is_revoked:
-          type: boolean
-          description: Whether token is revoked (manually or automatically when subject user is locked)
     PaginationMeta:
       type: object
       description: Pagination metadata containing information about the current page and total results
@@ -391,6 +336,61 @@ components:
         per_page: 10
         to: 3
         total: 3
+    CreatedUserToken:
+      allOf:
+      - $ref: '#/components/schemas/UserToken'
+      - $ref: '#/components/schemas/CreatedUserTokenSecret'
+    UserToken:
+      type: object
+      description: User token metadata object
+      required:
+      - uuid
+      - name
+      - scopes
+      - created_at
+      - expires_at
+      - last_used_at
+      - is_revoked
+      properties:
+        uuid:
+          type: string
+          format: uuid
+          description: User-token context UUID
+        name:
+          type: string
+          description: Human-readable token name
+        scopes:
+          type: array
+          items:
+            type: string
+          description: OAuth scopes granted to the token
+        created_at:
+          type: string
+          format: date-time
+          description: Token creation timestamp
+        expires_at:
+          type:
+          - string
+          - 'null'
+          format: date-time
+          description: Token expiry timestamp
+        last_used_at:
+          type:
+          - string
+          - 'null'
+          format: date-time
+          description: Last usage timestamp
+        is_revoked:
+          type: boolean
+          description: Whether token is revoked (manually or automatically when subject user is locked)
+    CreatedUserTokenSecret:
+      type: object
+      required:
+      - token
+      properties:
+        token:
+          type: string
+          description: Plaintext bearer token shown only once at creation
   securitySchemes:
     OAuth2:
       type: oauth2

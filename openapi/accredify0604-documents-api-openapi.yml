@@ -573,21 +573,18 @@ paths:
       description: Production
 components:
   responses:
-    InternalErrorRequest:
-      description: Internal server error
+    UnauthenticatedRequest:
+      description: Unauthenticated request
       content:
         application/json:
           schema:
             properties:
               status:
                 type: integer
-                example: 500
+                example: 401
               message:
                 type: string
-                example: There was an unexpected error while performing your last action. Please contact us at support@accredify.io with the error code for internal reference
-              code:
-                type: string
-                example: E500
+                example: Unauthenticated. You might have provided an invalid access token or your token has already expired.
             type: object
     TooManyRequests:
       description: Too many requests
@@ -601,32 +598,6 @@ components:
               message:
                 type: string
                 example: You're submitting requests too quickly. Please retry again after 60 seconds.
-            type: object
-    BadRequest:
-      description: Bad request
-      content:
-        application/json:
-          schema:
-            properties:
-              status:
-                type: integer
-                example: 400
-              message:
-                type: string
-                example: We couldn't find you, please try again.
-            type: object
-    UnauthenticatedRequest:
-      description: Unauthenticated request
-      content:
-        application/json:
-          schema:
-            properties:
-              status:
-                type: integer
-                example: 401
-              message:
-                type: string
-                example: Unauthenticated. You might have provided an invalid access token or your token has already expired.
             type: object
     UnprocessableEntityRequest:
       description: Unprocessable entity
@@ -645,19 +616,35 @@ components:
                 type: string
                 example: Validation failed for the request.
             type: object
-    '403':
-      description: Forbidden
+    BadRequest:
+      description: Bad request
       content:
         application/json:
           schema:
-            type: object
             properties:
+              status:
+                type: integer
+                example: 400
               message:
                 type: string
-          examples:
-            Example 1:
-              value:
-                message: Invalid scope(s) provided.
+                example: We couldn't find you, please try again.
+            type: object
+    InternalErrorRequest:
+      description: Internal server error
+      content:
+        application/json:
+          schema:
+            properties:
+              status:
+                type: integer
+                example: 500
+              message:
+                type: string
+                example: There was an unexpected error while performing your last action. Please contact us at support@accredify.io with the error code for internal reference
+              code:
+                type: string
+                example: E500
+            type: object
     '401':
       description: Unauthenticated
       content:
@@ -673,8 +660,8 @@ components:
             Example 1:
               value:
                 message: Unauthenticated.
-    '404':
-      description: Not found
+    '403':
+      description: Forbidden
       content:
         application/json:
           schema:
@@ -685,7 +672,7 @@ components:
           examples:
             Example 1:
               value:
-                message: Not found or not accessible.
+                message: Invalid scope(s) provided.
     '422':
       description: Unprocessable Entity (WebDAV)
       content:
@@ -708,31 +695,20 @@ components:
                   per_page:
                   - The per page field must be an integer.
                   - The selected per page is invalid.
+    '404':
+      description: Not found
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+          examples:
+            Example 1:
+              value:
+                message: Not found or not accessible.
   schemas:
-    Group:
-      title: Group
-      type: object
-      description: Organization group information from GroupApiResource
-      examples:
-      - uuid: 9f854436-2e67-439e-bdda-e7ab6a4b5874
-        name: Default Access Group
-        description: null
-      properties:
-        uuid:
-          type: string
-          format: uuid
-          description: Unique identifier for the group
-        name:
-          type: string
-          description: Name of the organization group
-        description:
-          type:
-          - string
-          - 'null'
-          description: Description of the organization group (can be null)
-      required:
-      - uuid
-      - name
     PaginationLinks:
       type: object
       description: Pagination links for navigating through paginated results
@@ -763,6 +739,150 @@ components:
         last: http://nexus.localhost:8080/api/workflows?page=1
         prev: null
         next: null
+    DocumentFile:
+      title: DocumentFile
+      type: object
+      description: File associated with a document
+      examples:
+      - url: https://example.com/document.pdf
+        label: presentation
+      - url: https://example.com/document.json
+        label: raw
+      - url: https://example.com/document.opencert
+        label: signed
+      properties:
+        url:
+          type: string
+          description: Temporary URL to download the file (null if unavailable)
+        label:
+          type: string
+          description: Type/label of the file (e.g., 'presentation', 'raw', 'signed')
+      required:
+      - url
+      - label
+    PaginationMeta:
+      type: object
+      description: Pagination metadata containing information about the current page and total results
+      required:
+      - current_page
+      - from
+      - last_page
+      - links
+      - path
+      - per_page
+      - to
+      - total
+      properties:
+        current_page:
+          type: integer
+          description: Current page number
+        from:
+          type:
+          - integer
+          - 'null'
+          description: Starting record number for current page
+        last_page:
+          type: integer
+          description: Last page number
+        links:
+          type: array
+          description: Array of pagination link objects
+          items:
+            type: object
+            required:
+            - url
+            - label
+            - active
+            properties:
+              url:
+                type:
+                - 'null'
+                - string
+                description: URL for the pagination link (null for disabled links)
+              label:
+                type: string
+                description: Display label for the pagination link
+              active:
+                type: boolean
+                description: Whether this link represents the current page
+        path:
+          type: string
+          description: Base path for the API endpoint
+        per_page:
+          type: integer
+          description: Number of items per page
+        to:
+          type:
+          - integer
+          - 'null'
+          description: Ending record number for current page
+        total:
+          type: integer
+          description: Total number of records
+      examples:
+      - current_page: 1
+        from: 1
+        last_page: 1
+        links:
+        - url: null
+          label: '&laquo; Previous'
+          active: false
+        - url: http://nexus.localhost:8080/api/workflows?page=1
+          label: '1'
+          active: true
+        - url: null
+          label: Next &raquo;
+          active: false
+        path: http://nexus.localhost:8080/api/workflows
+        per_page: 10
+        to: 3
+        total: 3
+    DocumentRecipient:
+      title: DocumentRecipient
+      type: object
+      description: Document recipient information
+      examples:
+      - name: John Doe
+        email: john.doe@example.com
+      properties:
+        name:
+          type:
+          - string
+          - 'null'
+          description: Recipient's full name
+        email:
+          type:
+          - string
+          - 'null'
+          format: email
+          description: Recipient's email address
+      required:
+      - name
+      - email
+    Group:
+      title: Group
+      type: object
+      description: Organization group information from GroupApiResource
+      examples:
+      - uuid: 9f854436-2e67-439e-bdda-e7ab6a4b5874
+        name: Default Access Group
+        description: null
+      properties:
+        uuid:
+          type: string
+          format: uuid
+          description: Unique identifier for the group
+        name:
+          type: string
+          description: Name of the organization group
+        description:
+          type:
+          - string
+          - 'null'
+          description: Description of the organization group (can be null)
+      required:
+      - uuid
+      - name
     Document:
       title: Document
       type: object
@@ -879,126 +999,6 @@ components:
       - uuid
       - status
       - group
-    DocumentFile:
-      title: DocumentFile
-      type: object
-      description: File associated with a document
-      examples:
-      - url: https://example.com/document.pdf
-        label: presentation
-      - url: https://example.com/document.json
-        label: raw
-      - url: https://example.com/document.opencert
-        label: signed
-      properties:
-        url:
-          type: string
-          description: Temporary URL to download the file (null if unavailable)
-        label:
-          type: string
-          description: Type/label of the file (e.g., 'presentation', 'raw', 'signed')
-      required:
-      - url
-      - label
-    DocumentRecipient:
-      title: DocumentRecipient
-      type: object
-      description: Document recipient information
-      examples:
-      - name: John Doe
-        email: john.doe@example.com
-      properties:
-        name:
-          type:
-          - string
-          - 'null'
-          description: Recipient's full name
-        email:
-          type:
-          - string
-          - 'null'
-          format: email
-          description: Recipient's email address
-      required:
-      - name
-      - email
-    PaginationMeta:
-      type: object
-      description: Pagination metadata containing information about the current page and total results
-      required:
-      - current_page
-      - from
-      - last_page
-      - links
-      - path
-      - per_page
-      - to
-      - total
-      properties:
-        current_page:
-          type: integer
-          description: Current page number
-        from:
-          type:
-          - integer
-          - 'null'
-          description: Starting record number for current page
-        last_page:
-          type: integer
-          description: Last page number
-        links:
-          type: array
-          description: Array of pagination link objects
-          items:
-            type: object
-            required:
-            - url
-            - label
-            - active
-            properties:
-              url:
-                type:
-                - 'null'
-                - string
-                description: URL for the pagination link (null for disabled links)
-              label:
-                type: string
-                description: Display label for the pagination link
-              active:
-                type: boolean
-                description: Whether this link represents the current page
-        path:
-          type: string
-          description: Base path for the API endpoint
-        per_page:
-          type: integer
-          description: Number of items per page
-        to:
-          type:
-          - integer
-          - 'null'
-          description: Ending record number for current page
-        total:
-          type: integer
-          description: Total number of records
-      examples:
-      - current_page: 1
-        from: 1
-        last_page: 1
-        links:
-        - url: null
-          label: '&laquo; Previous'
-          active: false
-        - url: http://nexus.localhost:8080/api/workflows?page=1
-          label: '1'
-          active: true
-        - url: null
-          label: Next &raquo;
-          active: false
-        path: http://nexus.localhost:8080/api/workflows
-        per_page: 10
-        to: 3
-        total: 3
   securitySchemes:
     bearerAuth:
       type: http

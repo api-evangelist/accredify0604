@@ -188,19 +188,6 @@ paths:
       operationId: download-workflow-run-documents
 components:
   responses:
-    '403':
-      description: Forbidden
-      content:
-        application/json:
-          schema:
-            type: object
-            properties:
-              message:
-                type: string
-          examples:
-            Example 1:
-              value:
-                message: Invalid scope(s) provided.
     '401':
       description: Unauthenticated
       content:
@@ -216,6 +203,19 @@ components:
             Example 1:
               value:
                 message: Unauthenticated.
+    '403':
+      description: Forbidden
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+          examples:
+            Example 1:
+              value:
+                message: Invalid scope(s) provided.
     '404':
       description: Not found
       content:
@@ -252,76 +252,6 @@ components:
                   - The per page field must be an integer.
                   - The selected per page is invalid.
   schemas:
-    Group:
-      title: Group
-      type: object
-      description: Organization group information from GroupApiResource
-      examples:
-      - uuid: 9f854436-2e67-439e-bdda-e7ab6a4b5874
-        name: Default Access Group
-        description: null
-      properties:
-        uuid:
-          type: string
-          format: uuid
-          description: Unique identifier for the group
-        name:
-          type: string
-          description: Name of the organization group
-        description:
-          type:
-          - string
-          - 'null'
-          description: Description of the organization group (can be null)
-      required:
-      - uuid
-      - name
-    User:
-      title: User
-      type: object
-      description: User information from UserApiResource
-      examples:
-      - uuid: 9fb13043-3833-4f0e-8aff-996a007e0aa5
-        name: John Doe
-        role: member
-        email: john.doe@accredify.io
-        status: active
-        groups:
-        - uuid: 9f854436-2e67-439e-bdda-e7ab6a4b5874
-          name: Default Access Group
-          description: null
-        - uuid: 9fb13026-0719-4cf5-b559-8fd312eebdbd
-          name: Marketing Team
-          description: null
-      properties:
-        uuid:
-          type: string
-          format: uuid
-          description: Unique identifier for the user
-        name:
-          type: string
-          description: Full name of the user
-        role:
-          type: string
-          description: User's role name (or '-' if no role assigned)
-        email:
-          type: string
-          format: email
-          description: Email address of the user
-        status:
-          type: string
-          description: Current status of the user
-        groups:
-          type: array
-          description: Array of organization groups the user belongs to (only present when groups are loaded)
-          items:
-            $ref: '#/components/schemas/Group'
-      required:
-      - uuid
-      - name
-      - role
-      - email
-      - status
     WorkflowRun:
       type: object
       properties:
@@ -405,6 +335,76 @@ components:
         - sequence: 2
           type: issue_documents
           status: running
+    User:
+      title: User
+      type: object
+      description: User information from UserApiResource
+      examples:
+      - uuid: 9fb13043-3833-4f0e-8aff-996a007e0aa5
+        name: John Doe
+        role: member
+        email: john.doe@accredify.io
+        status: active
+        groups:
+        - uuid: 9f854436-2e67-439e-bdda-e7ab6a4b5874
+          name: Default Access Group
+          description: null
+        - uuid: 9fb13026-0719-4cf5-b559-8fd312eebdbd
+          name: Marketing Team
+          description: null
+      properties:
+        uuid:
+          type: string
+          format: uuid
+          description: Unique identifier for the user
+        name:
+          type: string
+          description: Full name of the user
+        role:
+          type: string
+          description: User's role name (or '-' if no role assigned)
+        email:
+          type: string
+          format: email
+          description: Email address of the user
+        status:
+          type: string
+          description: Current status of the user
+        groups:
+          type: array
+          description: Array of organization groups the user belongs to (only present when groups are loaded)
+          items:
+            $ref: '#/components/schemas/Group'
+      required:
+      - uuid
+      - name
+      - role
+      - email
+      - status
+    Group:
+      title: Group
+      type: object
+      description: Organization group information from GroupApiResource
+      examples:
+      - uuid: 9f854436-2e67-439e-bdda-e7ab6a4b5874
+        name: Default Access Group
+        description: null
+      properties:
+        uuid:
+          type: string
+          format: uuid
+          description: Unique identifier for the group
+        name:
+          type: string
+          description: Name of the organization group
+        description:
+          type:
+          - string
+          - 'null'
+          description: Description of the organization group (can be null)
+      required:
+      - uuid
+      - name
   securitySchemes:
     OAuth2:
       type: oauth2

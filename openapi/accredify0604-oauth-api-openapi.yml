@@ -125,35 +125,6 @@ paths:
       x-operation-id-source: derived
 components:
   schemas:
-    OAuthTokenResponse:
-      type: object
-      description: OAuth token response
-      required:
-      - token_type
-      - expires_in
-      - access_token
-      properties:
-        token_type:
-          type: string
-          enum:
-          - Bearer
-          description: Type of token issued
-        expires_in:
-          type: integer
-          description: Token expiration time in seconds
-        access_token:
-          type: string
-          description: The access token
-        refresh_token:
-          type: string
-          description: The refresh token (if applicable)
-        scope:
-          type: string
-          description: Space-separated list of granted scopes
-      examples:
-      - token_type: Bearer
-        expires_in: 31536000
-        access_token: eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9...
     OAuthError:
       type: object
       description: OAuth error response
@@ -185,6 +156,35 @@ components:
         error_description: The authorization grant type is not supported by the authorization server.
         hint: Check that all required parameters have been provided
         message: The authorization grant type is not supported by the authorization server.
+    OAuthTokenResponse:
+      type: object
+      description: OAuth token response
+      required:
+      - token_type
+      - expires_in
+      - access_token
+      properties:
+        token_type:
+          type: string
+          enum:
+          - Bearer
+          description: Type of token issued
+        expires_in:
+          type: integer
+          description: Token expiration time in seconds
+        access_token:
+          type: string
+          description: The access token
+        refresh_token:
+          type: string
+          description: The refresh token (if applicable)
+        scope:
+          type: string
+          description: Space-separated list of granted scopes
+      examples:
+      - token_type: Bearer
+        expires_in: 31536000
+        access_token: eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9...
   securitySchemes:
     OAuth2:
       type: oauth2
