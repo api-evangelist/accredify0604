@@ -384,6 +384,9 @@ maintainers:
 - FN: APIs.json
   email: info@apis.io
 common:
+- type: CapabilityMap
+  url: capabilities/accredify0604-capability-edges.yml
+  name: Accredify Business Capability Map
 - type: Overlay
   url: overlays/accredify0604-nexus-auth-overlay.yaml
 - type: Overlay
