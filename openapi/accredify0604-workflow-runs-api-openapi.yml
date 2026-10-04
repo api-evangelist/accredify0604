@@ -187,70 +187,6 @@ paths:
           $ref: '#/components/responses/422'
       operationId: download-workflow-run-documents
 components:
-  responses:
-    '401':
-      description: Unauthenticated
-      content:
-        application/json:
-          schema:
-            type: object
-            properties:
-              message:
-                type: string
-            required:
-            - message
-          examples:
-            Example 1:
-              value:
-                message: Unauthenticated.
-    '403':
-      description: Forbidden
-      content:
-        application/json:
-          schema:
-            type: object
-            properties:
-              message:
-                type: string
-          examples:
-            Example 1:
-              value:
-                message: Invalid scope(s) provided.
-    '404':
-      description: Not found
-      content:
-        application/json:
-          schema:
-            type: object
-            properties:
-              message:
-                type: string
-          examples:
-            Example 1:
-              value:
-                message: Not found or not accessible.
-    '422':
-      description: Unprocessable Entity (WebDAV)
-      content:
-        application/json:
-          schema:
-            type: object
-            properties:
-              message:
-                type: string
-              errors:
-                type: object
-            required:
-            - message
-            - errors
-          examples:
-            Example 1:
-              value:
-                message: The per page field must be an integer. (and 1 more error)
-                errors:
-                  per_page:
-                  - The per page field must be an integer.
-                  - The selected per page is invalid.
   schemas:
     WorkflowRun:
       type: object
@@ -335,6 +271,30 @@ components:
         - sequence: 2
           type: issue_documents
           status: running
+    Group:
+      title: Group
+      type: object
+      description: Organization group information from GroupApiResource
+      examples:
+      - uuid: 9f854436-2e67-439e-bdda-e7ab6a4b5874
+        name: Default Access Group
+        description: null
+      properties:
+        uuid:
+          type: string
+          format: uuid
+          description: Unique identifier for the group
+        name:
+          type: string
+          description: Name of the organization group
+        description:
+          type:
+          - string
+          - 'null'
+          description: Description of the organization group (can be null)
+      required:
+      - uuid
+      - name
     User:
       title: User
       type: object
@@ -381,30 +341,70 @@ components:
       - role
       - email
       - status
-    Group:
-      title: Group
-      type: object
-      description: Organization group information from GroupApiResource
-      examples:
-      - uuid: 9f854436-2e67-439e-bdda-e7ab6a4b5874
-        name: Default Access Group
-        description: null
-      properties:
-        uuid:
-          type: string
-          format: uuid
-          description: Unique identifier for the group
-        name:
-          type: string
-          description: Name of the organization group
-        description:
-          type:
-          - string
-          - 'null'
-          description: Description of the organization group (can be null)
-      required:
-      - uuid
-      - name
+  responses:
+    '422':
+      description: Unprocessable Entity (WebDAV)
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+              errors:
+                type: object
+            required:
+            - message
+            - errors
+          examples:
+            Example 1:
+              value:
+                message: The per page field must be an integer. (and 1 more error)
+                errors:
+                  per_page:
+                  - The per page field must be an integer.
+                  - The selected per page is invalid.
+    '404':
+      description: Not found
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+          examples:
+            Example 1:
+              value:
+                message: Not found or not accessible.
+    '401':
+      description: Unauthenticated
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+            required:
+            - message
+          examples:
+            Example 1:
+              value:
+                message: Unauthenticated.
+    '403':
+      description: Forbidden
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+          examples:
+            Example 1:
+              value:
+                message: Invalid scope(s) provided.
   securitySchemes:
     OAuth2:
       type: oauth2

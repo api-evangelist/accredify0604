@@ -229,36 +229,14 @@ paths:
       x-operation-id-source: derived
 components:
   schemas:
-    PaginationLinks:
+    CreatedUserTokenSecret:
       type: object
-      description: Pagination links for navigating through paginated results
       required:
-      - first
-      - last
-      - prev
-      - next
+      - token
       properties:
-        first:
+        token:
           type: string
-          description: URL for the first page
-        last:
-          type: string
-          description: URL for the last page
-        prev:
-          type:
-          - string
-          - 'null'
-          description: URL for the previous page (null if on first page)
-        next:
-          type:
-          - string
-          - 'null'
-          description: URL for the next page (null if on last page)
-      examples:
-      - first: http://nexus.localhost:8080/api/workflows?page=1
-        last: http://nexus.localhost:8080/api/workflows?page=1
-        prev: null
-        next: null
+          description: Plaintext bearer token shown only once at creation
     PaginationMeta:
       type: object
       description: Pagination metadata containing information about the current page and total results
@@ -340,6 +318,36 @@ components:
       allOf:
       - $ref: '#/components/schemas/UserToken'
       - $ref: '#/components/schemas/CreatedUserTokenSecret'
+    PaginationLinks:
+      type: object
+      description: Pagination links for navigating through paginated results
+      required:
+      - first
+      - last
+      - prev
+      - next
+      properties:
+        first:
+          type: string
+          description: URL for the first page
+        last:
+          type: string
+          description: URL for the last page
+        prev:
+          type:
+          - string
+          - 'null'
+          description: URL for the previous page (null if on first page)
+        next:
+          type:
+          - string
+          - 'null'
+          description: URL for the next page (null if on last page)
+      examples:
+      - first: http://nexus.localhost:8080/api/workflows?page=1
+        last: http://nexus.localhost:8080/api/workflows?page=1
+        prev: null
+        next: null
     UserToken:
       type: object
       description: User token metadata object
@@ -383,14 +391,6 @@ components:
         is_revoked:
           type: boolean
           description: Whether token is revoked (manually or automatically when subject user is locked)
-    CreatedUserTokenSecret:
-      type: object
-      required:
-      - token
-      properties:
-        token:
-          type: string
-          description: Plaintext bearer token shown only once at creation
   securitySchemes:
     OAuth2:
       type: oauth2

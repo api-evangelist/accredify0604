@@ -127,6 +127,19 @@ paths:
       - bearerAuth: []
 components:
   responses:
+    BadRequest:
+      description: Bad request
+      content:
+        application/json:
+          schema:
+            properties:
+              status:
+                type: integer
+                example: 400
+              message:
+                type: string
+                example: We couldn't find you, please try again.
+            type: object
     UnauthenticatedRequest:
       description: Unauthenticated request
       content:
@@ -139,6 +152,35 @@ components:
               message:
                 type: string
                 example: Unauthenticated. You might have provided an invalid access token or your token has already expired.
+            type: object
+    NotFoundRequest:
+      description: The specified resource was not found
+      content:
+        application/json:
+          schema:
+            properties:
+              status:
+                type: integer
+                example: 404
+              message:
+                type: string
+                example: Please ensure you are making the request to the correct endpoint.
+            type: object
+    InternalErrorRequest:
+      description: Internal server error
+      content:
+        application/json:
+          schema:
+            properties:
+              status:
+                type: integer
+                example: 500
+              message:
+                type: string
+                example: There was an unexpected error while performing your last action. Please contact us at support@accredify.io with the error code for internal reference
+              code:
+                type: string
+                example: E500
             type: object
     TooManyRequests:
       description: Too many requests
@@ -169,48 +211,6 @@ components:
               message:
                 type: string
                 example: Validation failed for the request.
-            type: object
-    BadRequest:
-      description: Bad request
-      content:
-        application/json:
-          schema:
-            properties:
-              status:
-                type: integer
-                example: 400
-              message:
-                type: string
-                example: We couldn't find you, please try again.
-            type: object
-    NotFoundRequest:
-      description: The specified resource was not found
-      content:
-        application/json:
-          schema:
-            properties:
-              status:
-                type: integer
-                example: 404
-              message:
-                type: string
-                example: Please ensure you are making the request to the correct endpoint.
-            type: object
-    InternalErrorRequest:
-      description: Internal server error
-      content:
-        application/json:
-          schema:
-            properties:
-              status:
-                type: integer
-                example: 500
-              message:
-                type: string
-                example: There was an unexpected error while performing your last action. Please contact us at support@accredify.io with the error code for internal reference
-              code:
-                type: string
-                example: E500
             type: object
   securitySchemes:
     bearerAuth:

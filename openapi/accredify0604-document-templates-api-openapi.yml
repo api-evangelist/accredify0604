@@ -256,224 +256,7 @@ paths:
           $ref: '#/components/responses/404'
       operationId: get-document-template-by-id
 components:
-  responses:
-    '401':
-      description: Unauthenticated
-      content:
-        application/json:
-          schema:
-            type: object
-            properties:
-              message:
-                type: string
-            required:
-            - message
-          examples:
-            Example 1:
-              value:
-                message: Unauthenticated.
-    '403':
-      description: Forbidden
-      content:
-        application/json:
-          schema:
-            type: object
-            properties:
-              message:
-                type: string
-          examples:
-            Example 1:
-              value:
-                message: Invalid scope(s) provided.
-    '404':
-      description: Not found
-      content:
-        application/json:
-          schema:
-            type: object
-            properties:
-              message:
-                type: string
-          examples:
-            Example 1:
-              value:
-                message: Not found or not accessible.
-    '422':
-      description: Unprocessable Entity (WebDAV)
-      content:
-        application/json:
-          schema:
-            type: object
-            properties:
-              message:
-                type: string
-              errors:
-                type: object
-            required:
-            - message
-            - errors
-          examples:
-            Example 1:
-              value:
-                message: The per page field must be an integer. (and 1 more error)
-                errors:
-                  per_page:
-                  - The per page field must be an integer.
-                  - The selected per page is invalid.
   schemas:
-    PaginationLinks:
-      type: object
-      description: Pagination links for navigating through paginated results
-      required:
-      - first
-      - last
-      - prev
-      - next
-      properties:
-        first:
-          type: string
-          description: URL for the first page
-        last:
-          type: string
-          description: URL for the last page
-        prev:
-          type:
-          - string
-          - 'null'
-          description: URL for the previous page (null if on first page)
-        next:
-          type:
-          - string
-          - 'null'
-          description: URL for the next page (null if on last page)
-      examples:
-      - first: http://nexus.localhost:8080/api/workflows?page=1
-        last: http://nexus.localhost:8080/api/workflows?page=1
-        prev: null
-        next: null
-    PaginationMeta:
-      type: object
-      description: Pagination metadata containing information about the current page and total results
-      required:
-      - current_page
-      - from
-      - last_page
-      - links
-      - path
-      - per_page
-      - to
-      - total
-      properties:
-        current_page:
-          type: integer
-          description: Current page number
-        from:
-          type:
-          - integer
-          - 'null'
-          description: Starting record number for current page
-        last_page:
-          type: integer
-          description: Last page number
-        links:
-          type: array
-          description: Array of pagination link objects
-          items:
-            type: object
-            required:
-            - url
-            - label
-            - active
-            properties:
-              url:
-                type:
-                - 'null'
-                - string
-                description: URL for the pagination link (null for disabled links)
-              label:
-                type: string
-                description: Display label for the pagination link
-              active:
-                type: boolean
-                description: Whether this link represents the current page
-        path:
-          type: string
-          description: Base path for the API endpoint
-        per_page:
-          type: integer
-          description: Number of items per page
-        to:
-          type:
-          - integer
-          - 'null'
-          description: Ending record number for current page
-        total:
-          type: integer
-          description: Total number of records
-      examples:
-      - current_page: 1
-        from: 1
-        last_page: 1
-        links:
-        - url: null
-          label: '&laquo; Previous'
-          active: false
-        - url: http://nexus.localhost:8080/api/workflows?page=1
-          label: '1'
-          active: true
-        - url: null
-          label: Next &raquo;
-          active: false
-        path: http://nexus.localhost:8080/api/workflows
-        per_page: 10
-        to: 3
-        total: 3
-    User:
-      title: User
-      type: object
-      description: User information from UserApiResource
-      examples:
-      - uuid: 9fb13043-3833-4f0e-8aff-996a007e0aa5
-        name: John Doe
-        role: member
-        email: john.doe@accredify.io
-        status: active
-        groups:
-        - uuid: 9f854436-2e67-439e-bdda-e7ab6a4b5874
-          name: Default Access Group
-          description: null
-        - uuid: 9fb13026-0719-4cf5-b559-8fd312eebdbd
-          name: Marketing Team
-          description: null
-      properties:
-        uuid:
-          type: string
-          format: uuid
-          description: Unique identifier for the user
-        name:
-          type: string
-          description: Full name of the user
-        role:
-          type: string
-          description: User's role name (or '-' if no role assigned)
-        email:
-          type: string
-          format: email
-          description: Email address of the user
-        status:
-          type: string
-          description: Current status of the user
-        groups:
-          type: array
-          description: Array of organization groups the user belongs to (only present when groups are loaded)
-          items:
-            $ref: '#/components/schemas/Group'
-      required:
-      - uuid
-      - name
-      - role
-      - email
-      - status
     DocumentTemplate:
       title: DocumentTemplate
       type: object
@@ -578,6 +361,83 @@ components:
       - created_by
       - updated_by
       - tags
+    PaginationMeta:
+      type: object
+      description: Pagination metadata containing information about the current page and total results
+      required:
+      - current_page
+      - from
+      - last_page
+      - links
+      - path
+      - per_page
+      - to
+      - total
+      properties:
+        current_page:
+          type: integer
+          description: Current page number
+        from:
+          type:
+          - integer
+          - 'null'
+          description: Starting record number for current page
+        last_page:
+          type: integer
+          description: Last page number
+        links:
+          type: array
+          description: Array of pagination link objects
+          items:
+            type: object
+            required:
+            - url
+            - label
+            - active
+            properties:
+              url:
+                type:
+                - 'null'
+                - string
+                description: URL for the pagination link (null for disabled links)
+              label:
+                type: string
+                description: Display label for the pagination link
+              active:
+                type: boolean
+                description: Whether this link represents the current page
+        path:
+          type: string
+          description: Base path for the API endpoint
+        per_page:
+          type: integer
+          description: Number of items per page
+        to:
+          type:
+          - integer
+          - 'null'
+          description: Ending record number for current page
+        total:
+          type: integer
+          description: Total number of records
+      examples:
+      - current_page: 1
+        from: 1
+        last_page: 1
+        links:
+        - url: null
+          label: '&laquo; Previous'
+          active: false
+        - url: http://nexus.localhost:8080/api/workflows?page=1
+          label: '1'
+          active: true
+        - url: null
+          label: Next &raquo;
+          active: false
+        path: http://nexus.localhost:8080/api/workflows
+        per_page: 10
+        to: 3
+        total: 3
     TemplateAttribute:
       title: TemplateAttribute
       type: object
@@ -679,6 +539,146 @@ components:
       required:
       - uuid
       - name
+    PaginationLinks:
+      type: object
+      description: Pagination links for navigating through paginated results
+      required:
+      - first
+      - last
+      - prev
+      - next
+      properties:
+        first:
+          type: string
+          description: URL for the first page
+        last:
+          type: string
+          description: URL for the last page
+        prev:
+          type:
+          - string
+          - 'null'
+          description: URL for the previous page (null if on first page)
+        next:
+          type:
+          - string
+          - 'null'
+          description: URL for the next page (null if on last page)
+      examples:
+      - first: http://nexus.localhost:8080/api/workflows?page=1
+        last: http://nexus.localhost:8080/api/workflows?page=1
+        prev: null
+        next: null
+    User:
+      title: User
+      type: object
+      description: User information from UserApiResource
+      examples:
+      - uuid: 9fb13043-3833-4f0e-8aff-996a007e0aa5
+        name: John Doe
+        role: member
+        email: john.doe@accredify.io
+        status: active
+        groups:
+        - uuid: 9f854436-2e67-439e-bdda-e7ab6a4b5874
+          name: Default Access Group
+          description: null
+        - uuid: 9fb13026-0719-4cf5-b559-8fd312eebdbd
+          name: Marketing Team
+          description: null
+      properties:
+        uuid:
+          type: string
+          format: uuid
+          description: Unique identifier for the user
+        name:
+          type: string
+          description: Full name of the user
+        role:
+          type: string
+          description: User's role name (or '-' if no role assigned)
+        email:
+          type: string
+          format: email
+          description: Email address of the user
+        status:
+          type: string
+          description: Current status of the user
+        groups:
+          type: array
+          description: Array of organization groups the user belongs to (only present when groups are loaded)
+          items:
+            $ref: '#/components/schemas/Group'
+      required:
+      - uuid
+      - name
+      - role
+      - email
+      - status
+  responses:
+    '422':
+      description: Unprocessable Entity (WebDAV)
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+              errors:
+                type: object
+            required:
+            - message
+            - errors
+          examples:
+            Example 1:
+              value:
+                message: The per page field must be an integer. (and 1 more error)
+                errors:
+                  per_page:
+                  - The per page field must be an integer.
+                  - The selected per page is invalid.
+    '404':
+      description: Not found
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+          examples:
+            Example 1:
+              value:
+                message: Not found or not accessible.
+    '401':
+      description: Unauthenticated
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+            required:
+            - message
+          examples:
+            Example 1:
+              value:
+                message: Unauthenticated.
+    '403':
+      description: Forbidden
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+          examples:
+            Example 1:
+              value:
+                message: Invalid scope(s) provided.
   securitySchemes:
     OAuth2:
       type: oauth2

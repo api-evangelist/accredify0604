@@ -497,6 +497,40 @@ components:
                 type: string
                 example: Unauthenticated. You might have provided an invalid access token or your token has already expired.
             type: object
+    NotFoundRequest:
+      description: The specified resource was not found
+      content:
+        application/json:
+          schema:
+            properties:
+              status:
+                description: The HTTP status code
+                type: integer
+                example: 404
+              message:
+                description: The message returned from the request
+                type: string
+                example: Please ensure you are making the request to the correct endpoint.
+            type: object
+    InternalErrorRequest:
+      description: Internal error, please contact us at support@accredify with the code
+      content:
+        application/json:
+          schema:
+            properties:
+              status:
+                description: The HTTP status code
+                type: integer
+                example: 500
+              code:
+                description: The error code for reporting and internal reference
+                type: string
+                example: E400
+              message:
+                description: The message returned from the request
+                type: string
+                example: There was an unexpected error while performing your last action. Please contact us at support@accredify.io with the error code for internal reference
+            type: object
     TooManyRequests:
       description: Too many requests
       content:
@@ -531,40 +565,6 @@ components:
                       type: string
                       example: error message
                 type: object
-            type: object
-    NotFoundRequest:
-      description: The specified resource was not found
-      content:
-        application/json:
-          schema:
-            properties:
-              status:
-                description: The HTTP status code
-                type: integer
-                example: 404
-              message:
-                description: The message returned from the request
-                type: string
-                example: Please ensure you are making the request to the correct endpoint.
-            type: object
-    InternalErrorRequest:
-      description: Internal error, please contact us at support@accredify with the code
-      content:
-        application/json:
-          schema:
-            properties:
-              status:
-                description: The HTTP status code
-                type: integer
-                example: 500
-              code:
-                description: The error code for reporting and internal reference
-                type: string
-                example: E400
-              message:
-                description: The message returned from the request
-                type: string
-                example: There was an unexpected error while performing your last action. Please contact us at support@accredify.io with the error code for internal reference
             type: object
   securitySchemes:
     bearerAuth:

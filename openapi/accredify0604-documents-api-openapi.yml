@@ -573,6 +573,19 @@ paths:
       description: Production
 components:
   responses:
+    BadRequest:
+      description: Bad request
+      content:
+        application/json:
+          schema:
+            properties:
+              status:
+                type: integer
+                example: 400
+              message:
+                type: string
+                example: We couldn't find you, please try again.
+            type: object
     UnauthenticatedRequest:
       description: Unauthenticated request
       content:
@@ -585,6 +598,22 @@ components:
               message:
                 type: string
                 example: Unauthenticated. You might have provided an invalid access token or your token has already expired.
+            type: object
+    InternalErrorRequest:
+      description: Internal server error
+      content:
+        application/json:
+          schema:
+            properties:
+              status:
+                type: integer
+                example: 500
+              message:
+                type: string
+                example: There was an unexpected error while performing your last action. Please contact us at support@accredify.io with the error code for internal reference
+              code:
+                type: string
+                example: E500
             type: object
     TooManyRequests:
       description: Too many requests
@@ -616,63 +645,6 @@ components:
                 type: string
                 example: Validation failed for the request.
             type: object
-    BadRequest:
-      description: Bad request
-      content:
-        application/json:
-          schema:
-            properties:
-              status:
-                type: integer
-                example: 400
-              message:
-                type: string
-                example: We couldn't find you, please try again.
-            type: object
-    InternalErrorRequest:
-      description: Internal server error
-      content:
-        application/json:
-          schema:
-            properties:
-              status:
-                type: integer
-                example: 500
-              message:
-                type: string
-                example: There was an unexpected error while performing your last action. Please contact us at support@accredify.io with the error code for internal reference
-              code:
-                type: string
-                example: E500
-            type: object
-    '401':
-      description: Unauthenticated
-      content:
-        application/json:
-          schema:
-            type: object
-            properties:
-              message:
-                type: string
-            required:
-            - message
-          examples:
-            Example 1:
-              value:
-                message: Unauthenticated.
-    '403':
-      description: Forbidden
-      content:
-        application/json:
-          schema:
-            type: object
-            properties:
-              message:
-                type: string
-          examples:
-            Example 1:
-              value:
-                message: Invalid scope(s) provided.
     '422':
       description: Unprocessable Entity (WebDAV)
       content:
@@ -708,58 +680,35 @@ components:
             Example 1:
               value:
                 message: Not found or not accessible.
+    '401':
+      description: Unauthenticated
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+            required:
+            - message
+          examples:
+            Example 1:
+              value:
+                message: Unauthenticated.
+    '403':
+      description: Forbidden
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+          examples:
+            Example 1:
+              value:
+                message: Invalid scope(s) provided.
   schemas:
-    PaginationLinks:
-      type: object
-      description: Pagination links for navigating through paginated results
-      required:
-      - first
-      - last
-      - prev
-      - next
-      properties:
-        first:
-          type: string
-          description: URL for the first page
-        last:
-          type: string
-          description: URL for the last page
-        prev:
-          type:
-          - string
-          - 'null'
-          description: URL for the previous page (null if on first page)
-        next:
-          type:
-          - string
-          - 'null'
-          description: URL for the next page (null if on last page)
-      examples:
-      - first: http://nexus.localhost:8080/api/workflows?page=1
-        last: http://nexus.localhost:8080/api/workflows?page=1
-        prev: null
-        next: null
-    DocumentFile:
-      title: DocumentFile
-      type: object
-      description: File associated with a document
-      examples:
-      - url: https://example.com/document.pdf
-        label: presentation
-      - url: https://example.com/document.json
-        label: raw
-      - url: https://example.com/document.opencert
-        label: signed
-      properties:
-        url:
-          type: string
-          description: Temporary URL to download the file (null if unavailable)
-        label:
-          type: string
-          description: Type/label of the file (e.g., 'presentation', 'raw', 'signed')
-      required:
-      - url
-      - label
     PaginationMeta:
       type: object
       description: Pagination metadata containing information about the current page and total results
@@ -837,28 +786,6 @@ components:
         per_page: 10
         to: 3
         total: 3
-    DocumentRecipient:
-      title: DocumentRecipient
-      type: object
-      description: Document recipient information
-      examples:
-      - name: John Doe
-        email: john.doe@example.com
-      properties:
-        name:
-          type:
-          - string
-          - 'null'
-          description: Recipient's full name
-        email:
-          type:
-          - string
-          - 'null'
-          format: email
-          description: Recipient's email address
-      required:
-      - name
-      - email
     Group:
       title: Group
       type: object
@@ -883,6 +810,58 @@ components:
       required:
       - uuid
       - name
+    DocumentRecipient:
+      title: DocumentRecipient
+      type: object
+      description: Document recipient information
+      examples:
+      - name: John Doe
+        email: john.doe@example.com
+      properties:
+        name:
+          type:
+          - string
+          - 'null'
+          description: Recipient's full name
+        email:
+          type:
+          - string
+          - 'null'
+          format: email
+          description: Recipient's email address
+      required:
+      - name
+      - email
+    PaginationLinks:
+      type: object
+      description: Pagination links for navigating through paginated results
+      required:
+      - first
+      - last
+      - prev
+      - next
+      properties:
+        first:
+          type: string
+          description: URL for the first page
+        last:
+          type: string
+          description: URL for the last page
+        prev:
+          type:
+          - string
+          - 'null'
+          description: URL for the previous page (null if on first page)
+        next:
+          type:
+          - string
+          - 'null'
+          description: URL for the next page (null if on last page)
+      examples:
+      - first: http://nexus.localhost:8080/api/workflows?page=1
+        last: http://nexus.localhost:8080/api/workflows?page=1
+        prev: null
+        next: null
     Document:
       title: Document
       type: object
@@ -999,6 +978,27 @@ components:
       - uuid
       - status
       - group
+    DocumentFile:
+      title: DocumentFile
+      type: object
+      description: File associated with a document
+      examples:
+      - url: https://example.com/document.pdf
+        label: presentation
+      - url: https://example.com/document.json
+        label: raw
+      - url: https://example.com/document.opencert
+        label: signed
+      properties:
+        url:
+          type: string
+          description: Temporary URL to download the file (null if unavailable)
+        label:
+          type: string
+          description: Type/label of the file (e.g., 'presentation', 'raw', 'signed')
+      required:
+      - url
+      - label
   securitySchemes:
     bearerAuth:
       type: http

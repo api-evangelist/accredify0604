@@ -1622,6 +1622,19 @@ paths:
       description: Production
 components:
   responses:
+    BadRequest:
+      description: Bad request
+      content:
+        application/json:
+          schema:
+            properties:
+              status:
+                type: integer
+                example: 400
+              message:
+                type: string
+                example: We couldn't find you, please try again.
+            type: object
     UnauthenticatedRequest:
       description: Unauthenticated request
       content:
@@ -1634,6 +1647,35 @@ components:
               message:
                 type: string
                 example: Unauthenticated. You might have provided an invalid access token or your token has already expired.
+            type: object
+    NotFoundRequest:
+      description: The specified resource was not found
+      content:
+        application/json:
+          schema:
+            properties:
+              status:
+                type: integer
+                example: 404
+              message:
+                type: string
+                example: Please ensure you are making the request to the correct endpoint.
+            type: object
+    InternalErrorRequest:
+      description: Internal server error
+      content:
+        application/json:
+          schema:
+            properties:
+              status:
+                type: integer
+                example: 500
+              message:
+                type: string
+                example: There was an unexpected error while performing your last action. Please contact us at support@accredify.io with the error code for internal reference
+              code:
+                type: string
+                example: E500
             type: object
     TooManyRequests:
       description: Too many requests
@@ -1665,48 +1707,41 @@ components:
                 type: string
                 example: Validation failed for the request.
             type: object
-    BadRequest:
-      description: Bad request
+    '422':
+      description: Unprocessable Entity (WebDAV)
       content:
         application/json:
           schema:
+            type: object
             properties:
-              status:
-                type: integer
-                example: 400
               message:
                 type: string
-                example: We couldn't find you, please try again.
-            type: object
-    NotFoundRequest:
-      description: The specified resource was not found
+              errors:
+                type: object
+            required:
+            - message
+            - errors
+          examples:
+            Example 1:
+              value:
+                message: The per page field must be an integer. (and 1 more error)
+                errors:
+                  per_page:
+                  - The per page field must be an integer.
+                  - The selected per page is invalid.
+    '404':
+      description: Not found
       content:
         application/json:
           schema:
+            type: object
             properties:
-              status:
-                type: integer
-                example: 404
               message:
                 type: string
-                example: Please ensure you are making the request to the correct endpoint.
-            type: object
-    InternalErrorRequest:
-      description: Internal server error
-      content:
-        application/json:
-          schema:
-            properties:
-              status:
-                type: integer
-                example: 500
-              message:
-                type: string
-                example: There was an unexpected error while performing your last action. Please contact us at support@accredify.io with the error code for internal reference
-              code:
-                type: string
-                example: E500
-            type: object
+          examples:
+            Example 1:
+              value:
+                message: Not found or not accessible.
     '401':
       description: Unauthenticated
       content:
@@ -1735,41 +1770,6 @@ components:
             Example 1:
               value:
                 message: Invalid scope(s) provided.
-    '404':
-      description: Not found
-      content:
-        application/json:
-          schema:
-            type: object
-            properties:
-              message:
-                type: string
-          examples:
-            Example 1:
-              value:
-                message: Not found or not accessible.
-    '422':
-      description: Unprocessable Entity (WebDAV)
-      content:
-        application/json:
-          schema:
-            type: object
-            properties:
-              message:
-                type: string
-              errors:
-                type: object
-            required:
-            - message
-            - errors
-          examples:
-            Example 1:
-              value:
-                message: The per page field must be an integer. (and 1 more error)
-                errors:
-                  per_page:
-                  - The per page field must be an integer.
-                  - The selected per page is invalid.
   schemas:
     Course:
       title: Course
@@ -1842,36 +1842,6 @@ components:
       - group_uuid
       - latest_version
       - workflows
-    PaginationLinks:
-      type: object
-      description: Pagination links for navigating through paginated results
-      required:
-      - first
-      - last
-      - prev
-      - next
-      properties:
-        first:
-          type: string
-          description: URL for the first page
-        last:
-          type: string
-          description: URL for the last page
-        prev:
-          type:
-          - string
-          - 'null'
-          description: URL for the previous page (null if on first page)
-        next:
-          type:
-          - string
-          - 'null'
-          description: URL for the next page (null if on last page)
-      examples:
-      - first: http://nexus.localhost:8080/api/workflows?page=1
-        last: http://nexus.localhost:8080/api/workflows?page=1
-        prev: null
-        next: null
     PaginationMeta:
       type: object
       description: Pagination metadata containing information about the current page and total results
@@ -1949,24 +1919,36 @@ components:
         per_page: 10
         to: 3
         total: 3
-    CourseWorkflow:
-      title: CourseWorkflow
+    PaginationLinks:
       type: object
-      description: Slim summary of a workflow the course is attached to
-      examples:
-      - uuid: 9f001c24-eef9-4b82-8399-d4eaa1add4c5
-        name: OA Workflow (No Design)
-      properties:
-        uuid:
-          type: string
-          format: uuid
-          description: Unique identifier for the workflow
-        name:
-          type: string
-          description: Name of the workflow
+      description: Pagination links for navigating through paginated results
       required:
-      - uuid
-      - name
+      - first
+      - last
+      - prev
+      - next
+      properties:
+        first:
+          type: string
+          description: URL for the first page
+        last:
+          type: string
+          description: URL for the last page
+        prev:
+          type:
+          - string
+          - 'null'
+          description: URL for the previous page (null if on first page)
+        next:
+          type:
+          - string
+          - 'null'
+          description: URL for the next page (null if on last page)
+      examples:
+      - first: http://nexus.localhost:8080/api/workflows?page=1
+        last: http://nexus.localhost:8080/api/workflows?page=1
+        prev: null
+        next: null
     CourseVersion:
       title: CourseVersion
       type: object
@@ -2051,6 +2033,24 @@ components:
         fos_code: '011'
         fos_title: TEACHER TRAINING
         skills_passport_course_type: academic
+    CourseWorkflow:
+      title: CourseWorkflow
+      type: object
+      description: Slim summary of a workflow the course is attached to
+      examples:
+      - uuid: 9f001c24-eef9-4b82-8399-d4eaa1add4c5
+        name: OA Workflow (No Design)
+      properties:
+        uuid:
+          type: string
+          format: uuid
+          description: Unique identifier for the workflow
+        name:
+          type: string
+          description: Name of the workflow
+      required:
+      - uuid
+      - name
   securitySchemes:
     bearerAuth:
       type: http
