@@ -21,7 +21,7 @@ x-tier: profiled
 x-tier-reason: enrichment
 specificationVersion: '0.20'
 created: '2026-09-06'
-modified: '2026-09-06'
+modified: '2026-10-06'
 tags:
 - Company
 - Verifiable Credentials
@@ -384,6 +384,8 @@ maintainers:
 - FN: APIs.json
   email: info@apis.io
 common:
+- url: https://www.accredify.io/feed
+  type: BlogRSS
 - type: CapabilityMap
   url: capabilities/accredify0604-capability-edges.yml
   name: Accredify Business Capability Map
