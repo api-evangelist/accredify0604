@@ -127,19 +127,6 @@ paths:
       - bearerAuth: []
 components:
   responses:
-    BadRequest:
-      description: Bad request
-      content:
-        application/json:
-          schema:
-            properties:
-              status:
-                type: integer
-                example: 400
-              message:
-                type: string
-                example: We couldn't find you, please try again.
-            type: object
     UnauthenticatedRequest:
       description: Unauthenticated request
       content:
@@ -181,6 +168,19 @@ components:
               code:
                 type: string
                 example: E500
+            type: object
+    BadRequest:
+      description: Bad request
+      content:
+        application/json:
+          schema:
+            properties:
+              status:
+                type: integer
+                example: 400
+              message:
+                type: string
+                example: We couldn't find you, please try again.
             type: object
     TooManyRequests:
       description: Too many requests
