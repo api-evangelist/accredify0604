@@ -1,4 +1,4 @@
-# Accredify0604
+# Accredify
 
 <!-- API-EVANGELIST-PROVENANCE:BEGIN -->
 > ### About this repository
@@ -64,27 +64,152 @@
 > Full detail: **[Where this data comes from](https://apievangelist.com/about/where-our-data-comes-from)**
 <!-- API-EVANGELIST-PROVENANCE:END -->
 
-Accredify is a Singapore-headquartered verifiable-credentials and "TrustTech" platform that lets
-organisations create, issue, verify and manage tamper-proof digital documents. It serves education,
-healthcare, associations, licensing and public-sector customers across nine markets, and built
-Singapore's HealthCerts COVID-19 verification system.
+Accredify is a Singapore-headquartered verifiable-credentials and "TrustTech" platform that lets organisations create, issue, verify and manage tamper-proof digital documents. Its Nexus platform exposes an OAuth 2.0 client-credentials REST API covering organisation users, groups, roles and user tokens (Auth module), workflow definitions, workflow runs, documents, design/document templates and courses (Workflow module), and document verification plus verifiable-data key extraction (Verification module). A separate Accredify Dashboard API (v1 and v2) covers OAuth 2.0 grants, OpenBadges issuance and revocation, batch upload/issue, certificate revocation, courses, templates and email templates. Accredify also operates a live OpenID for Verifiable Credential Issuance (OID4VCI) credential issuer at nexus.accredify.io, publishing mso_mdoc credential configurations for ISO/IEC 18013-5 mobile driving licence and ISO/IEC 23220 photo ID. The company issues in W3C VC, EBSI, mDL, SMART Health Card, OpenCerts, OpenAttestation and OpenBadges standards, serves education, healthcare, associations, licensing and public-sector customers across nine markets, and built Singapore's HealthCerts COVID-19 verification system.
 
-The company publishes two API families, both documented with public OpenAPI 3.1 specifications:
+**Areas:** Company · Verifiable Credentials · Digital Credentials · Identity · Document Verification · Credentialing · Education · Healthcare · Trust · Open Badges · OID4VCI · Singapore
 
-- **Accredify Nexus API** (`https://nexus.accredify.io`) — OAuth 2.0 client credentials, 20 scopes,
-  across three modules: Auth (organisation users, groups, roles, user tokens), Workflow (workflows,
-  workflow runs, documents, design/document templates, courses) and Verification (verify a document,
-  extract verifiable data keys). Reference: <https://docs.nexus.accredify.io/>
-- **Accredify Dashboard API** (`https://dashboard.accredify.io/api`) — bearer JWT, published as v1
-  and v2 side by side, covering OAuth grants, OpenBadges issuance/revocation, batch upload and issue,
-  certificate revocation by hash, courses, templates and email templates.
-  Reference: <https://docs.dashboard.accredify.io/>
+## Accredify on APIs.io
 
-Nexus is also a live **OID4VCI** credential issuer: `/.well-known/openid-credential-issuer` serves
-`mso_mdoc` credential configurations for ISO/IEC 18013-5 mobile driving licence and ISO/IEC 23220
-photo ID.
+Everything profiled for Accredify is published on APIs.io rather than in this repository. Start at the provider page — **[apis.io/providers/accredify0604/](https://apis.io/providers/accredify0604/)** — or go straight to one of the APIs or properties below.
 
-This profile was first surfaced via the API Evangelist harvest backlog (source: secondary-market).
+### APIs (23)
 
-- https://www.accredify.io/
-- https://equityzen.com/company/accredify0604
+- [Accredify Batch Items API](https://apis.io/apis/accredify0604/accredify0604-batch-items-api/) — Batch Items
+- [Accredify Batches API](https://apis.io/apis/accredify0604/accredify0604-batches-api/) — Batches
+- [Accredify Courses API](https://apis.io/apis/accredify0604/accredify0604-courses-api/) — Courses
+- [Accredify Design Templates API](https://apis.io/apis/accredify0604/accredify0604-design-templates-api/) — The Design Templates API from Accredify — 4 operation(s) for design templates.
+- [Accredify Document Templates API](https://apis.io/apis/accredify0604/accredify0604-document-templates-api/) — The Document Templates API from Accredify — 2 operation(s) for document templates.
+- [Accredify Documents API](https://apis.io/apis/accredify0604/accredify0604-documents-api/) — Documents
+- [Accredify Email Templates API](https://apis.io/apis/accredify0604/accredify0604-email-templates-api/) — Email Templates
+- [Accredify External App Integrations API](https://apis.io/apis/accredify0604/accredify0604-external-app-integrations-api/) — External App Integrations
+- [Accredify Institutions API](https://apis.io/apis/accredify0604/accredify0604-institutions-api/) — Institutions
+- [Accredify Issue API](https://apis.io/apis/accredify0604/accredify0604-issue-api/) — Issue
+- [Accredify Keys API](https://apis.io/apis/accredify0604/accredify0604-keys-api/) — The Keys API from Accredify — 1 operation(s) for keys.
+- [Accredify OAuth 2.0 API](https://apis.io/apis/accredify0604/accredify0604-oauth-2-0-api/) — OAuth 2.0
+- [Accredify Open Badges API](https://apis.io/apis/accredify0604/accredify0604-openbadges-api/) — OpenBadges
+- [Accredify Organization Groups API](https://apis.io/apis/accredify0604/accredify0604-organization-groups-api/) — The Organization Groups API from Accredify — 2 operation(s) for organization groups.
+- [Accredify Organization Roles API](https://apis.io/apis/accredify0604/accredify0604-organization-roles-api/) — The Organization Roles API from Accredify — 1 operation(s) for organization roles.
+- [Accredify Organization Users API](https://apis.io/apis/accredify0604/accredify0604-organization-users-api/) — The Organization Users API from Accredify — 2 operation(s) for organization users.
+- [Accredify Revoke API](https://apis.io/apis/accredify0604/accredify0604-revoke-api/) — Revoke
+- [Accredify Templates API](https://apis.io/apis/accredify0604/accredify0604-templates-api/) — Templates
+- [Accredify User Tokens API](https://apis.io/apis/accredify0604/accredify0604-user-tokens-api/) — The User Tokens API from Accredify — 2 operation(s) for user tokens.
+- [Accredify Verification API](https://apis.io/apis/accredify0604/accredify0604-verification-api/) — The Verification API from Accredify — 1 operation(s) for verification.
+- [Accredify Workflow Runs API](https://apis.io/apis/accredify0604/accredify0604-workflow-runs-api/) — The Workflow Runs API from Accredify — 3 operation(s) for workflow runs.
+- [Accredify Workflows API](https://apis.io/apis/accredify0604/accredify0604-workflows-api/) — The Workflows API from Accredify — 5 operation(s) for workflows.
+- [Accredify O Auth API](https://apis.io/apis/accredify0604/accredify0604-oauth-api/) — The OAuth API from Accredify — 1 operation(s) for oauth.
+
+### Published properties
+
+Each property below is a page on APIs.io carrying the machine-readable artifact and what it says.
+
+#### MCP servers (1)
+
+Model Context Protocol servers that expose the API to agents.
+
+- [accredify0604-mcp.yml](https://apis.io/servers/accredify0604/accredify0604-mcp-yml/)
+
+#### Overlays (5)
+
+OpenAPI overlays, including conversational phrasing for each operation.
+
+- [Accredify0604 Dashboard V1 Overlay](https://apis.io/overlays/accredify0604/accredify0604-dashboard-v1-overlay/)
+- [Accredify0604 Dashboard V2 Overlay](https://apis.io/overlays/accredify0604/accredify0604-dashboard-v2-overlay/)
+- [Accredify0604 Nexus Auth Overlay](https://apis.io/overlays/accredify0604/accredify0604-nexus-auth-overlay/)
+- [Accredify0604 Nexus Verification Overlay](https://apis.io/overlays/accredify0604/accredify0604-nexus-verification-overlay/)
+- [Accredify0604 Nexus Workflow Overlay](https://apis.io/overlays/accredify0604/accredify0604-nexus-workflow-overlay/)
+
+#### Security (3)
+
+Authentication, trust centre, and vulnerability disclosure.
+
+- [Accredify0604 Authentication](https://apis.io/security/accredify0604/accredify0604-authentication/)
+- [Accredify0604 Domain Security](https://apis.io/security/accredify0604/accredify0604-domain-security/)
+- [Accredify0604 Trust Center](https://apis.io/security/accredify0604/accredify0604-trust-center/)
+
+#### OAuth scopes (1)
+
+The permissions the API asks for.
+
+- [Accredify0604 Scopes](https://apis.io/scopes/accredify0604/accredify0604-scopes/)
+
+#### Plans and pricing (1)
+
+Published plans, tiers and prices.
+
+- [Accredify0604 Plans Pricing](https://apis.io/plans/accredify0604/accredify0604-plans-pricing/)
+
+#### Rate limits (1)
+
+Published request limits.
+
+- [Accredify0604 Rate Limits](https://apis.io/rate-limits/accredify0604/accredify0604-rate-limits/)
+
+## Where to find this API
+
+Links to the company's own pages. This repository publishes no copy of their specifications — the canonical document is theirs and lives at the URLs below.
+
+- [Website](https://www.accredify.io/)
+- [Documentation](https://docs.nexus.accredify.io/)
+- [API reference](https://docs.dashboard.accredify.io/)
+- [Sign up](https://www.accredify.io/schedule-demo)
+- [Support](https://www.accredify.io/contact-us)
+- [Blog](https://www.accredify.io/blog)
+- [Security](https://www.accredify.io/security)
+- [Compliance](https://www.accredify.io/security)
+- [Terms of service](https://www.accredify.io/service-terms)
+- [Privacy policy](https://www.accredify.io/data-protection-notice)
+- [GitHub](https://github.com/Accredifysg)
+- [Status](https://status.accredify.io/)
+
+## API Evangelist rating
+
+**Kin Score 49.1** — developing · rubric 0.24.0 · scored 2026-10-17
+
+| Facet | Score |
+|---|---|
+| Discoverability | 78.6 |
+| Contract quality | 51.1 |
+| Contract governance | 18.2 |
+| Operational transparency | 28.9 |
+| Developer ergonomics | 44.6 |
+| Access clarity | 50.0 |
+
+**Agent readiness 34.6** — agent-ready
+
+| Agent-readiness dimension | Result |
+|---|---|
+| Spec Presence | yes |
+| Agentic Access | — |
+| Reversibility Documented | — |
+| MCP Server | — |
+| Auth Clarity | served (partial credit) |
+| Idempotency | — |
+| Error Semantics | verified |
+| OpenAPI Examples | verified |
+| Rate Limit Signal | derived (partial credit) |
+| Event Surface Described | — |
+| Agent Skills | derived (partial credit) |
+| Well Known Catalog | yes |
+| Consent Identity | — |
+| Agent Card | — |
+| Dry Run Mode | — |
+| Delegated Identity | — |
+| Protected Resource Metadata | — |
+| Dynamic Client Registration | — |
+| Agentic Commerce | — |
+
+**Regulatory alignment 40.6** — Health
+
+The rubric is published at [github.com/api-evangelist/kin-score](https://github.com/api-evangelist/kin-score). The per-check breakdown behind these numbers — which checks were earned, partial or missed — along with score history and how this provider compares to its peers, is available at [apis.io/providers/accredify0604/](https://apis.io/providers/accredify0604/).
+
+## How this profile is made
+
+API Evangelist profiles a company's public API surface the way a developer would find it: the website, developer portal and documentation, the specifications it publishes, its public repositories, and its pricing, status and changelog pages. From that it derives the properties above — contracts split per API, workflows, schemas, collections, governance rules, plans and rate limits — and scores them against the published [Kin Score rubric](https://github.com/api-evangelist/kin-score).
+
+The artifacts are published on [APIs.io](https://apis.io), not in this repository. This repository is the public record for Accredify: the place to say something is wrong, missing or out of date, and to ask for a re-score or a removal.
+
+## Open an issue
+
+- **Something about this listing** — a wrong description, a missing API, a stale artifact or a question about the rating: [open an issue on this repository](https://github.com/api-evangelist/accredify0604/issues/new).
+- **A new API, or one that is not in the catalog yet** — [submit it on APIs.io](https://apis.io/add/).
+- **Anything else** — [the APIs.io inbox](https://github.com/api-search/inbox/issues/new) or [info@apievangelist.com](mailto:info@apievangelist.com).
