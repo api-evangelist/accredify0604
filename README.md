@@ -112,37 +112,49 @@ Model Context Protocol servers that expose the API to agents.
 
 OpenAPI overlays, including conversational phrasing for each operation.
 
-- [Accredify0604 Dashboard V1 Overlay](https://apis.io/overlays/accredify0604/accredify0604-dashboard-v1-overlay/)
-- [Accredify0604 Dashboard V2 Overlay](https://apis.io/overlays/accredify0604/accredify0604-dashboard-v2-overlay/)
-- [Accredify0604 Nexus Auth Overlay](https://apis.io/overlays/accredify0604/accredify0604-nexus-auth-overlay/)
-- [Accredify0604 Nexus Verification Overlay](https://apis.io/overlays/accredify0604/accredify0604-nexus-verification-overlay/)
-- [Accredify0604 Nexus Workflow Overlay](https://apis.io/overlays/accredify0604/accredify0604-nexus-workflow-overlay/)
+- [Accredify Dashboard V1 Overlay](https://apis.io/overlays/accredify0604/accredify0604-dashboard-v1-overlay/)
+- [Accredify Dashboard V2 Overlay](https://apis.io/overlays/accredify0604/accredify0604-dashboard-v2-overlay/)
+- [Accredify Nexus Auth Overlay](https://apis.io/overlays/accredify0604/accredify0604-nexus-auth-overlay/)
+- [Accredify Nexus Verification Overlay](https://apis.io/overlays/accredify0604/accredify0604-nexus-verification-overlay/)
+- [Accredify Nexus Workflow Overlay](https://apis.io/overlays/accredify0604/accredify0604-nexus-workflow-overlay/)
+
+#### Governance rules (1)
+
+Spectral rulesets for the provider's contracts.
+
+- [Accredify API Rules](https://apis.io/rules/accredify0604/accredify0604-rules/)
 
 #### Security (3)
 
 Authentication, trust centre, and vulnerability disclosure.
 
-- [Accredify0604 Authentication](https://apis.io/security/accredify0604/accredify0604-authentication/)
-- [Accredify0604 Domain Security](https://apis.io/security/accredify0604/accredify0604-domain-security/)
-- [Accredify0604 Trust Center](https://apis.io/security/accredify0604/accredify0604-trust-center/)
+- [Accredify Authentication](https://apis.io/security/accredify0604/accredify0604-authentication/)
+- [Accredify Domain Security](https://apis.io/security/accredify0604/accredify0604-domain-security/)
+- [Accredify Trust Center](https://apis.io/security/accredify0604/accredify0604-trust-center/)
 
 #### OAuth scopes (1)
 
 The permissions the API asks for.
 
-- [Accredify0604 Scopes](https://apis.io/scopes/accredify0604/accredify0604-scopes/)
+- [Accredify Scopes](https://apis.io/scopes/accredify0604/accredify0604-scopes/)
 
 #### Plans and pricing (1)
 
 Published plans, tiers and prices.
 
-- [Accredify0604 Plans Pricing](https://apis.io/plans/accredify0604/accredify0604-plans-pricing/)
+- [Accredify Plans Pricing](https://apis.io/plans/accredify0604/accredify0604-plans-pricing/)
 
 #### Rate limits (1)
 
 Published request limits.
 
-- [Accredify0604 Rate Limits](https://apis.io/rate-limits/accredify0604/accredify0604-rate-limits/)
+- [Accredify Rate Limits](https://apis.io/rate-limits/accredify0604/accredify0604-rate-limits/)
+
+#### FinOps (1)
+
+What the API costs to run, by operation.
+
+- [Accredify Finops](https://apis.io/finops/accredify0604/accredify0604-finops/)
 
 ## Where to find this API
 
@@ -163,18 +175,18 @@ Links to the company's own pages. This repository publishes no copy of their spe
 
 ## API Evangelist rating
 
-**Kin Score 49.1** — developing · rubric 0.25.0 · scored 2026-10-23
+**Kin Score 52.3** — developing · rubric 0.28.1 · scored 2026-11-21
 
 | Facet | Score |
 |---|---|
 | Discoverability | 78.6 |
 | Contract quality | 51.1 |
-| Contract governance | 18.2 |
-| Operational transparency | 28.9 |
+| Contract governance | 31.8 |
+| Operational transparency | 33.3 |
 | Developer ergonomics | 44.6 |
-| Access clarity | 50.0 |
+| Access clarity | 55.3 |
 
-**Agent readiness 35.5** — agent-ready
+**Agent readiness 34.8** — agent-ready
 
 | Agent-readiness dimension | Result |
 |---|---|
@@ -199,6 +211,10 @@ Links to the company's own pages. This repository publishes no copy of their spe
 | Agentic Commerce | — |
 | Pagination Ratio | partial |
 | Operation Distinctiveness | mostly (partial credit) |
+| MCP Tool Quality | na |
+| Onboarding Descriptor | — |
+| Dns Aid Index | na |
+| Markdown Negotiation | na |
 
 **Regulatory alignment 40.6** — Health
 
